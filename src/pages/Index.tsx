@@ -89,7 +89,7 @@ const Index = () => {
 
           <div className="max-w-6xl mx-auto text-center mb-32 relative z-10">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 backdrop-blur-sm mb-8 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/5 border border-accent/20 mb-8 animate-fade-in">
               <Zap className="h-4 w-4 text-accent" />
               <span className="text-sm font-medium text-accent">Trusted by 10,000+ Australian workers</span>
             </div>
@@ -126,7 +126,7 @@ const Index = () => {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
               {stats.map((stat, index) => (
-                <div key={index} className="bg-card/30 backdrop-blur-lg border border-border/50 rounded-2xl p-6 hover:border-accent/30 transition-all">
+                <div key={index} className="bg-white border border-border rounded-2xl p-6 hover:border-accent/30 hover:shadow-card transition-all">
                   <div className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-primary mb-1">
                     {stat.value}
                   </div>
@@ -155,13 +155,13 @@ const Index = () => {
                 return (
                   <Card
                     key={index}
-                    className="group bg-card/40 backdrop-blur-lg border-border/50 hover:border-accent/30 hover:shadow-glow transition-all duration-300 hover:-translate-y-1"
+                    className="group bg-white border-border hover:border-accent/30 hover:shadow-elevated transition-all duration-300 hover:-translate-y-1"
                   >
                     <CardContent className="pt-8 pb-8">
                       <div className="h-14 w-14 rounded-2xl bg-gradient-primary flex items-center justify-center mb-5 group-hover:scale-110 group-hover:shadow-glow transition-all">
                         <Icon className="h-7 w-7 text-primary-foreground" />
                       </div>
-                      <h3 className="text-xl font-bold mb-3 group-hover:text-accent transition-colors">{feature.title}</h3>
+                      <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">{feature.title}</h3>
                       <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                     </CardContent>
                   </Card>
@@ -172,7 +172,7 @@ const Index = () => {
 
           {/* Benefits Section */}
           <div className="max-w-5xl mx-auto mb-32 relative z-10">
-            <Card className="bg-gradient-card backdrop-blur-lg border-accent/20 shadow-elevated overflow-hidden">
+            <Card className="bg-gradient-card border-border shadow-elevated overflow-hidden">
               <div className="absolute inset-0 bg-[image:var(--gradient-shine)] opacity-50" />
               <CardContent className="py-16 px-8 relative">
                 <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -190,14 +190,14 @@ const Index = () => {
                     <Button
                       size="lg"
                       onClick={() => navigate("/auth")}
-                      className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 hover:scale-105 transition-all"
+                      className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 hover:scale-105 transition-all shadow-card"
                     >
                       Start Checking Your Pay
                     </Button>
                   </div>
                   <div className="space-y-4">
                     {benefits.map((benefit, index) => (
-                      <div key={index} className="flex items-start gap-3 bg-background/50 backdrop-blur-sm rounded-xl p-4 border border-border/30">
+                      <div key={index} className="flex items-start gap-3 bg-white rounded-xl p-4 border border-border shadow-sm">
                         <CheckCircle2 className="h-6 w-6 text-accent flex-shrink-0 mt-0.5" />
                         <span className="text-foreground font-medium">{benefit}</span>
                       </div>
@@ -220,7 +220,7 @@ const Index = () => {
                 { name: "James T.", role: "Hospitality", quote: "Finally understand my penalty rates. No more confusion about weekend and night shifts." },
                 { name: "Lisa K.", role: "Healthcare", quote: "The calculator is spot-on. Helped me negotiate better terms with confidence." }
               ].map((testimonial, index) => (
-                <Card key={index} className="bg-card/40 backdrop-blur-lg border-border/50 hover:border-accent/30 transition-all">
+                <Card key={index} className="bg-white border-border hover:border-accent/30 hover:shadow-card transition-all">
                   <CardContent className="pt-6 pb-6">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="h-12 w-12 rounded-full bg-gradient-primary flex items-center justify-center font-bold text-primary-foreground">
