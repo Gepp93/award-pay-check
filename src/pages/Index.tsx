@@ -60,10 +60,10 @@ const Index = () => {
       {/* Background mesh gradient */}
       <div className="fixed inset-0 bg-[image:var(--gradient-mesh)] pointer-events-none" />
       
-      {/* Hero Section */}
-      <div className="relative">
-        <div className="container mx-auto px-4 py-8">
-          <nav className="flex justify-between items-center mb-20 relative z-10">
+      {/* Sticky Navigation */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-border shadow-sm">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center h-20">
             <div className="flex items-center gap-3 font-bold text-2xl group cursor-pointer">
               <div className="h-11 w-11 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow group-hover:scale-110 transition-transform">
                 <Calculator className="h-6 w-6 text-primary-foreground" />
@@ -85,7 +85,13 @@ const Index = () => {
                 Get Started Free
               </Button>
             </div>
-          </nav>
+          </div>
+        </div>
+      </nav>
+      
+      {/* Hero Section */}
+      <div className="relative">
+        <div className="container mx-auto px-4 py-16">
 
           <div className="max-w-6xl mx-auto text-center mb-32 relative z-10">
             {/* Badge */}
@@ -232,6 +238,34 @@ const Index = () => {
                       </div>
                     </div>
                     <p className="text-muted-foreground italic leading-relaxed">"{testimonial.quote}"</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Trusted Sources Section */}
+          <div className="max-w-6xl mx-auto mb-20 relative z-10">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4">Trusted Information Sources</h2>
+              <p className="text-xl text-muted-foreground">
+                Our calculations are based on official Australian Government data and Modern Award standards
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { name: "Fair Work Commission", subtitle: "Modern Awards" },
+                { name: "Australian Government", subtitle: "Fair Work Ombudsman" },
+                { name: "Pay Database API", subtitle: "Official Award Rates" },
+                { name: "ATO", subtitle: "Australian Taxation Office" }
+              ].map((source, index) => (
+                <Card key={index} className="bg-white border-border hover:border-primary/30 hover:shadow-card transition-all p-8">
+                  <CardContent className="flex flex-col items-center justify-center text-center p-0">
+                    <div className="h-16 w-16 rounded-full bg-gradient-primary/10 flex items-center justify-center mb-4">
+                      <Shield className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="font-bold text-base mb-1">{source.name}</h3>
+                    <p className="text-sm text-muted-foreground">{source.subtitle}</p>
                   </CardContent>
                 </Card>
               ))}
