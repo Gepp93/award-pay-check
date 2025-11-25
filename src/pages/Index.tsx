@@ -64,7 +64,7 @@ const Index = () => {
             
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center gap-8">
-              <a href="#why" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Why AwardPay</a>
+              <a href="/why-awardpay" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Why AwardPay</a>
               <a href="/how-it-works" className="text-foreground/70 hover:text-foreground transition-colors font-medium">How It Works</a>
               <a href="#pricing" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Pricing</a>
               <Button
