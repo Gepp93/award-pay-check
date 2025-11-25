@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Calculator from "./pages/Calculator";
 import Dashboard from "./pages/Dashboard";
 import Subscription from "./pages/Subscription";
+import Pricing from "./pages/Pricing";
 import HowItWorks from "./pages/HowItWorks";
 import WhyAwardPay from "./pages/WhyAwardPay";
 import NotFound from "./pages/NotFound";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/subscription" element={<Subscription />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/why-awardpay" element={<WhyAwardPay />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
