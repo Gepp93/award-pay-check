@@ -49,8 +49,35 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-card/50 backdrop-blur-lg border-border shadow-card">
+    <div className="min-h-screen bg-gradient-to-b from-secondary/10 via-white to-white">
+      {/* Fixed Navigation Bar */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border/50">
+        <div className="container mx-auto px-6">
+          <div className="flex justify-between items-center h-20">
+            <div 
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 font-bold text-xl cursor-pointer"
+            >
+              <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
+                <Calculator className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="text-foreground">AwardPay</span>
+            </div>
+            
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/")}
+              className="text-foreground/70 hover:text-foreground"
+            >
+              Back to Home
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Auth Card */}
+      <div className="pt-20 min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-card/50 backdrop-blur-lg border-border shadow-card">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="h-12 w-12 rounded-lg bg-gradient-primary flex items-center justify-center">
@@ -113,6 +140,7 @@ const Auth = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
