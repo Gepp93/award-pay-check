@@ -49,8 +49,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Fixed Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-border">
-        <div className="container mx-auto px-4">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border/50">
+        <div className="container mx-auto px-6">
           <div className="flex justify-between items-center h-20">
             <div 
               onClick={() => navigate("/")}
@@ -61,14 +61,38 @@ const Index = () => {
               </div>
               <span className="text-foreground">AwardPay</span>
             </div>
-            <div className="flex gap-3">
+            
+            {/* Navigation Links */}
+            <nav className="hidden md:flex items-center gap-8">
+              <a href="#why" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Why AwardPay</a>
+              <a href="#how-it-works" className="text-foreground/70 hover:text-foreground transition-colors font-medium">How It Works</a>
+              <a href="#pricing" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Pricing</a>
               <Button
                 variant="ghost"
+                onClick={() => navigate("/auth")}
+                className="text-foreground/70 hover:text-foreground"
+              >
+                Sign In
+              </Button>
+              <Button
+                onClick={() => navigate("/auth")}
+                className="bg-gradient-primary text-primary-foreground hover:opacity-90 px-6"
+              >
+                Get Started
+              </Button>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => navigate("/auth")}
               >
                 Sign In
               </Button>
               <Button
+                size="sm"
                 onClick={() => navigate("/auth")}
                 className="bg-gradient-primary text-primary-foreground hover:opacity-90"
               >
@@ -82,36 +106,89 @@ const Index = () => {
       {/* Add padding to account for fixed header */}
       <div className="pt-20">
         {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-b from-secondary/30 to-white">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-6xl md:text-7xl font-bold mb-6 leading-tight">
-                Are You Being Paid{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-primary">
-                  Correctly
-                </span>
-                ?
-              </h1>
-              <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-                AwardPay helps Australian workers instantly check if they're receiving 
-                the correct pay under their Modern Award. No more guessing – just accurate calculations.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  onClick={() => navigate("/auth")}
-                  className="bg-gradient-primary text-primary-foreground hover:opacity-90 text-lg px-8 py-6"
-                >
-                  Try Calculator Free
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={() => navigate("/subscription")}
-                  className="text-lg px-8 py-6 border-2"
-                >
-                  View Pricing
-                </Button>
+        <section className="py-24 md:py-32 bg-gradient-to-b from-secondary/10 via-white to-white">
+          <div className="container mx-auto px-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                {/* Left Column - Text Content */}
+                <div className="space-y-8">
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
+                    Are You Being Paid{" "}
+                    <span className="text-transparent bg-clip-text bg-gradient-primary">
+                      Correctly
+                    </span>
+                    ?
+                  </h1>
+                  <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
+                    AwardPay helps Australian workers instantly check if their payslip matches their Modern Award. No confusion. No guessing. Just award-accurate calculations.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                    <Button
+                      size="lg"
+                      onClick={() => navigate("/auth")}
+                      className="bg-gradient-primary text-primary-foreground hover:opacity-90 text-lg px-8 py-6 h-14 font-semibold"
+                    >
+                      Try Calculator Free
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => navigate("/subscription")}
+                      className="text-lg px-8 py-6 h-14 border-2 font-semibold hover:bg-secondary/50"
+                    >
+                      View Pricing
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Right Column - Badge/Card Graphic */}
+                <div className="flex items-center justify-center lg:justify-end">
+                  <div className="relative">
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl rounded-full scale-110"></div>
+                    
+                    {/* Main Badge */}
+                    <div className="relative bg-white border-4 border-primary rounded-3xl p-12 shadow-2xl max-w-md">
+                      <div className="text-center space-y-6">
+                        {/* Badge Icon */}
+                        <div className="mx-auto w-24 h-24 bg-gradient-primary rounded-full flex items-center justify-center mb-4">
+                          <Shield className="w-12 h-12 text-primary-foreground" />
+                        </div>
+                        
+                        {/* Badge Title */}
+                        <div className="space-y-2">
+                          <div className="text-sm font-bold text-primary tracking-widest uppercase">
+                            Certified
+                          </div>
+                          <h2 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">
+                            Award Accurate Calculator
+                          </h2>
+                        </div>
+                        
+                        {/* Badge Subtitle */}
+                        <div className="pt-4 border-t border-border">
+                          <p className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-primary">
+                            No More Underpayment
+                          </p>
+                        </div>
+                        
+                        {/* Checkmarks */}
+                        <div className="space-y-3 pt-4">
+                          {[
+                            "Fair Work Compliant",
+                            "Modern Award Rules",
+                            "Instant Verification"
+                          ].map((item, i) => (
+                            <div key={i} className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                              <CheckCircle2 className="w-5 h-5 text-primary" />
+                              <span>{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
