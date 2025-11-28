@@ -152,13 +152,13 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
                 <SelectTrigger id="classification" className="bg-secondary/50">
                   <SelectValue placeholder="Select your classification..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover">
                   {classifications.map((classification) => (
                     <SelectItem 
-                      key={classification.classification_fixed_id || classification.id} 
-                      value={classification.classification_fixed_id?.toString() || classification.id?.toString()}
+                      key={classification.classification_fixed_id} 
+                      value={classification.classification_fixed_id.toString()}
                     >
-                      {classification.classification_name || classification.name}
+                      {classification.classification}
                     </SelectItem>
                   ))}
                 </SelectContent>
