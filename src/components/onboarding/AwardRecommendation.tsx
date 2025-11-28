@@ -16,15 +16,17 @@ interface AwardRecommendationProps {
 
 const awardMapping: Record<string, { name: string; code: string }> = {
   "Hospitality": { name: "Hospitality Industry (General) Award", code: "MA000009" },
-  "Construction": { name: "Building and Construction General On-site Award", code: "MA000020" },
+  "Building and Construction": { name: "Building and Construction General On-site Award", code: "MA000020" },
   "Retail": { name: "General Retail Industry Award", code: "MA000004" },
-  "Transport": { name: "Road Transport and Distribution Award", code: "MA000038" },
-  "Admin & Clerical": { name: "Clerks—Private Sector Award", code: "MA000002" },
-  "Cleaning": { name: "Cleaning Services Award", code: "MA000022" },
-  "Healthcare": { name: "Nurses Award", code: "MA000034" },
-  "Childcare": { name: "Children's Services Award", code: "MA000120" },
-  "Manufacturing": { name: "Manufacturing and Associated Industries Award", code: "MA000010" },
-  "Trades": { name: "Manufacturing and Associated Industries Award", code: "MA000010" },
+  "Transport and Logistics": { name: "Road Transport and Distribution Award", code: "MA000038" },
+  "Clerical and Administrative": { name: "Clerks—Private Sector Award", code: "MA000002" },
+  "Cleaning Services": { name: "Cleaning Services Award", code: "MA000022" },
+  "Health and Aged Care": { name: "Nurses Award", code: "MA000034" },
+  "Early Childhood Education and Care": { name: "Children's Services Award", code: "MA000120" },
+  "Manufacturing": { name: "Manufacturing and Associated Industries and Occupations Award", code: "MA000010" },
+  "Mining": { name: "Mining Industry Award", code: "MA000011" },
+  "Security Services": { name: "Security Services Industry Award", code: "MA000016" },
+  "Fast Food": { name: "Fast Food Industry Award", code: "MA000003" },
 };
 
 export const AwardRecommendation = ({
