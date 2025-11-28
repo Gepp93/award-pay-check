@@ -18,6 +18,12 @@ interface ShiftInputFormProps {
   } | null;
 }
 
+interface PayRateInfo {
+  officialRate: number;
+  actualRate: number;
+  classificationName: string;
+}
+
 export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) => {
   const [formData, setFormData] = useState<ShiftData>({
     startTime: "09:00",
@@ -30,7 +36,10 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
 
   const [classifications, setClassifications] = useState<any[]>([]);
   const [selectedClassification, setSelectedClassification] = useState("");
+  const [selectedClassificationName, setSelectedClassificationName] = useState("");
   const [loadingClassifications, setLoadingClassifications] = useState(false);
+  const [officialBaseRate, setOfficialBaseRate] = useState<number | null>(null);
+  const [actualPayRate, setActualPayRate] = useState<number>(0);
 
   useEffect(() => {
     if (awardInfo?.awardCode) {
@@ -64,9 +73,11 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
   };
 
   const handleClassificationChange = async (classificationId: string) => {
+    const selectedClass = classifications.find(c => c.classification_fixed_id.toString() === classificationId);
     setSelectedClassification(classificationId);
+    setSelectedClassificationName(selectedClass?.classification || "");
     
-    // Fetch pay rates for the selected classification
+    // Fetch official pay rates from FWC
     try {
       const { data, error } = await supabase.functions.invoke("get-pay-rates", {
         body: { 
@@ -77,17 +88,20 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
 
       if (error) throw error;
 
-      console.log("Pay rates data:", data);
+      console.log("Official FWC pay rates data:", data);
 
       if (data?.baseRate) {
-        setFormData({ ...formData, baseRate: Number(data.baseRate) });
-        toast.success(`Base rate updated: $${Number(data.baseRate).toFixed(2)}/hour`);
+        const officialRate = Number(data.baseRate);
+        setOfficialBaseRate(officialRate);
+        // Set the official rate as the base for calculations
+        setFormData({ ...formData, baseRate: officialRate });
+        toast.success(`Official FWC rate loaded: $${officialRate.toFixed(2)}/hour`);
       } else {
-        toast.info("No pay rate found for this classification");
+        toast.warning("Could not fetch official pay rate from FWC");
       }
     } catch (error) {
-      console.error("Error loading pay rates:", error);
-      toast.error("Failed to load pay rate");
+      console.error("Error loading official pay rates:", error);
+      toast.error("Failed to load official FWC pay rate");
     }
   };
 
@@ -234,31 +248,64 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="baseRate">Base Hourly Rate ($)</Label>
-            <Input
-              id="baseRate"
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.baseRate}
-              onChange={(e) =>
-                setFormData({ ...formData, baseRate: Number(e.target.value) })
-              }
-              className="bg-secondary/50"
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              Select a classification above to auto-fill the rate
-            </p>
-          </div>
+          {officialBaseRate && (
+            <div className="space-y-3 p-4 bg-primary/10 border border-primary/20 rounded-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-primary">Official FWC Rate</p>
+                  <p className="text-xs text-muted-foreground">{selectedClassificationName}</p>
+                </div>
+                <p className="text-2xl font-bold text-primary">${officialBaseRate.toFixed(2)}<span className="text-sm">/hr</span></p>
+              </div>
+              <div className="pt-2 border-t border-primary/20">
+                <Label htmlFor="actualRate" className="text-xs">What are you actually being paid? (Optional)</Label>
+                <Input
+                  id="actualRate"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder={`Enter your actual rate to compare`}
+                  value={actualPayRate || ""}
+                  onChange={(e) => setActualPayRate(Number(e.target.value))}
+                  className="bg-background mt-1"
+                />
+                {actualPayRate > 0 && (
+                  <div className="mt-2 p-2 rounded-md" style={{
+                    backgroundColor: actualPayRate < officialBaseRate ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--success) / 0.1)',
+                  }}>
+                    {actualPayRate < officialBaseRate ? (
+                      <div className="text-sm">
+                        <p className="font-semibold text-destructive">⚠️ You may be underpaid!</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Difference: ${(officialBaseRate - actualPayRate).toFixed(2)}/hr less than official rate
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-sm">
+                        <p className="font-semibold text-success">✓ You're being paid correctly</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ${(actualPayRate - officialBaseRate).toFixed(2)}/hr above minimum rate
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <Button
             type="submit"
             className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+            disabled={!officialBaseRate}
           >
-            Calculate Pay
+            {officialBaseRate ? 'Calculate What You Should Earn' : 'Select Classification First'}
           </Button>
+          {officialBaseRate && (
+            <p className="text-xs text-center text-muted-foreground">
+              Calculation based on official FWC award rates
+            </p>
+          )}
         </form>
       </CardContent>
     </Card>
