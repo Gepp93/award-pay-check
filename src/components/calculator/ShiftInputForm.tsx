@@ -34,7 +34,10 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
 
   useEffect(() => {
     if (awardInfo?.awardCode) {
+      console.log("Loading classifications for award:", awardInfo.awardCode);
       loadClassifications();
+    } else {
+      console.log("No award info available, awardInfo:", awardInfo);
     }
   }, [awardInfo]);
 
@@ -112,12 +115,30 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Your Award</Label>
-            <div className="p-3 bg-accent/10 border border-accent/20 rounded-md">
-              <p className="font-semibold text-sm">{awardInfo?.awardName || "No award selected"}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Code: {awardInfo?.awardCode || "N/A"}
-              </p>
-            </div>
+            {awardInfo ? (
+              <div className="p-3 bg-accent/10 border border-accent/20 rounded-md">
+                <p className="font-semibold text-sm">{awardInfo.awardName}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Code: {awardInfo.awardCode}
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                <p className="font-semibold text-sm text-destructive">No award selected</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Please complete onboarding to select your award
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 w-full"
+                  onClick={() => window.location.href = "/onboarding"}
+                >
+                  Complete Onboarding
+                </Button>
+              </div>
+            )}
           </div>
 
           {classifications.length > 0 && (
