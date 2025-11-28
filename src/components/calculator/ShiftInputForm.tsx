@@ -160,26 +160,31 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
 
           {classifications.length > 0 && (
             <div className="space-y-2">
-              <Label htmlFor="classification">Job Classification</Label>
+              <Label htmlFor="classification">Job Classification Level</Label>
               <Select
                 value={selectedClassification}
                 onValueChange={handleClassificationChange}
                 disabled={loadingClassifications}
               >
                 <SelectTrigger id="classification" className="bg-secondary/50">
-                  <SelectValue placeholder="Select your classification..." />
+                  <SelectValue placeholder="Select your classification level..." />
                 </SelectTrigger>
                 <SelectContent className="bg-popover">
-                  {classifications.map((classification) => (
-                    <SelectItem 
-                      key={classification.classification_fixed_id} 
-                      value={classification.classification_fixed_id.toString()}
-                    >
-                      {classification.classification}
-                    </SelectItem>
-                  ))}
+                  {classifications
+                    .filter(c => c.parent_classification_name) // Only show child classifications with levels
+                    .map((classification) => (
+                      <SelectItem 
+                        key={classification.classification_fixed_id} 
+                        value={classification.classification_fixed_id.toString()}
+                      >
+                        {classification.parent_classification_name} - {classification.classification}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Select your specific pay level within your classification
+              </p>
             </div>
           )}
 
