@@ -62,7 +62,7 @@ const Calculator = () => {
     }
     
     // Set award info if available
-    if (data.award_name && data.award_code) {
+    if (data.award_code) {
       console.log("Setting award info:", {
         awardId: data.award_id,
         awardName: data.award_name,
@@ -70,7 +70,7 @@ const Calculator = () => {
       });
       setAwardInfo({
         awardId: data.award_id,
-        awardName: data.award_name,
+        awardName: data.award_name || data.award_code,
         awardCode: data.award_code,
         industry: data.industry,
         jobType: data.job_type,
