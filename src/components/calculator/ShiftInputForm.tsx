@@ -66,25 +66,28 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
   const handleClassificationChange = async (classificationId: string) => {
     setSelectedClassification(classificationId);
     
-    // Fetch classification details to get the base rate
+    // Fetch pay rates for the selected classification
     try {
-      const { data, error } = await supabase.functions.invoke("get-classification-details", {
+      const { data, error } = await supabase.functions.invoke("get-pay-rates", {
         body: { 
           awardId: awardInfo?.awardCode,
-          classificationId: classificationId 
+          classificationFixedId: classificationId 
         },
       });
 
       if (error) throw error;
 
-      // Extract base rate from classification details
-      // The FWC API structure may vary, adjust as needed
+      console.log("Pay rates data:", data);
+
       if (data?.baseRate) {
         setFormData({ ...formData, baseRate: Number(data.baseRate) });
-        toast.success("Base rate updated from award classification");
+        toast.success(`Base rate updated: $${Number(data.baseRate).toFixed(2)}/hour`);
+      } else {
+        toast.info("No pay rate found for this classification");
       }
     } catch (error) {
-      console.error("Error loading classification details:", error);
+      console.error("Error loading pay rates:", error);
+      toast.error("Failed to load pay rate");
     }
   };
 
