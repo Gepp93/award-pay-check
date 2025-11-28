@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ShiftInputForm } from "@/components/calculator/ShiftInputForm";
 import { PayBreakdown } from "@/components/calculator/PayBreakdown";
@@ -13,6 +14,7 @@ const Calculator = () => {
   const [user, setUser] = useState<any>(null);
   const [shiftData, setShiftData] = useState<ShiftData | null>(null);
   const [breakdown, setBreakdown] = useState<any>(null);
+  const [awardInfo, setAwardInfo] = useState<any>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -41,12 +43,25 @@ const Calculator = () => {
   const checkOnboarding = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
-      .select("onboarding_completed")
+      .select("onboarding_completed, award_id, award_name, award_code, industry, job_type, employment_type")
       .eq("id", userId)
       .single();
 
     if (!data?.onboarding_completed) {
       navigate("/onboarding");
+      return;
+    }
+    
+    // Set award info if available
+    if (data.award_name) {
+      setAwardInfo({
+        awardId: data.award_id,
+        awardName: data.award_name,
+        awardCode: data.award_code,
+        industry: data.industry,
+        jobType: data.job_type,
+        employmentType: data.employment_type,
+      });
     }
   };
 
@@ -82,7 +97,48 @@ const Calculator = () => {
 
         <div className="grid lg:grid-cols-2 gap-6">
           <ShiftInputForm onCalculate={handleCalculate} />
-          <PayBreakdown breakdown={breakdown} shiftData={shiftData} />
+          <div className="space-y-6">
+            {awardInfo && (
+              <Card className="bg-card/50 backdrop-blur-lg border-border shadow-card">
+                <CardHeader>
+                  <CardTitle className="text-xl">Your Award Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Award Name</p>
+                    <p className="font-semibold">{awardInfo.awardName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Award Code</p>
+                    <p className="font-mono">{awardInfo.awardCode}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Industry</p>
+                      <p className="text-sm font-medium">{awardInfo.industry}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Employment Type</p>
+                      <p className="text-sm font-medium">{awardInfo.employmentType}</p>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t">
+                    <p className="text-sm text-muted-foreground mb-1">Job Classification</p>
+                    <p className="text-sm font-medium">{awardInfo.jobType}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => navigate("/onboarding")}
+                  >
+                    Update Award Details
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+            <PayBreakdown breakdown={breakdown} shiftData={shiftData} />
+          </div>
         </div>
       </div>
     </div>
