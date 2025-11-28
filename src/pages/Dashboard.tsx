@@ -11,7 +11,6 @@ import { toast } from "sonner";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [calculations, setCalculations] = useState<any[]>([]);
-  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -19,7 +18,6 @@ const Dashboard = () => {
         navigate("/auth");
         return;
       }
-      checkProStatus(session.user.id);
       loadCalculations(session.user.id);
     });
 
@@ -33,16 +31,6 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  const checkProStatus = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("subscription_status")
-      .eq("id", userId)
-      .single();
-
-    setIsPro(data?.subscription_status === "active");
-  };
 
   const loadCalculations = async (userId: string) => {
     const { data } = await supabase
@@ -63,32 +51,6 @@ const Dashboard = () => {
   const handleEmail = () => {
     toast.info("Email feature coming soon!");
   };
-
-  if (!isPro) {
-    return (
-      <div className="min-h-screen bg-gradient-hero">
-        <NavBar />
-        <div className="container mx-auto px-4 py-16 text-center">
-          <Card className="max-w-md mx-auto bg-card/50 backdrop-blur-lg border-border shadow-card">
-            <CardHeader>
-              <CardTitle>Dashboard Access</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Upgrade to Pro to access your saved calculations and history.
-              </p>
-              <Button
-                onClick={() => navigate("/subscription")}
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-              >
-                Upgrade to Pro
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-hero">
