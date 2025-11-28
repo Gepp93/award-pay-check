@@ -11,6 +11,7 @@ import Subscription from "./pages/Subscription";
 import Pricing from "./pages/Pricing";
 import HowItWorks from "./pages/HowItWorks";
 import WhyAwardPay from "./pages/WhyAwardPay";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/subscription" element={<Subscription />} />

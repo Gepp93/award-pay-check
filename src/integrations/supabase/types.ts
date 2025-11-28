@@ -40,28 +40,49 @@ export type Database = {
       }
       profiles: {
         Row: {
+          award_code: string | null
+          award_id: string | null
+          award_name: string | null
           calc_count: number | null
           created_at: string | null
           email: string | null
+          employment_type: string | null
           id: string
+          industry: string | null
+          job_type: string | null
+          onboarding_completed: boolean | null
           stripe_customer_id: string | null
           subscription_status: string | null
           updated_at: string | null
         }
         Insert: {
+          award_code?: string | null
+          award_id?: string | null
+          award_name?: string | null
           calc_count?: number | null
           created_at?: string | null
           email?: string | null
+          employment_type?: string | null
           id: string
+          industry?: string | null
+          job_type?: string | null
+          onboarding_completed?: boolean | null
           stripe_customer_id?: string | null
           subscription_status?: string | null
           updated_at?: string | null
         }
         Update: {
+          award_code?: string | null
+          award_id?: string | null
+          award_name?: string | null
           calc_count?: number | null
           created_at?: string | null
           email?: string | null
+          employment_type?: string | null
           id?: string
+          industry?: string | null
+          job_type?: string | null
+          onboarding_completed?: boolean | null
           stripe_customer_id?: string | null
           subscription_status?: string | null
           updated_at?: string | null

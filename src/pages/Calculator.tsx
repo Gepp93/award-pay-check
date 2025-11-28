@@ -21,7 +21,7 @@ const Calculator = () => {
         return;
       }
       setUser(session.user);
-      loadUserProfile(session.user.id);
+      checkOnboarding(session.user.id);
     });
 
     const {
@@ -32,11 +32,23 @@ const Calculator = () => {
         return;
       }
       setUser(session.user);
-      loadUserProfile(session.user.id);
+      checkOnboarding(session.user.id);
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const checkOnboarding = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", userId)
+      .single();
+
+    if (!data?.onboarding_completed) {
+      navigate("/onboarding");
+    }
+  };
 
   const loadUserProfile = async (userId: string) => {
     // Profile loaded for potential future use
