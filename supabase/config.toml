@@ -1,1 +1,4 @@
 project_id = "umxwoofjvyvnhxbqvciw"
+
+[functions.test-fwc-api]
+verify_jwt = false
