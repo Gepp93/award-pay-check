@@ -47,7 +47,7 @@ export const EmploymentTypeSelection = ({ onSelect, onBack }: EmploymentTypeSele
             <Button
               key={type}
               variant="outline"
-              className="h-auto py-4 flex flex-col items-start hover:bg-accent/10 hover:border-accent"
+              className="h-auto py-4 flex flex-col items-start hover:bg-accent/20 hover:border-accent transition-all"
               onClick={() => onSelect(type)}
             >
               <div className="flex items-center gap-3 mb-2">

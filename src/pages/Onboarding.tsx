@@ -30,17 +30,17 @@ const Onboarding = () => {
 
   const handleIndustrySelect = (industry: string) => {
     setOnboardingData({ ...onboardingData, industry });
-    setStep(1);
+    setStep(2);
   };
 
   const handleJobTypeSelect = (jobType: string) => {
     setOnboardingData({ ...onboardingData, jobType });
-    setStep(2);
+    setStep(3);
   };
 
   const handleEmploymentTypeSelect = (employmentType: string) => {
     setOnboardingData({ ...onboardingData, employmentType });
-    setStep(3);
+    setStep(4);
   };
 
   const handleAwardConfirm = async (awardId: string, awardName: string, awardCode: string) => {
