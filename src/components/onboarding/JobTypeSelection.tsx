@@ -10,70 +10,75 @@ interface JobTypeSelectionProps {
 
 const jobTypesByIndustry: Record<string, string[]> = {
   "Hospitality": [
-    "Food & Beverage Level 1",
-    "Food & Beverage Level 2",
+    "Food & Beverage Attendant Level 1",
+    "Food & Beverage Attendant Level 2",
+    "Food & Beverage Attendant Level 3",
     "Cook Grade 1",
     "Cook Grade 2",
+    "Cook Grade 3",
     "Chef",
-    "Barista",
     "Supervisor",
   ],
-  "Construction": [
-    "Labourer",
+  "Building and Construction": [
+    "Construction Labourer",
     "Apprentice Level 1",
     "Apprentice Level 2",
     "Apprentice Level 3",
     "Apprentice Level 4",
     "Tradesperson",
+    "Leading Hand",
     "Plant Operator",
   ],
   "Retail": [
     "Retail Employee Level 1",
     "Retail Employee Level 2",
     "Retail Employee Level 3",
+    "Retail Employee Level 4",
     "Retail Supervisor",
     "Department Manager",
   ],
-  "Transport": [
+  "Transport and Logistics": [
     "Driver Grade 1",
     "Driver Grade 2",
     "Driver Grade 3",
+    "Driver Grade 4",
     "Logistics Coordinator",
+    "Warehouse Worker",
   ],
-  "Admin & Clerical": [
+  "Clerical and Administrative": [
     "Clerical Level 1",
     "Clerical Level 2",
     "Clerical Level 3",
+    "Clerical Level 4",
     "Administrative Officer",
   ],
-  "Cleaning": [
+  "Cleaning Services": [
     "Cleaner Level 1",
     "Cleaner Level 2",
+    "Cleaner Level 3",
     "Cleaning Supervisor",
   ],
-  "Healthcare": [
+  "Health and Aged Care": [
+    "Personal Care Assistant",
     "Healthcare Assistant",
     "Enrolled Nurse",
     "Registered Nurse Level 1",
     "Registered Nurse Level 2",
   ],
-  "Childcare": [
+  "Early Childhood Education and Care": [
     "Educator Level 1",
     "Educator Level 2",
     "Educator Level 3",
+    "Early Childhood Teacher Level 1",
+    "Early Childhood Teacher Level 2",
     "Director",
   ],
   "Manufacturing": [
     "Production Worker Level 1",
     "Production Worker Level 2",
+    "Production Worker Level 3",
     "Machine Operator",
     "Team Leader",
-  ],
-  "Trades": [
-    "Apprentice",
-    "Tradesperson Level 1",
-    "Tradesperson Level 2",
-    "Leading Hand",
   ],
 };
 
