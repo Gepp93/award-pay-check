@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { NavBar } from "@/components/NavBar";
 import { IndustrySelection } from "@/components/onboarding/IndustrySelection";
 import { JobTypeSelection } from "@/components/onboarding/JobTypeSelection";
 import { EmploymentTypeSelection } from "@/components/onboarding/EmploymentTypeSelection";
@@ -80,17 +81,22 @@ const Onboarding = () => {
 
   if (showManualSelection) {
     return (
-      <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-        <div className="w-full max-w-2xl">
-          <ManualAwardSelection onSelect={handleManualAwardSelect} />
+      <div className="min-h-screen bg-gradient-hero">
+        <NavBar />
+        <div className="flex items-center justify-center p-4 pt-24">
+          <div className="w-full max-w-2xl">
+            <ManualAwardSelection onSelect={handleManualAwardSelect} />
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
+    <div className="min-h-screen bg-gradient-hero">
+      <NavBar />
+      <div className="flex items-center justify-center p-4 pt-24">
+        <div className="w-full max-w-2xl">
         {step === 0 && (
           <Card className="bg-card/50 backdrop-blur-lg border-border shadow-card">
             <CardHeader>
@@ -117,19 +123,20 @@ const Onboarding = () => {
           </Card>
         )}
 
-        {step === 1 && <IndustrySelection onSelect={handleIndustrySelect} />}
-        {step === 2 && <JobTypeSelection industry={onboardingData.industry} onSelect={handleJobTypeSelect} onBack={() => setStep(1)} />}
-        {step === 3 && <EmploymentTypeSelection onSelect={handleEmploymentTypeSelect} onBack={() => setStep(2)} />}
-        {step === 4 && (
-          <AwardRecommendation
-            industry={onboardingData.industry}
-            jobType={onboardingData.jobType}
-            employmentType={onboardingData.employmentType}
-            onConfirm={handleAwardConfirm}
-            onManualSelect={() => setShowManualSelection(true)}
-            onBack={() => setStep(3)}
-          />
-        )}
+          {step === 1 && <IndustrySelection onSelect={handleIndustrySelect} />}
+          {step === 2 && <JobTypeSelection industry={onboardingData.industry} onSelect={handleJobTypeSelect} onBack={() => setStep(1)} />}
+          {step === 3 && <EmploymentTypeSelection onSelect={handleEmploymentTypeSelect} onBack={() => setStep(2)} />}
+          {step === 4 && (
+            <AwardRecommendation
+              industry={onboardingData.industry}
+              jobType={onboardingData.jobType}
+              employmentType={onboardingData.employmentType}
+              onConfirm={handleAwardConfirm}
+              onManualSelect={() => setShowManualSelection(true)}
+              onBack={() => setStep(3)}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
