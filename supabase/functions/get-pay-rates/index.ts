@@ -31,8 +31,9 @@ serve(async (req) => {
       );
     }
 
-    // Fetch pay rates for the classification
-    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/pay-rates?classification_fixed_id=${classificationFixedId}`;
+    // Fetch pay rates for the classification - get current operative rates
+    const today = new Date().toISOString().split('T')[0];
+    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/pay-rates?classification_fixed_id=${classificationFixedId}&operative_from=${today}`;
     console.log('Fetching pay rates from FWC API:', fwcUrl);
     
     const fwcResponse = await fetch(fwcUrl, {
@@ -54,20 +55,30 @@ serve(async (req) => {
 
     const data = await fwcResponse.json();
     console.log('Retrieved pay rates:', data.results?.length || 0);
+    console.log('First rate sample:', data.results?.[0]);
 
     // Extract the base rate from the pay rates response
     let baseRate = null;
     if (data.results && data.results.length > 0) {
-      // Find the base/ordinary rate (usually the first one or the one with rate_type_name = 'Ordinary')
-      const ordinaryRate = data.results.find((rate: any) => 
-        rate.rate_type_name === 'Ordinary' || 
-        rate.rate_type_name === 'Base' ||
-        rate.rate_type_name === 'Minimum'
-      ) || data.results[0];
-      
-      if (ordinaryRate && ordinaryRate.base_pay_rate) {
-        baseRate = parseFloat(ordinaryRate.base_pay_rate);
+      // Look for base_pay_rate_id or calculated_pay_rate_id
+      for (const rate of data.results) {
+        // Try base_rate first
+        if (rate.base_rate && parseFloat(rate.base_rate) > 0) {
+          baseRate = parseFloat(rate.base_rate);
+          console.log('Found base_rate:', baseRate);
+          break;
+        }
+        // Try calculated_rate as fallback
+        if (rate.calculated_rate && parseFloat(rate.calculated_rate) > 0) {
+          baseRate = parseFloat(rate.calculated_rate);
+          console.log('Found calculated_rate:', baseRate);
+          break;
+        }
       }
+    }
+
+    if (!baseRate) {
+      console.log('No valid rate found in results, returning full data for inspection');
     }
 
     return new Response(
