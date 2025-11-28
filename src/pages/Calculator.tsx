@@ -11,8 +11,6 @@ import { calculatePay, type ShiftData } from "@/lib/payCalculator";
 const Calculator = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
-  const [calcCount, setCalcCount] = useState(0);
-  const [isPro, setIsPro] = useState(false);
   const [shiftData, setShiftData] = useState<ShiftData | null>(null);
   const [breakdown, setBreakdown] = useState<any>(null);
 
@@ -41,45 +39,20 @@ const Calculator = () => {
   }, [navigate]);
 
   const loadUserProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("calc_count, subscription_status")
-      .eq("id", userId)
-      .single();
-
-    if (data) {
-      setCalcCount(data.calc_count || 0);
-      setIsPro(data.subscription_status === "active");
-    }
+    // Profile loaded for potential future use
   };
 
   const handleCalculate = async (data: ShiftData) => {
-    if (!isPro && calcCount >= 5) {
-      toast.error("You've reached the free calculation limit. Upgrade to Pro!");
-      navigate("/subscription");
-      return;
-    }
-
     setShiftData(data);
     const result = calculatePay(data);
     setBreakdown(result);
 
-    // Increment calc count
-    const newCount = calcCount + 1;
-    await supabase
-      .from("profiles")
-      .update({ calc_count: newCount })
-      .eq("id", user.id);
-    setCalcCount(newCount);
-
-    // Save calculation if Pro
-    if (isPro) {
-      await supabase.from("calculations").insert([{
-        user_id: user.id,
-        shift_data: data as any,
-        breakdown: result as any,
-      }]);
-    }
+    // Save calculation
+    await supabase.from("calculations").insert([{
+      user_id: user.id,
+      shift_data: data as any,
+      breakdown: result as any,
+    }]);
 
     toast.success("Calculation complete!");
   };
@@ -91,20 +64,7 @@ const Calculator = () => {
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">Pay Calculator</h1>
           <p className="text-muted-foreground">
-            {isPro ? (
-              "Unlimited calculations available"
-            ) : (
-              <>
-                {calcCount}/5 free calculations used.{" "}
-                <Button
-                  variant="link"
-                  className="p-0 h-auto text-accent"
-                  onClick={() => navigate("/subscription")}
-                >
-                  Upgrade to Pro
-                </Button>
-              </>
-            )}
+            Calculate your pay based on Australian Modern Awards
           </p>
         </div>
 
