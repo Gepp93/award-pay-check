@@ -106,7 +106,7 @@ export const JobTypeSelection = ({ industry, onSelect, onBack }: JobTypeSelectio
             <Button
               key={jobType}
               variant="outline"
-              className="justify-start hover:bg-accent/10 hover:border-accent"
+              className="justify-start hover:bg-accent/20 hover:border-accent hover:text-foreground transition-all font-medium"
               onClick={() => onSelect(jobType)}
             >
               {jobType}

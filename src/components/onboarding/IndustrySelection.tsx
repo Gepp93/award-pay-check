@@ -35,11 +35,11 @@ export const IndustrySelection = ({ onSelect }: IndustrySelectionProps) => {
               <Button
                 key={industry.name}
                 variant="outline"
-                className="h-24 flex flex-col items-center justify-center gap-2 hover:bg-accent/10 hover:border-accent"
+                className="h-24 flex flex-col items-center justify-center gap-2 hover:bg-accent/20 hover:border-accent hover:text-foreground transition-all"
                 onClick={() => onSelect(industry.name)}
               >
                 <Icon className="w-6 h-6" />
-                <span className="text-sm text-center">{industry.name}</span>
+                <span className="text-sm text-center font-medium">{industry.name}</span>
               </Button>
             );
           })}
