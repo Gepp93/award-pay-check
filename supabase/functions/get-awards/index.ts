@@ -24,37 +24,62 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const search = url.searchParams.get('search') || '';
-    const limit = url.searchParams.get('limit') || '200';
     
-    let fwcUrl = `https://api.fwc.gov.au/api/v1/awards?limit=${limit}`;
-    if (search) {
-      fwcUrl += `&search=${encodeURIComponent(search)}`;
+    // Fetch all pages of awards
+    let allAwards: any[] = [];
+    let currentPage = 1;
+    let hasMore = true;
+    const limit = 100; // Maximum allowed by FWC API
+    
+    while (hasMore && currentPage <= 2) { // Max 2 pages to get all 156 awards
+      let fwcUrl = `https://api.fwc.gov.au/api/v1/awards?limit=${limit}&page=${currentPage}`;
+      if (search) {
+        fwcUrl += `&search=${encodeURIComponent(search)}`;
+      }
+
+      console.log(`Fetching awards page ${currentPage} from FWC API:`, fwcUrl);
+      
+      const fwcResponse = await fetch(fwcUrl, {
+        method: 'GET',
+        headers: {
+          'Ocp-Apim-Subscription-Key': fwcApiKey,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!fwcResponse.ok) {
+        const errorText = await fwcResponse.text();
+        console.error('FWC API error:', fwcResponse.status, errorText);
+        return new Response(
+          JSON.stringify({ error: 'FWC API request failed', details: errorText }),
+          { status: fwcResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const data = await fwcResponse.json();
+      allAwards = allAwards.concat(data.results || []);
+      hasMore = data._meta?.has_more_results || false;
+      currentPage++;
+      
+      console.log(`Retrieved ${data.results?.length || 0} awards on page ${currentPage - 1}, total so far: ${allAwards.length}`);
     }
 
-    console.log('Fetching awards from FWC API:', fwcUrl);
-    
-    const fwcResponse = await fetch(fwcUrl, {
-      method: 'GET',
-      headers: {
-        'Ocp-Apim-Subscription-Key': fwcApiKey,
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!fwcResponse.ok) {
-      const errorText = await fwcResponse.text();
-      console.error('FWC API error:', fwcResponse.status, errorText);
-      return new Response(
-        JSON.stringify({ error: 'FWC API request failed', details: errorText }),
-        { status: fwcResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const data = await fwcResponse.json();
-    console.log('Retrieved awards:', data.results?.length || 0);
+    console.log('Total awards retrieved:', allAwards.length);
 
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({
+        _meta: {
+          current_page: 1,
+          page_count: 1,
+          limit: allAwards.length,
+          result_count: allAwards.length,
+          first_row_on_page: 1,
+          last_row_on_page: allAwards.length,
+          has_more_results: false,
+          has_previous_results: false
+        },
+        results: allAwards
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
