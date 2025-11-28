@@ -41,11 +41,20 @@ const Calculator = () => {
   }, [navigate]);
 
   const checkOnboarding = async (userId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select("onboarding_completed, award_id, award_name, award_code, industry, job_type, employment_type")
       .eq("id", userId)
       .single();
+
+    console.log("Profile data:", data);
+    console.log("Profile error:", error);
+
+    if (error) {
+      console.error("Error loading profile:", error);
+      toast.error("Failed to load profile information");
+      return;
+    }
 
     if (!data?.onboarding_completed) {
       navigate("/onboarding");
@@ -53,7 +62,12 @@ const Calculator = () => {
     }
     
     // Set award info if available
-    if (data.award_name) {
+    if (data.award_name && data.award_code) {
+      console.log("Setting award info:", {
+        awardId: data.award_id,
+        awardName: data.award_name,
+        awardCode: data.award_code,
+      });
       setAwardInfo({
         awardId: data.award_id,
         awardName: data.award_name,
@@ -62,6 +76,9 @@ const Calculator = () => {
         jobType: data.job_type,
         employmentType: data.employment_type,
       });
+    } else {
+      console.log("No award info found in profile");
+      toast.info("Please complete onboarding to select your award");
     }
   };
 
