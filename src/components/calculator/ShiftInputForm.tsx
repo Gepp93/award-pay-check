@@ -1,25 +1,89 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calculator } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { type ShiftData } from "@/lib/payCalculator";
 
 interface ShiftInputFormProps {
   onCalculate: (data: ShiftData) => void;
+  awardInfo?: {
+    awardId: string;
+    awardName: string;
+    awardCode: string;
+  } | null;
 }
 
-export const ShiftInputForm = ({ onCalculate }: ShiftInputFormProps) => {
+export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) => {
   const [formData, setFormData] = useState<ShiftData>({
     startTime: "09:00",
     endTime: "17:00",
     breakMinutes: 30,
     dayOfWeek: "Monday",
     baseRate: 28.5,
-    awardType: "Generic Award",
+    awardType: awardInfo?.awardName || "Not Selected",
   });
+
+  const [classifications, setClassifications] = useState<any[]>([]);
+  const [selectedClassification, setSelectedClassification] = useState("");
+  const [loadingClassifications, setLoadingClassifications] = useState(false);
+
+  useEffect(() => {
+    if (awardInfo?.awardCode) {
+      loadClassifications();
+    }
+  }, [awardInfo]);
+
+  const loadClassifications = async () => {
+    if (!awardInfo?.awardCode) return;
+    
+    setLoadingClassifications(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("get-classifications", {
+        body: { awardId: awardInfo.awardCode },
+      });
+
+      if (error) throw error;
+
+      if (data?.results) {
+        setClassifications(data.results);
+      }
+    } catch (error) {
+      console.error("Error loading classifications:", error);
+      toast.error("Failed to load classifications");
+    } finally {
+      setLoadingClassifications(false);
+    }
+  };
+
+  const handleClassificationChange = async (classificationId: string) => {
+    setSelectedClassification(classificationId);
+    
+    // Fetch classification details to get the base rate
+    try {
+      const { data, error } = await supabase.functions.invoke("get-classification-details", {
+        body: { 
+          awardId: awardInfo?.awardCode,
+          classificationId: classificationId 
+        },
+      });
+
+      if (error) throw error;
+
+      // Extract base rate from classification details
+      // The FWC API structure may vary, adjust as needed
+      if (data?.baseRate) {
+        setFormData({ ...formData, baseRate: Number(data.baseRate) });
+        toast.success("Base rate updated from award classification");
+      }
+    } catch (error) {
+      console.error("Error loading classification details:", error);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,22 +111,39 @@ export const ShiftInputForm = ({ onCalculate }: ShiftInputFormProps) => {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="awardType">Award Type</Label>
-            <Select
-              value={formData.awardType}
-              onValueChange={(value) =>
-                setFormData({ ...formData, awardType: value })
-              }
-            >
-              <SelectTrigger id="awardType" className="bg-secondary/50">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Generic Award">Generic Award</SelectItem>
-                <SelectItem value="Sample Award">Sample Award</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Your Award</Label>
+            <div className="p-3 bg-accent/10 border border-accent/20 rounded-md">
+              <p className="font-semibold text-sm">{awardInfo?.awardName || "No award selected"}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Code: {awardInfo?.awardCode || "N/A"}
+              </p>
+            </div>
           </div>
+
+          {classifications.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="classification">Job Classification</Label>
+              <Select
+                value={selectedClassification}
+                onValueChange={handleClassificationChange}
+                disabled={loadingClassifications}
+              >
+                <SelectTrigger id="classification" className="bg-secondary/50">
+                  <SelectValue placeholder="Select your classification..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {classifications.map((classification) => (
+                    <SelectItem 
+                      key={classification.classification_fixed_id || classification.id} 
+                      value={classification.classification_fixed_id?.toString() || classification.id?.toString()}
+                    >
+                      {classification.classification_name || classification.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -143,6 +224,9 @@ export const ShiftInputForm = ({ onCalculate }: ShiftInputFormProps) => {
               className="bg-secondary/50"
               required
             />
+            <p className="text-xs text-muted-foreground">
+              Select a classification above to auto-fill the rate
+            </p>
           </div>
 
           <Button
