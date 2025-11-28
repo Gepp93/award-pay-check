@@ -70,17 +70,17 @@ export const IndustrySelection = ({ onSelect }: IndustrySelectionProps) => {
       <CardContent className="space-y-6">
         <div>
           <Label className="text-base font-semibold mb-3 block">Common Industries</Label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {commonIndustries.map((industry) => {
               const Icon = industry.icon;
               return (
                 <Button
                   key={industry.name}
                   variant="outline"
-                  className="h-24 flex flex-col items-center justify-center gap-2 hover:bg-accent/20 hover:border-accent hover:text-foreground transition-all"
+                  className="h-28 flex flex-col items-center justify-center gap-2 hover:bg-accent/20 hover:border-accent hover:text-foreground transition-all p-3"
                   onClick={() => onSelect(industry.name)}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-5 h-5 flex-shrink-0" />
                   <span className="text-xs text-center font-medium leading-tight">{industry.name}</span>
                 </Button>
               );
