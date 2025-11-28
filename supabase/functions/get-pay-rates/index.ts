@@ -60,19 +60,30 @@ serve(async (req) => {
     // Extract the base rate from the pay rates response
     let baseRate = null;
     if (data.results && data.results.length > 0) {
-      // Look for base_pay_rate_id or calculated_pay_rate_id
+      // Look for hourly calculated_rate first (this is the actual hourly rate)
       for (const rate of data.results) {
-        // Try base_rate first
-        if (rate.base_rate && parseFloat(rate.base_rate) > 0) {
-          baseRate = parseFloat(rate.base_rate);
-          console.log('Found base_rate:', baseRate);
+        // Prioritize calculated_rate with Hourly type
+        if (rate.calculated_rate_type === 'Hourly' && rate.calculated_rate && parseFloat(rate.calculated_rate) > 0) {
+          baseRate = parseFloat(rate.calculated_rate);
+          console.log('Found hourly calculated_rate:', baseRate);
           break;
         }
-        // Try calculated_rate as fallback
-        if (rate.calculated_rate && parseFloat(rate.calculated_rate) > 0) {
-          baseRate = parseFloat(rate.calculated_rate);
-          console.log('Found calculated_rate:', baseRate);
+        // If base_rate is hourly, use it
+        if (rate.base_rate_type === 'Hourly' && rate.base_rate && parseFloat(rate.base_rate) > 0) {
+          baseRate = parseFloat(rate.base_rate);
+          console.log('Found hourly base_rate:', baseRate);
           break;
+        }
+      }
+      
+      // If we still don't have a rate and found a weekly rate, convert it
+      if (!baseRate) {
+        for (const rate of data.results) {
+          if (rate.base_rate_type === 'Weekly' && rate.base_rate && parseFloat(rate.base_rate) > 0) {
+            baseRate = parseFloat(rate.base_rate) / 38; // Standard 38-hour week
+            console.log('Converted weekly base_rate to hourly:', baseRate);
+            break;
+          }
         }
       }
     }
