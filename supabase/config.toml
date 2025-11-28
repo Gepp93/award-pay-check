@@ -2,3 +2,12 @@ project_id = "umxwoofjvyvnhxbqvciw"
 
 [functions.test-fwc-api]
 verify_jwt = false
+
+[functions.get-awards]
+verify_jwt = false
+
+[functions.get-classifications]
+verify_jwt = false
+
+[functions.get-classification-details]
+verify_jwt = false
