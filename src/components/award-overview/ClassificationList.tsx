@@ -1,0 +1,107 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+
+interface ClassificationListProps {
+  awardId: string;
+  selectedClassification: any;
+  onSelect: (classification: any) => void;
+}
+
+export const ClassificationList = ({ 
+  awardId, 
+  selectedClassification, 
+  onSelect 
+}: ClassificationListProps) => {
+  const [classifications, setClassifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchClassifications();
+  }, [awardId]);
+
+  const fetchClassifications = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-classifications', {
+        body: { awardId }
+      });
+
+      if (error) throw error;
+
+      if (data?.results) {
+        // Group and clean classifications - only show parent level job titles
+        const grouped = data.results.reduce((acc: any[], curr: any) => {
+          const level = curr.classification_level?.trim();
+          
+          if (!level || level === '') return acc;
+          
+          // Only add if we don't already have this level
+          if (!acc.find(item => item.classification_level === level)) {
+            acc.push({
+              classification_fixed_id: curr.classification_fixed_id,
+              classification_level: level,
+              classification: curr.classification,
+            });
+          }
+          
+          return acc;
+        }, []);
+
+        setClassifications(grouped);
+      }
+    } catch (error) {
+      console.error('Error fetching classifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Choose your job level</CardTitle>
+        <CardDescription>Select the classification that matches your role</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : classifications.length > 0 ? (
+          <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
+            {classifications.map((classification) => (
+              <Button
+                key={classification.classification_fixed_id}
+                variant={
+                  selectedClassification?.classification_fixed_id === 
+                  classification.classification_fixed_id 
+                    ? "default" 
+                    : "outline"
+                }
+                className="w-full justify-start h-auto py-3 px-4"
+                onClick={() => onSelect(classification)}
+              >
+                <div className="text-left">
+                  <div className="font-semibold">
+                    {classification.classification_level}
+                  </div>
+                  {classification.classification && (
+                    <div className="text-xs opacity-80 mt-1">
+                      {classification.classification}
+                    </div>
+                  )}
+                </div>
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            No classifications available
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
