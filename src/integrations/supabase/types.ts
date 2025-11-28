@@ -44,6 +44,8 @@ export type Database = {
           award_id: string | null
           award_name: string | null
           calc_count: number | null
+          classification_fixed_id: string | null
+          classification_name: string | null
           created_at: string | null
           email: string | null
           employment_type: string | null
@@ -60,6 +62,8 @@ export type Database = {
           award_id?: string | null
           award_name?: string | null
           calc_count?: number | null
+          classification_fixed_id?: string | null
+          classification_name?: string | null
           created_at?: string | null
           email?: string | null
           employment_type?: string | null
@@ -76,6 +80,8 @@ export type Database = {
           award_id?: string | null
           award_name?: string | null
           calc_count?: number | null
+          classification_fixed_id?: string | null
+          classification_name?: string | null
           created_at?: string | null
           email?: string | null
           employment_type?: string | null

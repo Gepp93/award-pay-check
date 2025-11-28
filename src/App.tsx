@@ -12,6 +12,9 @@ import Pricing from "./pages/Pricing";
 import HowItWorks from "./pages/HowItWorks";
 import WhyAwardPay from "./pages/WhyAwardPay";
 import Onboarding from "./pages/Onboarding";
+import AwardFinder from "./pages/AwardFinder";
+import AwardOverview from "./pages/AwardOverview";
+import WeeklyPayCheck from "./pages/WeeklyPayCheck";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +29,9 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/award-finder" element={<AwardFinder />} />
+          <Route path="/award-overview" element={<AwardOverview />} />
+          <Route path="/weekly-pay-check" element={<WeeklyPayCheck />} />
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/subscription" element={<Subscription />} />

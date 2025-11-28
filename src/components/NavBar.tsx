@@ -30,7 +30,7 @@ export const NavBar = () => {
             <div className="hidden md:flex items-center gap-4">
               <Button
                 variant="ghost"
-                onClick={() => navigate("/calculator")}
+                onClick={() => navigate("/award-overview")}
                 className="flex items-center gap-2"
               >
                 <Calculator className="h-4 w-4" />
