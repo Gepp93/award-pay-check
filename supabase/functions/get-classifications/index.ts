@@ -23,7 +23,7 @@ serve(async (req) => {
     }
 
     const url = new URL(req.url);
-    const awardId = url.searchParams.get('awardId');
+    const { awardId } = await req.json();
     
     if (!awardId) {
       return new Response(

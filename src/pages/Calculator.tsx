@@ -96,7 +96,14 @@ const Calculator = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
-          <ShiftInputForm onCalculate={handleCalculate} />
+          <ShiftInputForm 
+            onCalculate={handleCalculate} 
+            awardInfo={awardInfo ? {
+              awardId: awardInfo.awardId,
+              awardName: awardInfo.awardName,
+              awardCode: awardInfo.awardCode,
+            } : null}
+          />
           <div className="space-y-6">
             {awardInfo && (
               <Card className="bg-card/50 backdrop-blur-lg border-border shadow-card">

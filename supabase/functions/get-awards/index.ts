@@ -22,8 +22,19 @@ serve(async (req) => {
       );
     }
 
+    // Support both query params and body
     const url = new URL(req.url);
-    const search = url.searchParams.get('search') || '';
+    let search = url.searchParams.get('search') || '';
+    
+    // Try to get from body if not in query params
+    if (!search && req.method === 'POST') {
+      try {
+        const body = await req.json();
+        search = body.search || '';
+      } catch {
+        // No body, continue with empty search
+      }
+    }
     
     // Fetch all pages of awards
     let allAwards: any[] = [];

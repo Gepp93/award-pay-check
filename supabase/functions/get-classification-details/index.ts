@@ -22,9 +22,7 @@ serve(async (req) => {
       );
     }
 
-    const url = new URL(req.url);
-    const awardId = url.searchParams.get('awardId');
-    const classificationId = url.searchParams.get('classificationId');
+    const { awardId, classificationId } = await req.json();
     
     if (!awardId || !classificationId) {
       return new Response(
