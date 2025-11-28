@@ -15,6 +15,8 @@ const Calculator = () => {
   const [shiftData, setShiftData] = useState<ShiftData | null>(null);
   const [breakdown, setBreakdown] = useState<any>(null);
   const [awardInfo, setAwardInfo] = useState<any>(null);
+  const [classifications, setClassifications] = useState<any[]>([]);
+  const [loadingClassifications, setLoadingClassifications] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -68,22 +70,47 @@ const Calculator = () => {
         awardName: data.award_name,
         awardCode: data.award_code,
       });
-      setAwardInfo({
+      const awardData = {
         awardId: data.award_id,
         awardName: data.award_name || data.award_code,
         awardCode: data.award_code,
         industry: data.industry,
         jobType: data.job_type,
         employmentType: data.employment_type,
-      });
+      };
+      setAwardInfo(awardData);
+      
+      // Fetch classifications for this award
+      if (data.award_code) {
+        fetchClassifications(data.award_code);
+      }
     } else {
       console.log("No award info found in profile");
       toast.info("Please complete onboarding to select your award");
     }
   };
 
-  const loadUserProfile = async (userId: string) => {
-    // Profile loaded for potential future use
+  const fetchClassifications = async (awardId: string) => {
+    setLoadingClassifications(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('get-classifications', {
+        body: { awardId }
+      });
+
+      if (error) throw error;
+
+      if (data?.results) {
+        // Filter to only show child classifications with levels (those that have rates)
+        const childClassifications = data.results.filter((c: any) => 
+          c.classification_level && c.classification_level.trim() !== ''
+        );
+        setClassifications(childClassifications);
+      }
+    } catch (error) {
+      console.error('Error fetching classifications:', error);
+    } finally {
+      setLoadingClassifications(false);
+    }
   };
 
   const handleCalculate = async (data: ShiftData) => {
@@ -150,6 +177,35 @@ const Calculator = () => {
                     <p className="text-sm text-muted-foreground mb-1">Job Classification</p>
                     <p className="text-sm font-medium">{awardInfo.jobType}</p>
                   </div>
+                  
+                  {/* Classifications Section */}
+                  <div className="pt-2 border-t">
+                    <p className="text-sm text-muted-foreground mb-2">Available Classifications</p>
+                    {loadingClassifications ? (
+                      <p className="text-xs text-muted-foreground">Loading classifications...</p>
+                    ) : classifications.length > 0 ? (
+                      <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
+                        {classifications.map((classification: any) => (
+                          <div 
+                            key={classification.classification_fixed_id}
+                            className="bg-muted/30 rounded-md p-2 text-xs"
+                          >
+                            <p className="font-medium text-foreground">
+                              {classification.classification_level}
+                            </p>
+                            {classification.classification && (
+                              <p className="text-muted-foreground text-[10px] mt-0.5">
+                                {classification.classification}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">No classifications available</p>
+                    )}
+                  </div>
+                  
                   <Button
                     variant="outline"
                     size="sm"
