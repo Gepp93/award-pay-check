@@ -24,7 +24,7 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const search = url.searchParams.get('search') || '';
-    const limit = url.searchParams.get('limit') || '100';
+    const limit = url.searchParams.get('limit') || '200';
     
     let fwcUrl = `https://api.fwc.gov.au/api/v1/awards?limit=${limit}`;
     if (search) {
