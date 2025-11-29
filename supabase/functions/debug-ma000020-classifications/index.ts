@@ -13,8 +13,8 @@ serve(async (req) => {
   try {
     const fwcApiKey = Deno.env.get('FWC_API_KEY')
     
-    // Fetch with larger page size to get more data
-    const url = `https://api.fwc.gov.au/api/v1/awards/MA000020/classifications?page=1&limit=200`
+    // Fetch with max allowed page size (100 is the API limit)
+    const url = `https://api.fwc.gov.au/api/v1/awards/MA000020/classifications?page=1&limit=100`
     
     console.log(`Fetching classifications from FWC API: ${url}`)
     
