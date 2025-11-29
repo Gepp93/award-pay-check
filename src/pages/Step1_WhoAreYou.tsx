@@ -135,20 +135,46 @@ export default function Step1_WhoAreYou() {
                   <SelectValue placeholder="Select your classification" />
                 </SelectTrigger>
                 <SelectContent>
-                  {classifications.map((classification) => {
-                    const displayText = classification.parent_classification_name 
-                      ? `${classification.parent_classification_name} - ${classification.classification}`
-                      : classification.clause_description || classification.classification;
-                    
-                    return (
-                      <SelectItem
-                        key={classification.classification_fixed_id}
-                        value={classification.classification_fixed_id.toString()}
-                      >
-                        {displayText}
-                      </SelectItem>
-                    );
-                  })}
+                  {classifications
+                    .filter((c) => {
+                      // Filter to show only meaningful base rate classifications
+                      const isBaseRate = c.classification?.toLowerCase().includes('base rate') || 
+                                        c.clause_description?.toLowerCase().includes('base') ||
+                                        c.parent_classification_name;
+                      return isBaseRate;
+                    })
+                    .reduce((unique, classification) => {
+                      // Remove duplicates based on display text
+                      const displayText = classification.clause_description && classification.parent_classification_name
+                        ? `${classification.clause_description} - ${classification.parent_classification_name}`
+                        : classification.parent_classification_name || classification.clause_description || classification.classification;
+                      
+                      const exists = unique.some(c => {
+                        const existingText = c.clause_description && c.parent_classification_name
+                          ? `${c.clause_description} - ${c.parent_classification_name}`
+                          : c.parent_classification_name || c.clause_description || c.classification;
+                        return existingText === displayText;
+                      });
+                      
+                      if (!exists) {
+                        unique.push(classification);
+                      }
+                      return unique;
+                    }, [] as typeof classifications)
+                    .map((classification, index) => {
+                      const displayText = classification.clause_description && classification.parent_classification_name
+                        ? `${classification.clause_description} - ${classification.parent_classification_name}`
+                        : classification.parent_classification_name || classification.clause_description || classification.classification;
+                      
+                      return (
+                        <SelectItem
+                          key={`${classification.classification_fixed_id}-${index}`}
+                          value={classification.classification_fixed_id.toString()}
+                        >
+                          {displayText}
+                        </SelectItem>
+                      );
+                    })}
                 </SelectContent>
               </Select>
               )}
