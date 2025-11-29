@@ -41,7 +41,7 @@ export default function Step1_WhoAreYou() {
     try {
       const { data, error } = await supabase.functions.invoke("get-awards");
       if (error) throw error;
-      setAwards(data.awards || []);
+      setAwards(data.results || []);
     } catch (error) {
       console.error("Error loading awards:", error);
       toast.error("Failed to load awards");
@@ -57,7 +57,7 @@ export default function Step1_WhoAreYou() {
         body: { awardId: awardCode },
       });
       if (error) throw error;
-      setClassifications(data.classifications || []);
+      setClassifications(data.results || []);
     } catch (error) {
       console.error("Error loading classifications:", error);
       toast.error("Failed to load classifications");
