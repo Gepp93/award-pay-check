@@ -31,26 +31,46 @@ export const ClassificationList = ({
       if (error) throw error;
 
       if (data?.results) {
-        // Group by parent_classification_name to show distinct job levels
-        const grouped = data.results.reduce((acc: any[], curr: any) => {
+        // Show all unique classifications without heavy filtering
+        // Only skip entries that are clearly sub-rates (Base rate, Weekly rate, etc.)
+        const subRateKeywords = ['base rate', 'weekly rate', 'hourly rate', 'industry allowance'];
+        
+        const filtered = data.results.filter((curr: any) => {
+          const classification = curr.classification?.toLowerCase() || '';
           const parentName = curr.parent_classification_name?.trim();
           
-          // Skip if no parent name or if it's a sub-classification like "Base rate", "Weekly rate"
-          if (!parentName || parentName === '') return acc;
+          // Skip if it's a sub-rate component
+          if (subRateKeywords.some(keyword => classification.includes(keyword))) {
+            return false;
+          }
           
-          // Only add if we don't already have this parent classification
-          if (!acc.find(item => item.classification_level === parentName)) {
+          // Skip if no parent name
+          if (!parentName || parentName === '') return false;
+          
+          return true;
+        });
+
+        // Remove exact duplicates only
+        const unique = filtered.reduce((acc: any[], curr: any) => {
+          const key = `${curr.parent_classification_name}_${curr.clause_description}_${curr.classification}`;
+          
+          if (!acc.find(item => {
+            const itemKey = `${item.parent_classification_name}_${item.clause_description}_${item.classification}`;
+            return itemKey === key;
+          })) {
             acc.push({
               classification_fixed_id: curr.classification_fixed_id,
-              classification_level: parentName,
-              classification: curr.clause_description || curr.classification,
+              parent_classification_name: curr.parent_classification_name,
+              classification_level: curr.parent_classification_name,
+              classification: curr.classification,
+              clause_description: curr.clause_description,
             });
           }
           
           return acc;
         }, []);
 
-        setClassifications(grouped);
+        setClassifications(unique);
       }
     } catch (error) {
       console.error('Error fetching classifications:', error);
@@ -86,11 +106,14 @@ export const ClassificationList = ({
               >
                 <div className="w-full">
                   <div className="font-semibold leading-relaxed break-words">
-                    {classification.classification_level}
+                    {classification.parent_classification_name}
+                    {classification.classification && 
+                     classification.classification !== classification.parent_classification_name && 
+                     ` – ${classification.classification}`}
                   </div>
-                  {classification.classification && (
+                  {classification.clause_description && (
                     <div className="text-xs opacity-80 mt-2 leading-relaxed break-words">
-                      {classification.classification}
+                      {classification.clause_description}
                     </div>
                   )}
                 </div>
