@@ -95,19 +95,19 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
             </div>
           )}
           
-          {penalties?.results && penalties.results.length > 0 && (
-            <>
-              <div className="border-t pt-3">
-                <p className="text-sm font-medium mb-2">Penalty Rates</p>
-                {penalties.results.slice(0, 5).map((penalty: any, idx: number) => (
-                  <div key={idx} className="flex justify-between items-center text-sm mb-1">
-                    <span className="text-muted-foreground">{penalty.penalty_description}</span>
-                    <span className="font-medium">{penalty.penalty_rate}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          <div className="border-t pt-3">
+            <p className="text-sm font-medium mb-2">Penalty Rates</p>
+            {penalties?.results && penalties.results.length > 0 ? (
+              penalties.results.slice(0, 5).map((penalty: any, idx: number) => (
+                <div key={idx} className="flex justify-between items-center text-sm mb-1">
+                  <span className="text-muted-foreground">{penalty.penalty_description}</span>
+                  <span className="font-medium">{penalty.penalty_rate}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-muted-foreground">No penalty rate information available</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 

@@ -28,7 +28,7 @@ serve(async (req) => {
 
     console.log(`Fetching allowances for award: ${awardId}`);
 
-    const fwcUrl = `https://uatapi.fwc.gov.au/api/v1/awards/${awardId}/allowances`;
+    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/allowances`;
     
     const fwcResponse = await fetch(fwcUrl, {
       headers: {
@@ -39,7 +39,17 @@ serve(async (req) => {
 
     if (!fwcResponse.ok) {
       const errorText = await fwcResponse.text();
-      console.error('FWC API error:', errorText);
+      console.error('FWC API error:', errorText, 'Status:', fwcResponse.status);
+      
+      // If 404, return empty array (some awards may not have allowances)
+      if (fwcResponse.status === 404) {
+        console.log('No allowances found for award:', awardId);
+        return new Response(
+          JSON.stringify({ allowances: [] }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ 
           error: 'Failed to fetch allowances from FWC API',
@@ -50,7 +60,7 @@ serve(async (req) => {
     }
 
     const data = await fwcResponse.json();
-    console.log('Successfully fetched allowances');
+    console.log('Successfully fetched allowances:', data?.allowances?.length || 0);
 
     return new Response(
       JSON.stringify(data),
