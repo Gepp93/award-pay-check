@@ -50,9 +50,15 @@ const DebugClassifications = () => {
             ) : data ? (
               <div className="space-y-4">
                 <div className="text-sm text-muted-foreground">
-                  <strong>Total Count:</strong> {data._meta?.result_count || 0} classifications
+                  <strong>Total Count:</strong> {data._meta?.total_count || data._meta?.result_count || 0} classifications
                   <br />
-                  <strong>Showing:</strong> {data.results?.length || 0} items (Page {data._meta?.current_page} of {data._meta?.page_count})
+                  <strong>Showing:</strong> {data.results?.length || 0} items
+                  {data._meta?.pages_fetched && (
+                    <>
+                      <br />
+                      <strong>Pages Fetched:</strong> {data._meta.pages_fetched}
+                    </>
+                  )}
                 </div>
 
                 <div className="max-h-[600px] overflow-auto">
