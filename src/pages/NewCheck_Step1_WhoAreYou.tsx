@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,19 +12,23 @@ import { Loader2 } from "lucide-react";
 export default function NewCheck_Step1_WhoAreYou() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingClassifications, setLoadingClassifications] = useState(false);
   const [awards, setAwards] = useState<any[]>([]);
   const [classifications, setClassifications] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedAward, setSelectedAward] = useState("");
   const [selectedClassification, setSelectedClassification] = useState("");
   const [employmentType, setEmploymentType] = useState("Full-time");
 
-  const searchAwards = async (query: string) => {
+  useEffect(() => {
+    loadAllAwards();
+  }, []);
+
+  const loadAllAwards = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("get-awards", {
-        body: { search: query },
+        body: { search: "" },
       });
 
       if (error) throw error;
@@ -41,7 +45,7 @@ export default function NewCheck_Step1_WhoAreYou() {
   };
 
   const loadClassifications = async (awardId: string) => {
-    setLoading(true);
+    setLoadingClassifications(true);
     try {
       const { data, error } = await supabase.functions.invoke("get-classifications", {
         body: { awardId },
@@ -56,7 +60,7 @@ export default function NewCheck_Step1_WhoAreYou() {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setLoadingClassifications(false);
     }
   };
 
@@ -95,26 +99,18 @@ export default function NewCheck_Step1_WhoAreYou() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>Search for your Award</Label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by award name or code..."
-                className="flex-1 px-3 py-2 border rounded-md"
-                onKeyDown={(e) => e.key === "Enter" && searchAwards(searchQuery)}
-              />
-              <Button onClick={() => searchAwards(searchQuery)} disabled={loading}>
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
-              </Button>
-            </div>
-            {awards.length > 0 && (
+            <Label>Select your Award</Label>
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span className="ml-2 text-muted-foreground">Loading awards...</span>
+              </div>
+            ) : (
               <Select value={selectedAward} onValueChange={handleAwardSelect}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Select an award" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border border-border max-h-[300px] z-50">
                   {awards.map((award) => (
                     <SelectItem key={award.code} value={award.code}>
                       {award.code} - {award.name}
@@ -125,21 +121,30 @@ export default function NewCheck_Step1_WhoAreYou() {
             )}
           </div>
 
-          {classifications.length > 0 && (
+          {selectedAward && (
             <div className="space-y-2">
               <Label>Job Classification / Level</Label>
-              <Select value={selectedClassification} onValueChange={setSelectedClassification}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your classification" />
-                </SelectTrigger>
-                <SelectContent>
-                  {classifications.map((cls) => (
-                    <SelectItem key={cls.fixed_id} value={cls.fixed_id}>
-                      {cls.classification}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {loadingClassifications ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="ml-2 text-sm text-muted-foreground">Loading classifications...</span>
+                </div>
+              ) : classifications.length > 0 ? (
+                <Select value={selectedClassification} onValueChange={setSelectedClassification}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Select your classification" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border max-h-[300px] z-50">
+                    {classifications.map((cls) => (
+                      <SelectItem key={cls.fixed_id} value={cls.fixed_id}>
+                        {cls.classification}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm text-muted-foreground">No classifications available for this award</p>
+              )}
             </div>
           )}
 
