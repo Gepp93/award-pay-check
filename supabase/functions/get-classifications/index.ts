@@ -22,7 +22,6 @@ serve(async (req) => {
       );
     }
 
-    const url = new URL(req.url);
     const { awardId } = await req.json();
     
     if (!awardId) {
@@ -32,31 +31,56 @@ serve(async (req) => {
       );
     }
 
-    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/classifications?limit=100`;
-    console.log('Fetching classifications from FWC API:', fwcUrl);
+    // Fetch all classifications with pagination (API limit is 100 per page)
+    let allResults: any[] = [];
+    let currentPage = 1;
+    let hasMorePages = true;
     
-    const fwcResponse = await fetch(fwcUrl, {
-      method: 'GET',
-      headers: {
-        'Ocp-Apim-Subscription-Key': fwcApiKey,
-        'Accept': 'application/json',
-      },
-    });
+    while (hasMorePages) {
+      const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/classifications?page=${currentPage}&limit=100`;
+      console.log(`Fetching page ${currentPage} from FWC API:`, fwcUrl);
+      
+      const fwcResponse = await fetch(fwcUrl, {
+        method: 'GET',
+        headers: {
+          'Ocp-Apim-Subscription-Key': fwcApiKey,
+          'Accept': 'application/json',
+        },
+      });
 
-    if (!fwcResponse.ok) {
-      const errorText = await fwcResponse.text();
-      console.error('FWC API error:', fwcResponse.status, errorText);
-      return new Response(
-        JSON.stringify({ error: 'FWC API request failed', details: errorText }),
-        { status: fwcResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      if (!fwcResponse.ok) {
+        const errorText = await fwcResponse.text();
+        console.error('FWC API error:', fwcResponse.status, errorText);
+        return new Response(
+          JSON.stringify({ error: 'FWC API request failed', details: errorText }),
+          { status: fwcResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const pageData = await fwcResponse.json();
+      allResults = allResults.concat(pageData.results || []);
+      
+      // Check if there are more pages
+      hasMorePages = pageData._meta?.has_more_results === true;
+      currentPage++;
+      
+      // Safety limit to prevent infinite loops
+      if (currentPage > 20) {
+        console.warn('Reached maximum page limit (20)');
+        hasMorePages = false;
+      }
     }
 
-    const data = await fwcResponse.json();
-    console.log(`Retrieved ${data.results?.length || 0} classifications out of ${data._meta?.result_count || 0} total`);
+    console.log(`Retrieved ${allResults.length} total classifications across ${currentPage - 1} pages`);
 
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({ 
+        results: allResults,
+        _meta: {
+          total_count: allResults.length,
+          pages_fetched: currentPage - 1
+        }
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
