@@ -81,15 +81,15 @@ export const ClassificationList = ({
                     ? "default" 
                     : "outline"
                 }
-                className="w-full justify-start h-auto py-3 px-4"
+                className="w-full justify-start h-auto py-4 px-5 whitespace-normal text-left"
                 onClick={() => onSelect(classification)}
               >
-                <div className="text-left">
-                  <div className="font-semibold">
+                <div className="w-full">
+                  <div className="font-semibold leading-relaxed break-words">
                     {classification.classification_level}
                   </div>
                   {classification.classification && (
-                    <div className="text-xs opacity-80 mt-1">
+                    <div className="text-xs opacity-80 mt-2 leading-relaxed break-words">
                       {classification.classification}
                     </div>
                   )}
