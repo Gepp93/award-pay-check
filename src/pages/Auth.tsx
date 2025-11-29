@@ -27,7 +27,7 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success("Welcome back!");
-        navigate("/calculator");
+        navigate("/dashboard");
       } else {
         const redirectUrl = `${window.location.origin}/calculator`;
         const { error } = await supabase.auth.signUp({
@@ -39,7 +39,7 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success("Account created! Please check your email.");
-        navigate("/calculator");
+        navigate("/dashboard");
       }
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");
