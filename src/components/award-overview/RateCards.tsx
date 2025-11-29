@@ -3,7 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Loader2, DollarSign, Clock, Gift, ChevronDown, Coffee } from "lucide-react";
+import { Loader2, DollarSign, Clock, Gift, ChevronDown, Coffee, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getFallbackPenalties, getFallbackAllowances } from "@/lib/fallbackAwardData";
 
 interface RateCardsProps {
   awardId: string;
@@ -18,6 +20,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
   const [loading, setLoading] = useState(false);
   const [showAllPenalties, setShowAllPenalties] = useState(false);
   const [showAllAllowances, setShowAllAllowances] = useState(false);
+  const [usingFallbackData, setUsingFallbackData] = useState({ penalties: false, allowances: false });
 
   useEffect(() => {
     if (classification) {
@@ -94,7 +97,22 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
       });
 
       console.log('RateCards: Penalties response:', penaltyData?.results?.length || 0);
-      setPenalties(penaltyData);
+      
+      // Use fallback data if API returns empty
+      if (!penaltyData?.results || penaltyData.results.length === 0) {
+        const fallbackPenalties = getFallbackPenalties(awardId);
+        if (fallbackPenalties.length > 0) {
+          console.log('Using fallback penalties:', fallbackPenalties.length);
+          setPenalties({ results: fallbackPenalties });
+          setUsingFallbackData(prev => ({ ...prev, penalties: true }));
+        } else {
+          setPenalties(penaltyData);
+          setUsingFallbackData(prev => ({ ...prev, penalties: false }));
+        }
+      } else {
+        setPenalties(penaltyData);
+        setUsingFallbackData(prev => ({ ...prev, penalties: false }));
+      }
 
       // Fetch allowances
       const { data: allowanceData } = await supabase.functions.invoke('get-allowances', {
@@ -102,7 +120,22 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
       });
 
       console.log('RateCards: Allowances response:', allowanceData?.allowances?.length || 0);
-      setAllowances(allowanceData);
+      
+      // Use fallback data if API returns empty
+      if (!allowanceData?.allowances || allowanceData.allowances.length === 0) {
+        const fallbackAllowances = getFallbackAllowances(awardId);
+        if (fallbackAllowances.length > 0) {
+          console.log('Using fallback allowances:', fallbackAllowances.length);
+          setAllowances({ results: fallbackAllowances });
+          setUsingFallbackData(prev => ({ ...prev, allowances: true }));
+        } else {
+          setAllowances(allowanceData);
+          setUsingFallbackData(prev => ({ ...prev, allowances: false }));
+        }
+      } else {
+        setAllowances({ results: allowanceData.allowances });
+        setUsingFallbackData(prev => ({ ...prev, allowances: false }));
+      }
 
     } catch (error) {
       console.error('Error fetching rate data:', error);
@@ -209,14 +242,27 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
           <CardDescription>Weekend, public holiday, and overtime penalties</CardDescription>
         </CardHeader>
         <CardContent>
+          {usingFallbackData.penalties && (
+            <Alert className="mb-4">
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription className="text-xs">
+                Showing standard penalty rates for this award. Verify with current award documentation.
+              </AlertDescription>
+            </Alert>
+          )}
           {penalties?.results && penalties.results.length > 0 ? (
             <Collapsible open={showAllPenalties} onOpenChange={setShowAllPenalties}>
               <div className="space-y-2">
                 {(showAllPenalties ? penalties.results : penalties.results.slice(0, 5)).map((penalty: any, idx: number) => (
                   <div key={idx} className="bg-muted/30 rounded-md p-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">{penalty.penalty_description}</span>
-                      <span className="text-sm font-bold">{penalty.penalty_rate}</span>
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex-1">
+                        <span className="text-sm font-medium block">{penalty.penalty_description || penalty.description}</span>
+                        {penalty.conditions && (
+                          <span className="text-xs text-muted-foreground block mt-1">{penalty.conditions}</span>
+                        )}
+                      </div>
+                      <span className="text-sm font-bold whitespace-nowrap">{penalty.penalty_rate || penalty.rate}</span>
                     </div>
                   </div>
                 ))}
@@ -245,24 +291,36 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
             <CardTitle>Allowances</CardTitle>
           </div>
           <CardDescription>
-            {filteredAllowances.length < (allowances?.results?.length || 0)
-              ? `Allowances relevant to your role (${filteredAllowances.length} of ${allowances?.results?.length || 0} total)`
-              : "Additional payments you may be entitled to"
-            }
+            Additional payments you may be entitled to based on your work conditions
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {usingFallbackData.allowances && (
+            <Alert className="mb-4">
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription className="text-xs">
+                Showing common allowances for this award. Check with your employer which apply to you.
+              </AlertDescription>
+            </Alert>
+          )}
           {filteredAllowances.length > 0 ? (
             <Collapsible open={showAllAllowances} onOpenChange={setShowAllAllowances}>
               <div className="space-y-2">
                 {(showAllAllowances ? filteredAllowances : filteredAllowances.slice(0, 8)).map((allowance: any, idx: number) => (
                   <div key={idx} className="bg-muted/30 rounded-md p-3">
                     <div className="font-medium text-sm mb-1">
-                      {allowance.allowance_type_description}
+                      {allowance.allowance_type_description || allowance.name}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {allowance.allowance_amount && `$${allowance.allowance_amount}`}
-                      {allowance.allowance_description && ` - ${allowance.allowance_description}`}
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      {(allowance.allowance_amount || allowance.amount) && (
+                        <div className="font-semibold text-foreground">{allowance.allowance_amount || allowance.amount}</div>
+                      )}
+                      {(allowance.allowance_description || allowance.description) && (
+                        <div>{allowance.allowance_description || allowance.description}</div>
+                      )}
+                      {allowance.conditions && (
+                        <div className="italic">{allowance.conditions}</div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -278,7 +336,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
               )}
             </Collapsible>
           ) : (
-            <p className="text-sm text-muted-foreground">No specific allowances found for your role</p>
+            <p className="text-sm text-muted-foreground">No specific allowances found for your award</p>
           )}
         </CardContent>
       </Card>
