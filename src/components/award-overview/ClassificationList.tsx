@@ -23,6 +23,7 @@ export const ClassificationList = ({
   const [selectedStream, setSelectedStream] = useState<string>("all");
   const [streams, setStreams] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("default");
   const [loading, setLoading] = useState(true);
   const [showHelp, setShowHelp] = useState(false);
 
@@ -92,8 +93,48 @@ export const ClassificationList = ({
       });
     }
     
+    // Sort classifications
+    if (sortBy !== "default") {
+      filtered = [...filtered].sort((a, b) => {
+        const aText = `${a.classification || ''} ${a.parent_classification_name || ''}`.toLowerCase();
+        const bText = `${b.classification || ''} ${b.parent_classification_name || ''}`.toLowerCase();
+        
+        switch (sortBy) {
+          case "entry-level":
+            // Prioritize classifications with entry level indicators
+            const aIsEntry = aText.includes('entry') || aText.includes('level 1') || aText.includes('grade 1') || aText.includes('apprentice') || aText.includes('trainee');
+            const bIsEntry = bText.includes('entry') || bText.includes('level 1') || bText.includes('grade 1') || bText.includes('apprentice') || bText.includes('trainee');
+            if (aIsEntry && !bIsEntry) return -1;
+            if (!aIsEntry && bIsEntry) return 1;
+            return 0;
+            
+          case "experienced":
+            // Prioritize senior, qualified, experienced roles
+            const aIsExperienced = aText.includes('senior') || aText.includes('qualified') || aText.includes('experienced') || aText.includes('level 3') || aText.includes('level 4') || aText.includes('grade 3') || aText.includes('grade 4');
+            const bIsExperienced = bText.includes('senior') || bText.includes('qualified') || bText.includes('experienced') || bText.includes('level 3') || bText.includes('level 4') || bText.includes('grade 3') || bText.includes('grade 4');
+            if (aIsExperienced && !bIsExperienced) return -1;
+            if (!aIsExperienced && bIsExperienced) return 1;
+            return 0;
+            
+          case "supervisor":
+            // Prioritize supervisor and management roles
+            const aIsSupervisor = aText.includes('supervisor') || aText.includes('manager') || aText.includes('coordinator') || aText.includes('director') || aText.includes('leading hand') || aText.includes('foreman');
+            const bIsSupervisor = bText.includes('supervisor') || bText.includes('manager') || bText.includes('coordinator') || bText.includes('director') || bText.includes('leading hand') || bText.includes('foreman');
+            if (aIsSupervisor && !bIsSupervisor) return -1;
+            if (!aIsSupervisor && bIsSupervisor) return 1;
+            return 0;
+            
+          case "alphabetical":
+            return aText.localeCompare(bText);
+            
+          default:
+            return 0;
+        }
+      });
+    }
+    
     setFilteredClassifications(filtered);
-  }, [selectedStream, searchTerm, classifications]);
+  }, [selectedStream, searchTerm, sortBy, classifications]);
 
   const fetchClassifications = async () => {
     try {
@@ -262,25 +303,21 @@ export const ClassificationList = ({
               </p>
             </div>
 
-            {/* Quick Find Buttons */}
-            {!searchTerm && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Quick Find</label>
-                <div className="flex flex-wrap gap-2">
-                  {['Foreman', 'Operator', 'Driver', 'Director', 'Teacher', 'Manager', 'Supervisor', 'Apprentice', 'Cook', 'Assistant'].map((term) => (
-                    <Button
-                      key={term}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSearchTerm(term)}
-                      className="text-xs"
-                    >
-                      {term}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Sort Section */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Sort By</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="default">Default (as listed in award)</option>
+                <option value="entry-level">Entry Level First</option>
+                <option value="experienced">Experienced/Qualified First</option>
+                <option value="supervisor">Supervisor/Management First</option>
+                <option value="alphabetical">Alphabetical (A-Z)</option>
+              </select>
+            </div>
 
             {/* Work Area Filter */}
             <div className="space-y-2">
