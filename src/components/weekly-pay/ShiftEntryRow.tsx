@@ -6,17 +6,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { type WeeklyShift } from "@/lib/payCalculator";
+import { DynamicAllowanceCheckboxes } from "./DynamicAllowanceCheckboxes";
 
 interface ShiftEntryRowProps {
   shift: WeeklyShift;
   onUpdate: (id: string, updates: Partial<WeeklyShift>) => void;
   onRemove: (id: string) => void;
   calculation?: any;
+  allowances?: any;
 }
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-export const ShiftEntryRow = ({ shift, onUpdate, onRemove, calculation }: ShiftEntryRowProps) => {
+export const ShiftEntryRow = ({ shift, onUpdate, onRemove, calculation, allowances }: ShiftEntryRowProps) => {
   return (
     <Card>
       <CardContent className="pt-6">
@@ -90,71 +92,65 @@ export const ShiftEntryRow = ({ shift, onUpdate, onRemove, calculation }: ShiftE
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`past6pm-${shift.id}`}
-              checked={shift.workedPast6pm}
-              onCheckedChange={(checked) => 
-                onUpdate(shift.id, { workedPast6pm: checked as boolean })
-              }
-            />
-            <Label htmlFor={`past6pm-${shift.id}`} className="text-sm">
-              Past 6pm
-            </Label>
+        <div className="space-y-3 mt-4">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Shift Conditions
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={`weekend-${shift.id}`}
+                checked={shift.isWeekend}
+                onCheckedChange={(checked) => 
+                  onUpdate(shift.id, { isWeekend: checked as boolean })
+                }
+              />
+              <Label htmlFor={`weekend-${shift.id}`} className="text-sm cursor-pointer">
+                Weekend
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={`holiday-${shift.id}`}
+                checked={shift.isPublicHoliday}
+                onCheckedChange={(checked) => 
+                  onUpdate(shift.id, { isPublicHoliday: checked as boolean })
+                }
+              />
+              <Label htmlFor={`holiday-${shift.id}`} className="text-sm cursor-pointer">
+                Public Holiday
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={`past6pm-${shift.id}`}
+                checked={shift.workedPast6pm}
+                onCheckedChange={(checked) => 
+                  onUpdate(shift.id, { workedPast6pm: checked as boolean })
+                }
+              />
+              <Label htmlFor={`past6pm-${shift.id}`} className="text-sm cursor-pointer">
+                Past 6pm
+              </Label>
+            </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`weekend-${shift.id}`}
-              checked={shift.isWeekend}
-              onCheckedChange={(checked) => 
-                onUpdate(shift.id, { isWeekend: checked as boolean })
-              }
-            />
-            <Label htmlFor={`weekend-${shift.id}`} className="text-sm">
-              Weekend
-            </Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`holiday-${shift.id}`}
-              checked={shift.isPublicHoliday}
-              onCheckedChange={(checked) => 
-                onUpdate(shift.id, { isPublicHoliday: checked as boolean })
-              }
-            />
-            <Label htmlFor={`holiday-${shift.id}`} className="text-sm">
-              Public Holiday
-            </Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`travel-${shift.id}`}
-              checked={shift.travelWithCar}
-              onCheckedChange={(checked) => 
-                onUpdate(shift.id, { travelWithCar: checked as boolean })
-              }
-            />
-            <Label htmlFor={`travel-${shift.id}`} className="text-sm">
-              Travel
-            </Label>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id={`meal-${shift.id}`}
-              checked={shift.boughtOwnMeal}
-              onCheckedChange={(checked) => 
-                onUpdate(shift.id, { boughtOwnMeal: checked as boolean })
-              }
-            />
-            <Label htmlFor={`meal-${shift.id}`} className="text-sm">
-              Own Meal
-            </Label>
-          </div>
+          {allowances?.results?.length > 0 && (
+            <>
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mt-4">
+                Allowances
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <DynamicAllowanceCheckboxes
+                  shift={shift}
+                  allowances={allowances}
+                  onUpdate={onUpdate}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {calculation && (
