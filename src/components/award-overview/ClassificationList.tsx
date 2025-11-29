@@ -31,18 +31,19 @@ export const ClassificationList = ({
       if (error) throw error;
 
       if (data?.results) {
-        // Group and clean classifications - only show parent level job titles
+        // Group by parent_classification_name to show distinct job levels
         const grouped = data.results.reduce((acc: any[], curr: any) => {
-          const level = curr.classification_level?.trim();
+          const parentName = curr.parent_classification_name?.trim();
           
-          if (!level || level === '') return acc;
+          // Skip if no parent name or if it's a sub-classification like "Base rate", "Weekly rate"
+          if (!parentName || parentName === '') return acc;
           
-          // Only add if we don't already have this level
-          if (!acc.find(item => item.classification_level === level)) {
+          // Only add if we don't already have this parent classification
+          if (!acc.find(item => item.classification_level === parentName)) {
             acc.push({
               classification_fixed_id: curr.classification_fixed_id,
-              classification_level: level,
-              classification: curr.classification,
+              classification_level: parentName,
+              classification: curr.clause_description || curr.classification,
             });
           }
           
