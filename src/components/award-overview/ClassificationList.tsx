@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Search, HelpCircle, Sparkles } from "lucide-react";
+import { Loader2, HelpCircle, Sparkles } from "lucide-react";
 
 interface ClassificationListProps {
   awardId: string;
@@ -354,27 +354,6 @@ export const ClassificationList = ({
                 </AlertDescription>
               </Alert>
             )}
-
-            {/* Enhanced Search - More Prominent */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <Search className="w-4 h-4" />
-                Search by Job Title
-              </label>
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="e.g., forklift driver, excavator operator, director, foreman..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-3 h-12 text-base"
-                  autoFocus
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Type your actual job title - we'll find matching classifications
-              </p>
-            </div>
 
             {/* Sort Section */}
             <div className="space-y-2">
