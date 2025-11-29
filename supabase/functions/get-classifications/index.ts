@@ -32,7 +32,7 @@ serve(async (req) => {
       );
     }
 
-    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/classifications?limit=200`;
+    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/classifications?limit=100`;
     console.log('Fetching classifications from FWC API:', fwcUrl);
     
     const fwcResponse = await fetch(fwcUrl, {
