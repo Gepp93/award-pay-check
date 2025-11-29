@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Search } from "lucide-react";
 
 interface ClassificationListProps {
   awardId: string;
@@ -19,6 +20,7 @@ export const ClassificationList = ({
   const [filteredClassifications, setFilteredClassifications] = useState<any[]>([]);
   const [selectedStream, setSelectedStream] = useState<string>("all");
   const [streams, setStreams] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,15 +28,26 @@ export const ClassificationList = ({
   }, [awardId]);
 
   useEffect(() => {
-    // Filter classifications when stream changes
-    if (selectedStream === "all") {
-      setFilteredClassifications(classifications);
-    } else {
-      setFilteredClassifications(
-        classifications.filter(c => c.stream === selectedStream)
+    // Filter classifications when stream or search term changes
+    let filtered = classifications;
+    
+    // Filter by stream
+    if (selectedStream !== "all") {
+      filtered = filtered.filter(c => c.stream === selectedStream);
+    }
+    
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(c => 
+        c.classification?.toLowerCase().includes(search) ||
+        c.parent_classification_name?.toLowerCase().includes(search) ||
+        c.clause_description?.toLowerCase().includes(search)
       );
     }
-  }, [selectedStream, classifications]);
+    
+    setFilteredClassifications(filtered);
+  }, [selectedStream, searchTerm, classifications]);
 
   const fetchClassifications = async () => {
     try {
@@ -120,6 +133,21 @@ export const ClassificationList = ({
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Search Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Search Classifications</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search by job title or description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
             </div>
 
             {/* Classifications List */}
