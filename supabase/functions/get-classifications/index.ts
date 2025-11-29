@@ -32,7 +32,7 @@ serve(async (req) => {
       );
     }
 
-    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/classifications`;
+    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/classifications?limit=200`;
     console.log('Fetching classifications from FWC API:', fwcUrl);
     
     const fwcResponse = await fetch(fwcUrl, {
@@ -53,7 +53,7 @@ serve(async (req) => {
     }
 
     const data = await fwcResponse.json();
-    console.log('Retrieved classifications:', data.results?.length || 0);
+    console.log(`Retrieved ${data.results?.length || 0} classifications out of ${data._meta?.result_count || 0} total`);
 
     return new Response(
       JSON.stringify(data),
