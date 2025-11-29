@@ -59,15 +59,12 @@ serve(async (req) => {
     // Extract the base rate from the pay rates response
     let baseRate = null;
     if (data.results && data.results.length > 0) {
-      // Filter for most recent operative rates (where operative_to is null or in future)
-      const activeRates = data.results.filter((rate: any) => 
-        !rate.operative_to || new Date(rate.operative_to) >= new Date()
-      );
-      
-      // Sort by operative_from descending to get most recent
-      const sortedRates = activeRates.sort((a: any, b: any) => 
+      // Sort all rates by operative_from descending to get most recent
+      const sortedRates = [...data.results].sort((a: any, b: any) => 
         new Date(b.operative_from).getTime() - new Date(a.operative_from).getTime()
       );
+      
+      console.log('Most recent rate:', sortedRates[0]?.operative_from, 'Type:', sortedRates[0]?.base_rate_type, 'Amount:', sortedRates[0]?.base_rate);
       
       // Look for hourly calculated_rate first (this is the actual hourly rate)
       for (const rate of sortedRates) {
@@ -90,7 +87,7 @@ serve(async (req) => {
         for (const rate of sortedRates) {
           if (rate.base_rate_type === 'Weekly' && rate.base_rate && parseFloat(rate.base_rate) > 0) {
             baseRate = parseFloat(rate.base_rate) / 38; // Standard 38-hour week
-            console.log('Converted weekly base_rate to hourly:', baseRate, 'operative from:', rate.operative_from);
+            console.log('Converted weekly base_rate to hourly:', baseRate, 'from weekly:', rate.base_rate, 'operative from:', rate.operative_from);
             break;
           }
         }
