@@ -57,8 +57,6 @@ export default function Step1_WhoAreYou() {
         body: { awardId: awardCode },
       });
       if (error) throw error;
-      console.log("Classifications data:", data);
-      console.log("First classification:", data.results?.[0]);
       setClassifications(data.results || []);
     } catch (error) {
       console.error("Error loading classifications:", error);
@@ -75,13 +73,17 @@ export default function Step1_WhoAreYou() {
     }
 
     const award = awards.find((a) => a.code === selectedAward);
-    const classification = classifications.find((c) => c.classification_fixed_id === selectedClassification);
+    const classification = classifications.find((c) => c.classification_fixed_id.toString() === selectedClassification);
+
+    const classificationName = classification?.parent_classification_name 
+      ? `${classification.parent_classification_name} - ${classification.classification}`
+      : classification?.clause_description || classification?.classification || selectedClassification;
 
     updateState({
       awardCode: selectedAward,
       awardName: award?.name || selectedAward,
       classificationId: selectedClassification,
-      classificationName: classification?.classification_level || selectedClassification,
+      classificationName: classificationName,
       employmentType,
     });
 
@@ -133,14 +135,20 @@ export default function Step1_WhoAreYou() {
                   <SelectValue placeholder="Select your classification" />
                 </SelectTrigger>
                 <SelectContent>
-                  {classifications.map((classification) => (
-                    <SelectItem
-                      key={classification.classification_fixed_id}
-                      value={classification.classification_fixed_id}
-                    >
-                      {classification.classification_level || classification.name || `Classification ${classification.classification_fixed_id}`}
-                    </SelectItem>
-                  ))}
+                  {classifications.map((classification) => {
+                    const displayText = classification.parent_classification_name 
+                      ? `${classification.parent_classification_name} - ${classification.classification}`
+                      : classification.clause_description || classification.classification;
+                    
+                    return (
+                      <SelectItem
+                        key={classification.classification_fixed_id}
+                        value={classification.classification_fixed_id.toString()}
+                      >
+                        {displayText}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               )}
