@@ -7,6 +7,7 @@ import { NavBar } from "@/components/NavBar";
 import { ShiftEntryRow } from "@/components/weekly-pay/ShiftEntryRow";
 import { WeeklySummary } from "@/components/weekly-pay/WeeklySummary";
 import { MissingMoneyBreakdown } from "@/components/weekly-pay/MissingMoneyBreakdown";
+import { DetailedBreakdown } from "@/components/weekly-pay/DetailedBreakdown";
 import { Plus } from "lucide-react";
 import { calculateWeeklyPay, type WeeklyShift } from "@/lib/payCalculator";
 
@@ -164,6 +165,7 @@ export default function WeeklyPayCheck() {
               onUpdate={updateShift}
               onRemove={removeShift}
               calculation={weeklyCalc.shifts.find(s => s.id === shift.id)}
+              allowances={allowances}
             />
           ))}
         </div>
@@ -173,10 +175,18 @@ export default function WeeklyPayCheck() {
           Add Another Shift
         </Button>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
           <WeeklySummary calculation={weeklyCalc} />
           <MissingMoneyBreakdown calculation={weeklyCalc} />
         </div>
+
+        <DetailedBreakdown 
+          calculation={weeklyCalc} 
+          shifts={shifts}
+          baseRate={baseRate}
+          penalties={penalties}
+          allowances={allowances}
+        />
       </div>
     </div>
   );

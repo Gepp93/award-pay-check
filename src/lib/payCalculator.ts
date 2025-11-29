@@ -112,6 +112,46 @@ export const calculatePay = (shift: ShiftData): PayBreakdown => {
   };
 };
 
+// Helper to find penalty rate from FWC data
+const findPenaltyRate = (penalties: any, description: string): number | null => {
+  if (!penalties?.results) return null;
+  
+  const penalty = penalties.results.find((p: any) => 
+    p.penalty_description?.toLowerCase().includes(description.toLowerCase())
+  );
+  
+  if (penalty?.penalty_rate) {
+    // Parse rate like "150%" or "1.5" or "Time and a half"
+    const match = penalty.penalty_rate.match(/(\d+(?:\.\d+)?)/);
+    if (match) {
+      const num = parseFloat(match[1]);
+      return num > 10 ? num / 100 : num; // Convert percentage to decimal if needed
+    }
+  }
+  
+  return null;
+};
+
+// Helper to find allowance amount from FWC data
+const findAllowanceAmount = (allowances: any, description: string): number | null => {
+  if (!allowances?.results) return null;
+  
+  const allowance = allowances.results.find((a: any) => 
+    a.allowance_type_description?.toLowerCase().includes(description.toLowerCase()) ||
+    a.allowance_description?.toLowerCase().includes(description.toLowerCase())
+  );
+  
+  if (allowance?.allowance_amount) {
+    // Parse amount like "$20.10" or "20.10"
+    const match = allowance.allowance_amount.toString().match(/(\d+(?:\.\d+)?)/);
+    if (match) {
+      return parseFloat(match[1]);
+    }
+  }
+  
+  return null;
+};
+
 // New function for weekly pay calculations
 export const calculateWeeklyPay = (
   shifts: WeeklyShift[],
@@ -139,15 +179,18 @@ export const calculateWeeklyPay = (
     let effectiveRate = baseRate;
     let penaltyApplied = false;
 
-    // Apply weekend/public holiday penalties
+    // Apply weekend/public holiday penalties using real FWC data
     if (shift.isPublicHoliday) {
-      effectiveRate = baseRate * 2.5; // Public holiday typically 2.5x
+      const publicHolidayRate = findPenaltyRate(penalties, "public holiday") || 2.5;
+      effectiveRate = baseRate * publicHolidayRate;
       penaltyApplied = true;
     } else if (shift.isWeekend) {
       if (shift.dayOfWeek === "Saturday") {
-        effectiveRate = baseRate * 1.5;
+        const saturdayRate = findPenaltyRate(penalties, "saturday") || 1.5;
+        effectiveRate = baseRate * saturdayRate;
       } else if (shift.dayOfWeek === "Sunday") {
-        effectiveRate = baseRate * 1.75;
+        const sundayRate = findPenaltyRate(penalties, "sunday") || 1.75;
+        effectiveRate = baseRate * sundayRate;
       }
       penaltyApplied = true;
     }
@@ -160,31 +203,34 @@ export const calculateWeeklyPay = (
     shouldEarn += regularHours * effectiveRate;
 
     if (overtimeHours > 0) {
-      const overtimeRate = effectiveRate * 1.5;
-      shouldEarn += overtimeHours * overtimeRate;
+      const overtimeRate = findPenaltyRate(penalties, "overtime") || 1.5;
+      shouldEarn += overtimeHours * effectiveRate * overtimeRate;
     }
 
-    // Apply allowances
+    // Apply allowances using real FWC data
     if (shift.boughtOwnMeal && totalHours > 5) {
-      shouldEarn += 20.10; // Standard meal allowance
+      const mealAllowance = findAllowanceAmount(allowances, "meal") || 20.10;
+      shouldEarn += mealAllowance;
       if (shift.actualPaid < shouldEarn && shift.actualPaid > 0) {
-        missingMoney.push(`Missing meal allowance on ${shift.dayOfWeek}`);
+        missingMoney.push(`Missing meal allowance ($${mealAllowance.toFixed(2)}) on ${shift.dayOfWeek}`);
       }
     }
 
     if (shift.travelWithCar) {
-      shouldEarn += 15.00; // Simplified travel allowance
+      const travelAllowance = findAllowanceAmount(allowances, "travel") || findAllowanceAmount(allowances, "vehicle") || 15.00;
+      shouldEarn += travelAllowance;
       if (shift.actualPaid < shouldEarn && shift.actualPaid > 0) {
-        missingMoney.push(`No travel allowance on ${shift.dayOfWeek}`);
+        missingMoney.push(`No travel allowance ($${travelAllowance.toFixed(2)}) on ${shift.dayOfWeek}`);
       }
     }
 
     // Check for missing overtime
     if (overtimeHours > 0 && shift.actualPaid > 0) {
-      const expectedWithOvertime = regularHours * effectiveRate + overtimeHours * effectiveRate * 1.5;
+      const overtimeRate = findPenaltyRate(penalties, "overtime") || 1.5;
+      const expectedWithOvertime = regularHours * effectiveRate + overtimeHours * effectiveRate * overtimeRate;
       const withoutOvertime = totalHours * effectiveRate;
       if (Math.abs(shift.actualPaid - withoutOvertime) < Math.abs(shift.actualPaid - expectedWithOvertime)) {
-        missingMoney.push(`Overtime rate not applied after ${standardHours} hours on ${shift.dayOfWeek}`);
+        missingMoney.push(`Overtime rate (${(overtimeRate * 100).toFixed(0)}%) not applied after ${standardHours} hours on ${shift.dayOfWeek}`);
       }
     }
 

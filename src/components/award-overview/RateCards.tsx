@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, DollarSign, Clock, Gift } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Loader2, DollarSign, Clock, Gift, ChevronDown, Coffee } from "lucide-react";
 
 interface RateCardsProps {
   awardId: string;
@@ -14,6 +16,8 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
   const [penalties, setPenalties] = useState<any>(null);
   const [allowances, setAllowances] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [showAllPenalties, setShowAllPenalties] = useState(false);
+  const [showAllAllowances, setShowAllAllowances] = useState(false);
 
   useEffect(() => {
     if (classification) {
@@ -77,40 +81,92 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
     );
   }
 
+  const casualLoading = employmentType === "Casual" ? 0.25 : 0;
+  const displayRate = baseRate ? baseRate * (1 + casualLoading) : null;
+
   return (
     <div className="space-y-4">
+      {/* Base Rate Card */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
             <DollarSign className="w-5 h-5" />
             <CardTitle>Base Rate</CardTitle>
           </div>
-          <CardDescription>Your hourly rate and penalties</CardDescription>
+          <CardDescription>Your hourly rate{employmentType === "Casual" && " (including 25% casual loading)"}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {baseRate && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Base hourly rate</span>
-              <span className="text-lg font-bold">${baseRate.toFixed(2)}/hr</span>
-            </div>
-          )}
-          
-          <div className="border-t pt-3">
-            <p className="text-sm font-medium mb-2">Penalty Rates</p>
-            {penalties?.results && penalties.results.length > 0 ? (
-              penalties.results.slice(0, 5).map((penalty: any, idx: number) => (
-                <div key={idx} className="flex justify-between items-center text-sm mb-1">
-                  <span className="text-muted-foreground">{penalty.penalty_description}</span>
-                  <span className="font-medium">{penalty.penalty_rate}</span>
+          {displayRate && (
+            <>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-muted-foreground">Your hourly rate</span>
+                <span className="text-lg font-bold">${displayRate.toFixed(2)}/hr</span>
+              </div>
+              
+              {employmentType === "Casual" && baseRate && (
+                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-blue-800 dark:text-blue-200">Base rate:</span>
+                    <span className="font-medium text-blue-800 dark:text-blue-200">${baseRate.toFixed(2)}/hr</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm mt-1">
+                    <span className="text-blue-800 dark:text-blue-200">Casual loading (25%):</span>
+                    <span className="font-medium text-blue-800 dark:text-blue-200">+${(baseRate * 0.25).toFixed(2)}/hr</span>
+                  </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-xs text-muted-foreground">No penalty rate information available</p>
-            )}
-          </div>
+              )}
+
+              {employmentType === "Part-time" && (
+                <div className="bg-purple-50 dark:bg-purple-950 border border-purple-200 dark:border-purple-800 rounded-md p-3">
+                  <p className="text-xs text-purple-800 dark:text-purple-200">
+                    As a part-time employee, you're entitled to pro-rata benefits and minimum engagement hours may apply.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
 
+      {/* Penalty Rates Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            <CardTitle>Penalty Rates</CardTitle>
+          </div>
+          <CardDescription>Weekend, public holiday, and overtime penalties</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {penalties?.results && penalties.results.length > 0 ? (
+            <Collapsible open={showAllPenalties} onOpenChange={setShowAllPenalties}>
+              <div className="space-y-2">
+                {(showAllPenalties ? penalties.results : penalties.results.slice(0, 5)).map((penalty: any, idx: number) => (
+                  <div key={idx} className="bg-muted/30 rounded-md p-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">{penalty.penalty_description}</span>
+                      <span className="text-sm font-bold">{penalty.penalty_rate}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {penalties.results.length > 5 && (
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-full mt-3">
+                    {showAllPenalties ? "Show Less" : `Show All ${penalties.results.length} Penalties`}
+                    <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showAllPenalties ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+              )}
+            </Collapsible>
+          ) : (
+            <p className="text-sm text-muted-foreground">No penalty rate information available</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Allowances Card */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -121,42 +177,63 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
         </CardHeader>
         <CardContent>
           {allowances?.results && allowances.results.length > 0 ? (
-            <div className="space-y-2">
-              {allowances.results.slice(0, 8).map((allowance: any, idx: number) => (
-                <div key={idx} className="bg-muted/30 rounded-md p-3">
-                  <div className="font-medium text-sm mb-1">
-                    {allowance.allowance_type_description}
+            <Collapsible open={showAllAllowances} onOpenChange={setShowAllAllowances}>
+              <div className="space-y-2">
+                {(showAllAllowances ? allowances.results : allowances.results.slice(0, 8)).map((allowance: any, idx: number) => (
+                  <div key={idx} className="bg-muted/30 rounded-md p-3">
+                    <div className="font-medium text-sm mb-1">
+                      {allowance.allowance_type_description}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {allowance.allowance_amount && `$${allowance.allowance_amount}`}
+                      {allowance.allowance_description && ` - ${allowance.allowance_description}`}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {allowance.allowance_amount && `$${allowance.allowance_amount}`}
-                    {allowance.allowance_description && ` - ${allowance.allowance_description}`}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              
+              {allowances.results.length > 8 && (
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-full mt-3">
+                    {showAllAllowances ? "Show Less" : `Show All ${allowances.results.length} Allowances`}
+                    <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showAllAllowances ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+              )}
+            </Collapsible>
           ) : (
             <p className="text-sm text-muted-foreground">No specific allowances found</p>
           )}
         </CardContent>
       </Card>
 
+      {/* Break Entitlements Card */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            <CardTitle>Summary</CardTitle>
+            <Coffee className="w-5 h-5" />
+            <CardTitle>Break Entitlements</CardTitle>
           </div>
+          <CardDescription>Rest breaks based on shift length</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Common places people miss money for this award:
-          </p>
-          <ul className="list-disc list-inside space-y-1 mt-2 text-sm">
-            <li>Overtime rates after standard hours</li>
-            <li>Weekend and public holiday penalties</li>
-            <li>Meal allowances for long shifts</li>
-            <li>Travel allowances when required</li>
-          </ul>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between items-center p-2 bg-muted/30 rounded-md">
+              <span>4-5 hours</span>
+              <span className="font-medium">One 10-minute paid rest break</span>
+            </div>
+            <div className="flex justify-between items-center p-2 bg-muted/30 rounded-md">
+              <span>5-7 hours</span>
+              <span className="font-medium">One 30-minute unpaid meal break</span>
+            </div>
+            <div className="flex justify-between items-center p-2 bg-muted/30 rounded-md">
+              <span>7+ hours</span>
+              <span className="font-medium">Additional 10-minute paid rest break</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Note: Specific break entitlements may vary by award. Check your award for exact requirements.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
