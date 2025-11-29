@@ -30,27 +30,11 @@ export const NavBar = () => {
             <div className="hidden md:flex items-center gap-4">
               <Button
                 variant="ghost"
-                onClick={() => navigate("/award-overview")}
+                onClick={() => navigate("/step1-who-are-you")}
                 className="flex items-center gap-2"
               >
                 <Calculator className="h-4 w-4" />
-                Calculator
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/dashboard")}
-                className="flex items-center gap-2"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Dashboard
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/subscription")}
-                className="flex items-center gap-2"
-              >
-                <CreditCard className="h-4 w-4" />
-                Subscription
+                New Calculation
               </Button>
             </div>
           </div>
