@@ -57,6 +57,8 @@ export default function Step1_WhoAreYou() {
         body: { awardId: awardCode },
       });
       if (error) throw error;
+      console.log("Classifications data:", data);
+      console.log("First classification:", data.results?.[0]);
       setClassifications(data.results || []);
     } catch (error) {
       console.error("Error loading classifications:", error);
@@ -126,21 +128,21 @@ export default function Step1_WhoAreYou() {
                   Loading classifications...
                 </div>
               ) : (
-                <Select value={selectedClassification} onValueChange={setSelectedClassification}>
-                  <SelectTrigger id="classification">
-                    <SelectValue placeholder="Select your classification" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {classifications.map((classification) => (
-                      <SelectItem
-                        key={classification.classification_fixed_id}
-                        value={classification.classification_fixed_id}
-                      >
-                        {classification.classification_level}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <Select value={selectedClassification} onValueChange={setSelectedClassification}>
+                <SelectTrigger id="classification">
+                  <SelectValue placeholder="Select your classification" />
+                </SelectTrigger>
+                <SelectContent>
+                  {classifications.map((classification) => (
+                    <SelectItem
+                      key={classification.classification_fixed_id}
+                      value={classification.classification_fixed_id}
+                    >
+                      {classification.classification_level || classification.name || `Classification ${classification.classification_fixed_id}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               )}
             </div>
           )}
