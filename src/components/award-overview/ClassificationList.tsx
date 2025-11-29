@@ -13,6 +13,12 @@ interface ClassificationListProps {
   onSelect: (classification: any) => void;
 }
 
+interface ClassificationWithRate {
+  classification: any;
+  hourlyRate: number | null;
+  loading: boolean;
+}
+
 export const ClassificationList = ({ 
   awardId, 
   selectedClassification, 
@@ -20,6 +26,7 @@ export const ClassificationList = ({
 }: ClassificationListProps) => {
   const [classifications, setClassifications] = useState<any[]>([]);
   const [filteredClassifications, setFilteredClassifications] = useState<any[]>([]);
+  const [classificationsWithRates, setClassificationsWithRates] = useState<Map<string, ClassificationWithRate>>(new Map());
   const [selectedStream, setSelectedStream] = useState<string>("all");
   const [streams, setStreams] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -40,6 +47,72 @@ export const ClassificationList = ({
     'labourer': ['labourer', 'general', 'unskilled', 'entry'],
     'cook': ['cook', 'chef', 'kitchen', 'food'],
   };
+
+  // Fetch pay rate for a single classification
+  const fetchPayRate = async (classification: any) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-pay-rates', {
+        body: { 
+          awardId,
+          classificationFixedId: classification.classification_fixed_id 
+        }
+      });
+
+      if (error) {
+        console.error('Error fetching pay rate:', error);
+        return null;
+      }
+
+      return data?.baseRate || null;
+    } catch (error) {
+      console.error('Error fetching pay rate:', error);
+      return null;
+    }
+  };
+
+  // Fetch pay rates for displayed classifications
+  useEffect(() => {
+    const fetchRatesForClassifications = async () => {
+      if (filteredClassifications.length === 0) return;
+
+      // Fetch rates for up to 20 classifications at a time to avoid overwhelming the API
+      const classificationsToFetch = filteredClassifications.slice(0, 20);
+      
+      const newRatesMap = new Map(classificationsWithRates);
+      
+      // Mark as loading
+      classificationsToFetch.forEach(c => {
+        if (!newRatesMap.has(c.classification_fixed_id)) {
+          newRatesMap.set(c.classification_fixed_id, {
+            classification: c,
+            hourlyRate: null,
+            loading: true
+          });
+        }
+      });
+      setClassificationsWithRates(new Map(newRatesMap));
+
+      // Fetch rates in parallel
+      const ratePromises = classificationsToFetch.map(async (c) => {
+        const rate = await fetchPayRate(c);
+        return { classification: c, rate };
+      });
+
+      const results = await Promise.all(ratePromises);
+      
+      results.forEach(({ classification, rate }) => {
+        newRatesMap.set(classification.classification_fixed_id, {
+          classification,
+          hourlyRate: rate,
+          loading: false
+        });
+      });
+
+      setClassificationsWithRates(new Map(newRatesMap));
+    };
+
+    fetchRatesForClassifications();
+  }, [filteredClassifications, awardId]);
 
   useEffect(() => {
     fetchClassifications();
@@ -358,6 +431,7 @@ export const ClassificationList = ({
                   {filteredClassifications.map((classification, index) => {
                     const keywords = getKeywords(classification);
                     const levelBadge = getLevelBadge(classification);
+                    const rateInfo = classificationsWithRates.get(classification.classification_fixed_id);
                     
                     return (
                       <Button
@@ -378,6 +452,17 @@ export const ClassificationList = ({
                               {classification.classification && 
                                classification.classification !== classification.parent_classification_name && 
                                ` – ${classification.classification}`}
+                              {rateInfo && (
+                                <div className="mt-1.5">
+                                  {rateInfo.loading ? (
+                                    <span className="text-xs text-muted-foreground font-normal">Loading rate...</span>
+                                  ) : rateInfo.hourlyRate ? (
+                                    <span className="text-base font-bold text-primary">
+                                      ${rateInfo.hourlyRate.toFixed(2)}/hr
+                                    </span>
+                                  ) : null}
+                                </div>
+                              )}
                             </div>
                             {levelBadge}
                           </div>

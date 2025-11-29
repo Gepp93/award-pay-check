@@ -31,9 +31,8 @@ serve(async (req) => {
       );
     }
 
-    // Fetch pay rates for the classification - get current operative rates
-    const today = new Date().toISOString().split('T')[0];
-    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/pay-rates?classification_fixed_id=${classificationFixedId}&operative_from=${today}`;
+    // Fetch pay rates for the classification - get all rates (no date filter)
+    const fwcUrl = `https://api.fwc.gov.au/api/v1/awards/${awardId}/pay-rates?classification_fixed_id=${classificationFixedId}`;
     console.log('Fetching pay rates from FWC API:', fwcUrl);
     
     const fwcResponse = await fetch(fwcUrl, {
@@ -60,28 +59,38 @@ serve(async (req) => {
     // Extract the base rate from the pay rates response
     let baseRate = null;
     if (data.results && data.results.length > 0) {
+      // Filter for most recent operative rates (where operative_to is null or in future)
+      const activeRates = data.results.filter((rate: any) => 
+        !rate.operative_to || new Date(rate.operative_to) >= new Date()
+      );
+      
+      // Sort by operative_from descending to get most recent
+      const sortedRates = activeRates.sort((a: any, b: any) => 
+        new Date(b.operative_from).getTime() - new Date(a.operative_from).getTime()
+      );
+      
       // Look for hourly calculated_rate first (this is the actual hourly rate)
-      for (const rate of data.results) {
+      for (const rate of sortedRates) {
         // Prioritize calculated_rate with Hourly type
         if (rate.calculated_rate_type === 'Hourly' && rate.calculated_rate && parseFloat(rate.calculated_rate) > 0) {
           baseRate = parseFloat(rate.calculated_rate);
-          console.log('Found hourly calculated_rate:', baseRate);
+          console.log('Found hourly calculated_rate:', baseRate, 'operative from:', rate.operative_from);
           break;
         }
         // If base_rate is hourly, use it
         if (rate.base_rate_type === 'Hourly' && rate.base_rate && parseFloat(rate.base_rate) > 0) {
           baseRate = parseFloat(rate.base_rate);
-          console.log('Found hourly base_rate:', baseRate);
+          console.log('Found hourly base_rate:', baseRate, 'operative from:', rate.operative_from);
           break;
         }
       }
       
       // If we still don't have a rate and found a weekly rate, convert it
       if (!baseRate) {
-        for (const rate of data.results) {
+        for (const rate of sortedRates) {
           if (rate.base_rate_type === 'Weekly' && rate.base_rate && parseFloat(rate.base_rate) > 0) {
             baseRate = parseFloat(rate.base_rate) / 38; // Standard 38-hour week
-            console.log('Converted weekly base_rate to hourly:', baseRate);
+            console.log('Converted weekly base_rate to hourly:', baseRate, 'operative from:', rate.operative_from);
             break;
           }
         }
