@@ -25,6 +25,42 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
     }
   }, [classification, awardId]);
 
+  // Filter allowances based on classification keywords
+  const filterAllowancesByClassification = (allowancesList: any[]) => {
+    if (!classification || !allowancesList || allowancesList.length === 0) return allowancesList;
+
+    const classificationText = `${classification.classification || ''} ${classification.parent_classification_name || ''} ${classification.clause_description || ''}`.toLowerCase();
+    
+    // Extract role keywords from classification
+    const roleKeywords = [
+      'operator', 'foreman', 'supervisor', 'director', 'manager', 'driver',
+      'labourer', 'tradesperson', 'apprentice', 'cook', 'chef', 'teacher',
+      'assistant', 'coordinator', 'leading hand', 'plant', 'machinery', 'forklift',
+      'excavator', 'equipment'
+    ];
+
+    const matchedRoles = roleKeywords.filter(keyword => classificationText.includes(keyword));
+    
+    if (matchedRoles.length === 0) return allowancesList; // Show all if no specific role identified
+
+    // Filter allowances that match the role keywords
+    return allowancesList.filter(allowance => {
+      const allowanceText = `${allowance.allowance_type_description || ''} ${allowance.allowance_description || ''}`.toLowerCase();
+      
+      // Show allowance if it matches any of the role keywords
+      return matchedRoles.some(role => allowanceText.includes(role)) ||
+             // Always show common allowances that apply to most roles
+             allowanceText.includes('meal') ||
+             allowanceText.includes('travel') ||
+             allowanceText.includes('vehicle') ||
+             allowanceText.includes('tool') ||
+             allowanceText.includes('uniform') ||
+             allowanceText.includes('first aid') ||
+             allowanceText.includes('laundry') ||
+             allowanceText.includes('clothing');
+    });
+  };
+
   const fetchRateData = async () => {
     setLoading(true);
     try {
@@ -83,6 +119,9 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
 
   const casualLoading = employmentType === "Casual" ? 0.25 : 0;
   const displayRate = baseRate ? baseRate * (1 + casualLoading) : null;
+  
+  // Filter allowances based on classification
+  const filteredAllowances = filterAllowancesByClassification(allowances?.results || []);
 
   return (
     <div className="space-y-4">
@@ -173,13 +212,18 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
             <Gift className="w-5 h-5" />
             <CardTitle>Allowances</CardTitle>
           </div>
-          <CardDescription>Additional payments you may be entitled to</CardDescription>
+          <CardDescription>
+            {filteredAllowances.length < (allowances?.results?.length || 0)
+              ? `Allowances relevant to your role (${filteredAllowances.length} of ${allowances?.results?.length || 0} total)`
+              : "Additional payments you may be entitled to"
+            }
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {allowances?.results && allowances.results.length > 0 ? (
+          {filteredAllowances.length > 0 ? (
             <Collapsible open={showAllAllowances} onOpenChange={setShowAllAllowances}>
               <div className="space-y-2">
-                {(showAllAllowances ? allowances.results : allowances.results.slice(0, 8)).map((allowance: any, idx: number) => (
+                {(showAllAllowances ? filteredAllowances : filteredAllowances.slice(0, 8)).map((allowance: any, idx: number) => (
                   <div key={idx} className="bg-muted/30 rounded-md p-3">
                     <div className="font-medium text-sm mb-1">
                       {allowance.allowance_type_description}
@@ -192,17 +236,17 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
                 ))}
               </div>
               
-              {allowances.results.length > 8 && (
+              {filteredAllowances.length > 8 && (
                 <CollapsibleTrigger asChild>
                   <Button variant="ghost" size="sm" className="w-full mt-3">
-                    {showAllAllowances ? "Show Less" : `Show All ${allowances.results.length} Allowances`}
+                    {showAllAllowances ? "Show Less" : `Show All ${filteredAllowances.length} Allowances`}
                     <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showAllAllowances ? 'rotate-180' : ''}`} />
                   </Button>
                 </CollapsibleTrigger>
               )}
             </Collapsible>
           ) : (
-            <p className="text-sm text-muted-foreground">No specific allowances found</p>
+            <p className="text-sm text-muted-foreground">No specific allowances found for your role</p>
           )}
         </CardContent>
       </Card>

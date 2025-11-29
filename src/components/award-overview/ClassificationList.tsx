@@ -60,10 +60,19 @@ export const ClassificationList = ({
       // Check if search term matches any keyword category
       const matchedKeywords: string[] = [];
       Object.entries(jobTitleKeywords).forEach(([key, keywords]) => {
-        if (keywords.some(keyword => search.includes(keyword.toLowerCase()))) {
+        // If the search term matches the key OR any of the keywords
+        if (key.toLowerCase().includes(search) || search.includes(key.toLowerCase())) {
           matchedKeywords.push(...keywords);
         }
+        keywords.forEach(keyword => {
+          if (search.includes(keyword.toLowerCase()) || keyword.toLowerCase().includes(search)) {
+            matchedKeywords.push(...keywords);
+          }
+        });
       });
+
+      // Remove duplicates from matched keywords
+      const uniqueKeywords = [...new Set(matchedKeywords)];
 
       filtered = filtered.filter(c => {
         const classification = c.classification?.toLowerCase() || '';
@@ -74,8 +83,8 @@ export const ClassificationList = ({
         // Direct match
         if (combined.includes(search)) return true;
         
-        // Keyword match
-        if (matchedKeywords.some(keyword => combined.includes(keyword.toLowerCase()))) {
+        // Keyword match - check if any matched keyword appears in the classification
+        if (uniqueKeywords.length > 0 && uniqueKeywords.some(keyword => combined.includes(keyword.toLowerCase()))) {
           return true;
         }
         
@@ -309,13 +318,13 @@ export const ClassificationList = ({
                   )}
                 </div>
                 <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2">
-                  {filteredClassifications.map((classification) => {
+                  {filteredClassifications.map((classification, index) => {
                     const keywords = getKeywords(classification);
                     const levelBadge = getLevelBadge(classification);
                     
                     return (
                       <Button
-                        key={classification.classification_fixed_id}
+                        key={`${classification.classification_fixed_id}-${index}`}
                         variant={
                           selectedClassification?.classification_fixed_id === 
                           classification.classification_fixed_id 
