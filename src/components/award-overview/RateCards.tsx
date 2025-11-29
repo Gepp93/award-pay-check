@@ -21,9 +21,15 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
 
   useEffect(() => {
     if (classification) {
+      console.log('RateCards: Classification changed, fetching data for:', classification.classification_level);
       fetchRateData();
+    } else {
+      // Reset state when no classification
+      setBaseRate(null);
+      setPenalties(null);
+      setAllowances(null);
     }
-  }, [classification, awardId]);
+  }, [classification?.classification_fixed_id, awardId]);
 
   // Filter allowances based on classification keywords
   const filterAllowancesByClassification = (allowancesList: any[]) => {
@@ -63,6 +69,11 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
 
   const fetchRateData = async () => {
     setLoading(true);
+    // Reset previous data
+    setBaseRate(null);
+    setPenalties(null);
+    setAllowances(null);
+    
     try {
       // Fetch base rate
       const { data: rateData } = await supabase.functions.invoke('get-pay-rates', {
@@ -72,6 +83,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
         },
       });
 
+      console.log('RateCards: Base rate response:', rateData?.baseRate);
       if (rateData?.baseRate) {
         setBaseRate(rateData.baseRate);
       }
@@ -81,6 +93,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
         body: { awardId },
       });
 
+      console.log('RateCards: Penalties response:', penaltyData?.results?.length || 0);
       setPenalties(penaltyData);
 
       // Fetch allowances
@@ -88,6 +101,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
         body: { awardId },
       });
 
+      console.log('RateCards: Allowances response:', allowanceData?.allowances?.length || 0);
       setAllowances(allowanceData);
 
     } catch (error) {
@@ -125,6 +139,24 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
 
   return (
     <div className="space-y-4">
+      {/* Selected Classification Header */}
+      <Card className="bg-primary/5">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-3">
+            <div className="bg-primary rounded-full p-2 flex-shrink-0">
+              <DollarSign className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-muted-foreground mb-1">Selected Classification</p>
+              <p className="text-lg font-semibold break-words">{classification.classification_level}</p>
+              {classification.classification && classification.classification !== classification.classification_level && (
+                <p className="text-sm text-muted-foreground mt-1 break-words">{classification.classification}</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
       {/* Base Rate Card */}
       <Card>
         <CardHeader>
