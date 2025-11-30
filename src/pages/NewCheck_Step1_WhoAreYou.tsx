@@ -21,6 +21,7 @@ export default function NewCheck_Step1_WhoAreYou() {
   const [selectedWorkArea, setSelectedWorkArea] = useState("");
   const [selectedClassification, setSelectedClassification] = useState("");
   const [employmentType, setEmploymentType] = useState("Full-time");
+  const [knowsClassification, setKnowsClassification] = useState<'yes' | 'no'>('yes');
 
   useEffect(() => {
     loadAllAwards();
@@ -131,7 +132,8 @@ export default function NewCheck_Step1_WhoAreYou() {
   });
 
   const handleNext = () => {
-    if (!selectedAward || !selectedClassification || !employmentType) {
+    // Validate based on whether user knows classification
+    if (!selectedAward || !employmentType) {
       toast({
         title: "Missing Information",
         description: "Please complete all fields",
@@ -140,11 +142,22 @@ export default function NewCheck_Step1_WhoAreYou() {
       return;
     }
 
+    if (knowsClassification === 'yes' && !selectedClassification) {
+      toast({
+        title: "Missing Information",
+        description: "Please select your job classification",
+        variant: "destructive",
+      });
+      return;
+    }
+
     navigate("/new-check-step-2", {
       state: {
         awardCode: selectedAward,
-        classificationId: selectedClassification,
+        classificationId: knowsClassification === 'yes' ? selectedClassification : null,
         employmentType,
+        knowsClassification,
+        workArea: selectedWorkArea,
       },
     });
   };
@@ -209,30 +222,57 @@ export default function NewCheck_Step1_WhoAreYou() {
               </div>
 
               {selectedWorkArea && (
-                <div className="space-y-2">
-                  <Label>Job Classification / Level</Label>
-                  {filteredClassifications.length > 0 ? (
-                    <Select value={selectedClassification} onValueChange={setSelectedClassification}>
-                      <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Select your classification" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border border-border max-h-[300px] z-50">
-                        {filteredClassifications.map((cls: any) => (
-                          <SelectItem key={cls.classification_fixed_id} value={cls.classification_fixed_id.toString()}>
-                            <div className="flex flex-col">
-                              <span>{cls.classification}</span>
-                              {cls.parent_classification_name && (
-                                <span className="text-xs text-muted-foreground">{cls.parent_classification_name}</span>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No classifications available for this work area</p>
+                <>
+                  <div className="space-y-2">
+                    <Label>Do you know your exact job classification?</Label>
+                    <RadioGroup value={knowsClassification} onValueChange={(value: 'yes' | 'no') => {
+                      setKnowsClassification(value);
+                      if (value === 'no') {
+                        setSelectedClassification("");
+                      }
+                    }}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes" id="knows-yes" />
+                        <Label htmlFor="knows-yes" className="font-normal cursor-pointer">
+                          Yes, I know it
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no" id="knows-no" />
+                        <Label htmlFor="knows-no" className="font-normal cursor-pointer">
+                          No, I'm not sure
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {knowsClassification === 'yes' && (
+                    <div className="space-y-2">
+                      <Label>Job Classification / Level</Label>
+                      {filteredClassifications.length > 0 ? (
+                        <Select value={selectedClassification} onValueChange={setSelectedClassification}>
+                          <SelectTrigger className="bg-background">
+                            <SelectValue placeholder="Select your classification" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border border-border max-h-[300px] z-50">
+                            {filteredClassifications.map((cls: any) => (
+                              <SelectItem key={cls.classification_fixed_id} value={cls.classification_fixed_id.toString()}>
+                                <div className="flex flex-col">
+                                  <span>{cls.classification}</span>
+                                  {cls.parent_classification_name && (
+                                    <span className="text-xs text-muted-foreground">{cls.parent_classification_name}</span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No classifications available for this work area</p>
+                      )}
+                    </div>
                   )}
-                </div>
+                </>
               )}
             </>
           )}

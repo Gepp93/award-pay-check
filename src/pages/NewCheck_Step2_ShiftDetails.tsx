@@ -17,7 +17,7 @@ export default function NewCheck_Step2_ShiftDetails() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { awardCode, classificationId, employmentType } = location.state || {};
+  const { awardCode, classificationId, employmentType, knowsClassification, workArea } = location.state || {};
 
   const [date, setDate] = useState<Date>();
   const [startTime, setStartTime] = useState("");
@@ -30,7 +30,7 @@ export default function NewCheck_Step2_ShiftDetails() {
   const [actualPaid, setActualPaid] = useState("");
   const [loading, setLoading] = useState(false);
 
-  if (!awardCode || !classificationId || !employmentType) {
+  if (!awardCode || !employmentType) {
     navigate("/new-check-step-1");
     return null;
   }
@@ -52,6 +52,7 @@ export default function NewCheck_Step2_ShiftDetails() {
           awardCode,
           classificationId,
           employmentType,
+          workArea,
           date: format(date, "yyyy-MM-dd"),
           startTime,
           finishTime,

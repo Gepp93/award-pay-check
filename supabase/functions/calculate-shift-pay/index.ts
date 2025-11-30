@@ -6,6 +6,297 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to calculate pay for a single classification
+async function calculateSingleClassification(params: any) {
+  const {
+    awardCode,
+    classificationId,
+    employmentType,
+    startTime,
+    finishTime,
+    breakMinutes,
+    workedWeekend,
+    workedPublicHoliday,
+    droveOwnCar,
+    workedOver10Hours,
+    actualPaid,
+    fwcApiKey,
+  } = params;
+
+  // Fetch pay rates
+  const ratesResponse = await fetch(
+    `https://api.fwc.gov.au/api/v1/awards/${awardCode}/classifications/${classificationId}/pay-rates`,
+    {
+      headers: {
+        'Ocp-Apim-Subscription-Key': fwcApiKey,
+        'Accept': 'application/json',
+      },
+    }
+  );
+
+  if (!ratesResponse.ok) {
+    return null;
+  }
+
+  const ratesData = await ratesResponse.json();
+
+  // Find base hourly rate
+  let baseRate = 0;
+  if (ratesData.results && ratesData.results.length > 0) {
+    const sortedRates = ratesData.results.sort((a: any, b: any) => 
+      new Date(b.operative_from).getTime() - new Date(a.operative_from).getTime()
+    );
+
+    for (const rate of sortedRates) {
+      if (rate.calculated_rate && rate.pay_rate_type === 'Hourly') {
+        baseRate = parseFloat(rate.calculated_rate);
+        break;
+      }
+      if (rate.base_rate) {
+        if (rate.pay_rate_type === 'Hourly') {
+          baseRate = parseFloat(rate.base_rate);
+          break;
+        } else if (rate.pay_rate_type === 'Weekly') {
+          baseRate = parseFloat(rate.base_rate) / 38;
+          break;
+        }
+      }
+    }
+  }
+
+  if (baseRate === 0) {
+    return null;
+  }
+
+  // Calculate hours worked
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  const [finishHour, finishMinute] = finishTime.split(':').map(Number);
+  const startMinutes = startHour * 60 + startMinute;
+  const finishMinutes = finishHour * 60 + finishMinute;
+  const totalMinutes = finishMinutes - startMinutes - breakMinutes;
+  const totalHours = totalMinutes / 60;
+
+  // Calculate base pay
+  let basePay = totalHours * baseRate;
+  let overtimePay = 0;
+  let weekendPay = 0;
+  let publicHolidayPay = 0;
+  let allowances = 0;
+
+  // Apply casual loading if applicable
+  if (employmentType === 'Casual') {
+    const casualLoading = basePay * 0.25;
+    basePay += casualLoading;
+  }
+
+  // Check for overtime (simple rule: over 8 hours)
+  if (totalHours > 8) {
+    const overtimeHours = totalHours - 8;
+    overtimePay = overtimeHours * baseRate * 0.5;
+  }
+
+  // Weekend penalty (50% extra)
+  if (workedWeekend) {
+    weekendPay = totalHours * baseRate * 0.5;
+  }
+
+  // Public holiday (double time and a half)
+  if (workedPublicHoliday) {
+    publicHolidayPay = totalHours * baseRate * 1.5;
+  }
+
+  // Allowances
+  if (droveOwnCar) {
+    allowances += 20;
+  }
+
+  if (workedOver10Hours) {
+    allowances += 15;
+  }
+
+  const awardPayTotal = basePay + overtimePay + weekendPay + publicHolidayPay + allowances;
+  const possibleUnderpayment = Math.max(0, awardPayTotal - actualPaid);
+
+  return {
+    baseRate,
+    awardPayTotal,
+    possibleUnderpayment,
+    breakdown: {
+      baseHours: totalHours,
+      basePay,
+      overtimePay,
+      weekendPay,
+      publicHolidayPay,
+      allowances,
+    },
+  };
+}
+
+// Handler for when user doesn't know their classification
+async function handleUnsureClassification(params: any) {
+  const {
+    awardCode,
+    employmentType,
+    workArea,
+    startTime,
+    finishTime,
+    breakMinutes,
+    workedWeekend,
+    workedPublicHoliday,
+    droveOwnCar,
+    workedOver10Hours,
+    actualPaid,
+    fwcApiKey,
+    corsHeaders,
+  } = params;
+
+  console.log('User is unsure about classification, fetching all classifications for award:', awardCode);
+
+  // Fetch all classifications for the award
+  let allClassifications: any[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore && page <= 5) {
+    const classificationsResponse = await fetch(
+      `https://api.fwc.gov.au/api/v1/awards/${awardCode}/classifications?limit=100&offset=${(page - 1) * 100}`,
+      {
+        headers: {
+          'Ocp-Apim-Subscription-Key': fwcApiKey,
+          'Accept': 'application/json',
+        },
+      }
+    );
+
+    if (!classificationsResponse.ok) {
+      throw new Error('Failed to fetch classifications');
+    }
+
+    const classificationsData = await classificationsResponse.json();
+    const results = classificationsData.results || [];
+    allClassifications = allClassifications.concat(results);
+    
+    hasMore = results.length === 100;
+    page++;
+  }
+
+  console.log(`Fetched ${allClassifications.length} classifications`);
+
+  // Filter classifications
+  const filteredClassifications = allClassifications.filter((cls: any) => {
+    // Filter by work area if provided
+    if (workArea && cls.clause_description !== workArea) {
+      return false;
+    }
+
+    // Exclude trainee classifications unless work area is trainee-related
+    const isTraineeWorkArea = workArea?.toLowerCase().includes('trainee') || 
+                               workArea?.toLowerCase().includes('school');
+    
+    if (!isTraineeWorkArea) {
+      const classificationName = cls.classification?.toLowerCase() || '';
+      const isTraineeClassification = 
+        classificationName.includes('school leaver') ||
+        classificationName.includes('plus 1 year') ||
+        classificationName.includes('plus 2 year') ||
+        classificationName.includes('plus 3 year') ||
+        classificationName.includes('trainee');
+      
+      if (isTraineeClassification) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  console.log(`After filtering: ${filteredClassifications.length} classifications`);
+
+  // Calculate for each classification (limit to first 30 to avoid timeout)
+  const classificationsToCheck = filteredClassifications.slice(0, 30);
+  const results: any[] = [];
+
+  for (const cls of classificationsToCheck) {
+    try {
+      const result = await calculateSingleClassification({
+        awardCode,
+        classificationId: cls.classification_fixed_id,
+        employmentType,
+        startTime,
+        finishTime,
+        breakMinutes,
+        workedWeekend,
+        workedPublicHoliday,
+        droveOwnCar,
+        workedOver10Hours,
+        actualPaid,
+        fwcApiKey,
+      });
+
+      if (result) {
+        results.push({
+          classificationId: cls.classification_fixed_id,
+          classificationName: cls.classification,
+          workArea: cls.clause_description,
+          ...result,
+        });
+      }
+    } catch (error) {
+      console.error(`Error calculating for classification ${cls.classification_fixed_id}:`, error);
+    }
+  }
+
+  console.log(`Successfully calculated ${results.length} classifications`);
+
+  if (results.length === 0) {
+    throw new Error('Could not calculate pay for any classification');
+  }
+
+  // Sort by possible underpayment (highest first)
+  results.sort((a, b) => b.possibleUnderpayment - a.possibleUnderpayment);
+
+  // Calculate min and max underpayment
+  const underpayments = results.map(r => r.possibleUnderpayment);
+  const overallMinUnderpayment = Math.min(...underpayments);
+  const overallMaxUnderpayment = Math.max(...underpayments);
+
+  // Determine common entitlements based on shift conditions
+  const commonEntitlements: string[] = [];
+  if (workedWeekend) commonEntitlements.push('Weekend penalty rates');
+  if (workedPublicHoliday) commonEntitlements.push('Public holiday penalty rates');
+  if (droveOwnCar) commonEntitlements.push('Motor vehicle allowance');
+  if (workedOver10Hours) commonEntitlements.push('Meal allowance (worked over 10 hours)');
+  
+  // Check for overtime
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  const [finishHour, finishMinute] = finishTime.split(':').map(Number);
+  const totalMinutes = (finishHour * 60 + finishMinute) - (startHour * 60 + startMinute) - breakMinutes;
+  const totalHours = totalMinutes / 60;
+  if (totalHours > 8) commonEntitlements.push('Overtime (worked over 8 hours)');
+  if (employmentType === 'Casual') commonEntitlements.push('Casual loading (25%)');
+
+  return new Response(
+    JSON.stringify({
+      mode: 'unsure',
+      overallMinUnderpayment,
+      overallMaxUnderpayment,
+      likelyClassifications: results.slice(0, 10).map(r => ({
+        classificationId: r.classificationId,
+        classificationName: r.classificationName,
+        workArea: r.workArea,
+        awardPayTotal: r.awardPayTotal,
+        possibleUnderpayment: r.possibleUnderpayment,
+      })),
+      commonEntitlements,
+      breakdown: {
+        totalClassificationsAnalyzed: results.length,
+        totalClassificationsAvailable: filteredClassifications.length,
+      },
+    }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -16,6 +307,7 @@ serve(async (req) => {
       awardCode,
       classificationId,
       employmentType,
+      workArea,
       date,
       startTime,
       finishTime,
@@ -27,7 +319,27 @@ serve(async (req) => {
       actualPaid,
     } = await req.json();
 
-    console.log('Calculating shift pay for:', { awardCode, classificationId, employmentType, date });
+    console.log('Calculating shift pay for:', { awardCode, classificationId, employmentType, date, workArea });
+
+    // If classificationId is null, user doesn't know their classification
+    if (classificationId === null) {
+      return await handleUnsureClassification({
+        awardCode,
+        employmentType,
+        workArea,
+        date,
+        startTime,
+        finishTime,
+        breakMinutes,
+        workedWeekend,
+        workedPublicHoliday,
+        droveOwnCar,
+        workedOver10Hours,
+        actualPaid,
+        fwcApiKey: Deno.env.get('FWC_API_KEY'),
+        corsHeaders,
+      });
+    }
 
     const fwcApiKey = Deno.env.get('FWC_API_KEY');
     if (!fwcApiKey) {
