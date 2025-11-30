@@ -1,17 +1,14 @@
-import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
 
 export default function NewCheck_Step3_Result() {
   const navigate = useNavigate();
   const location = useLocation();
   const { result, shiftDetails } = location.state || {};
-  const [showBreakdown, setShowBreakdown] = useState(false);
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -107,14 +104,69 @@ export default function NewCheck_Step3_Result() {
                 </Alert>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Should have been paid</p>
-                  <p className="text-2xl font-bold">${result.awardPayTotal?.toFixed(2) || "0.00"}</p>
+              {result.breakdown?.advancedPayslip && (
+                <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                  <div className="font-semibold text-sm">What you were paid (your payslip):</div>
+                  {result.breakdown.advancedPayslip.hoursAtBase > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Base hours ({result.breakdown.advancedPayslip.hoursAtBase} hrs × ${result.breakdown.advancedPayslip.payslipBaseRate}/hr)</span>
+                      <span>${(result.breakdown.advancedPayslip.hoursAtBase * result.breakdown.advancedPayslip.payslipBaseRate).toFixed(2)}</span>
+                    </div>
+                  )}
+                  {result.breakdown.advancedPayslip.hoursAt150 > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Time & half ({result.breakdown.advancedPayslip.hoursAt150} hrs × ${(result.breakdown.advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
+                      <span>${(result.breakdown.advancedPayslip.hoursAt150 * result.breakdown.advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
+                    </div>
+                  )}
+                  {result.breakdown.advancedPayslip.hoursAt200 > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span>Double time ({result.breakdown.advancedPayslip.hoursAt200} hrs × ${(result.breakdown.advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
+                      <span>${(result.breakdown.advancedPayslip.hoursAt200 * result.breakdown.advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="border-t pt-2 flex justify-between font-bold text-base">
+                    <span>Total you were paid</span>
+                    <span>${parseFloat(shiftDetails.actualPaid).toFixed(2)}</span>
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">You were paid</p>
-                  <p className="text-2xl font-bold">${parseFloat(shiftDetails.actualPaid).toFixed(2)}</p>
+              )}
+
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+                <div className="font-semibold text-sm">What the award says you should earn:</div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  Based on ${result.baseRate?.toFixed(2)}/hr award rate
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span>Regular hours ({result.breakdown?.regularHours?.toFixed(2) || "0"} hrs × ${result.baseRate?.toFixed(2)}/hr)</span>
+                  <span>${result.breakdown?.basePay?.toFixed(2) || "0.00"}</span>
+                </div>
+                
+                {result.breakdown?.overtimeAt150Hours > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Overtime at 1.5x ({result.breakdown.overtimeAt150Hours.toFixed(2)} hrs × ${(result.baseRate * 1.5)?.toFixed(2)}/hr)</span>
+                    <span>${(result.breakdown.overtimeAt150Hours * result.baseRate * 1.5).toFixed(2)}</span>
+                  </div>
+                )}
+                
+                {result.breakdown?.overtimeAt200Hours > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Overtime at 2x ({result.breakdown.overtimeAt200Hours.toFixed(2)} hrs × ${(result.baseRate * 2)?.toFixed(2)}/hr)</span>
+                    <span>${(result.breakdown.overtimeAt200Hours * result.baseRate * 2).toFixed(2)}</span>
+                  </div>
+                )}
+                
+                {result.breakdown?.allowances > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Meal allowance (worked over 10 hours)</span>
+                    <span>${result.breakdown.allowances.toFixed(2)}</span>
+                  </div>
+                )}
+                
+                <div className="border-t pt-2 flex justify-between font-bold text-base">
+                  <span>Total award pay</span>
+                  <span>${result.awardPayTotal?.toFixed(2) || "0.00"}</span>
                 </div>
               </div>
             </>
@@ -133,112 +185,13 @@ export default function NewCheck_Step3_Result() {
             </div>
           )}
 
-          {!isUnsureMode && (
-            <Collapsible open={showBreakdown} onOpenChange={setShowBreakdown}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full">
-                {showBreakdown ? (
-                  <>
-                    <ChevronUp className="mr-2 h-4 w-4" />
-                    Hide detailed breakdown
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="mr-2 h-4 w-4" />
-                    View detailed breakdown
-                  </>
-                )}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-4 space-y-3">
-              {result.rateWarning && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription className="text-sm">
-                    {result.rateWarning}
-                  </AlertDescription>
-                </Alert>
-              )}
-              {result.breakdown && (
-                <div className="rounded-lg border p-4 space-y-3">
-                  <div className="text-xs text-muted-foreground mb-2">
-                    Award calculation based on ${result.baseRate?.toFixed(2)}/hr
-                  </div>
-                  
-                  <div className="flex justify-between text-sm">
-                    <span>Regular hours ({result.breakdown.regularHours?.toFixed(2) || "0"} hrs × ${result.baseRate?.toFixed(2)}/hr)</span>
-                    <span>${result.breakdown.basePay?.toFixed(2) || "0.00"}</span>
-                  </div>
-                  
-                  {result.breakdown.overtimeAt150Hours > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span>Overtime at 1.5x ({result.breakdown.overtimeAt150Hours.toFixed(2)} hrs × ${(result.baseRate * 1.5)?.toFixed(2)}/hr)</span>
-                      <span>${(result.breakdown.overtimeAt150Hours * result.baseRate * 1.5).toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  {result.breakdown.overtimeAt200Hours > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span>Overtime at 2x ({result.breakdown.overtimeAt200Hours.toFixed(2)} hrs × ${(result.baseRate * 2)?.toFixed(2)}/hr)</span>
-                      <span>${(result.breakdown.overtimeAt200Hours * result.baseRate * 2).toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  {result.breakdown.weekendPay > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span>Weekend penalty (50%)</span>
-                      <span>${result.breakdown.weekendPay.toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  {result.breakdown.publicHolidayPay > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span>Public holiday penalty (2.5x)</span>
-                      <span>${result.breakdown.publicHolidayPay.toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  {result.breakdown.allowances > 0 && (
-                    <div className="flex justify-between text-sm">
-                      <span>Allowances</span>
-                      <span>${result.breakdown.allowances.toFixed(2)}</span>
-                    </div>
-                  )}
-                  
-                  <div className="border-t pt-2 flex justify-between font-semibold">
-                    <span>Total award pay</span>
-                    <span>${result.awardPayTotal?.toFixed(2) || "0.00"}</span>
-                  </div>
-                  
-                  {result.breakdown.advancedPayslip?.payslipBaseRate && (
-                    <>
-                      <div className="border-t pt-3 mt-3">
-                        <div className="text-xs font-semibold text-muted-foreground mb-2">Your payslip breakdown:</div>
-                        {result.breakdown.advancedPayslip.hoursAtBase > 0 && (
-                          <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>Base hours ({result.breakdown.advancedPayslip.hoursAtBase} hrs × ${result.breakdown.advancedPayslip.payslipBaseRate}/hr)</span>
-                            <span>${(result.breakdown.advancedPayslip.hoursAtBase * result.breakdown.advancedPayslip.payslipBaseRate).toFixed(2)}</span>
-                          </div>
-                        )}
-                        {result.breakdown.advancedPayslip.hoursAt150 > 0 && (
-                          <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>Time & half ({result.breakdown.advancedPayslip.hoursAt150} hrs × ${(result.breakdown.advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
-                            <span>${(result.breakdown.advancedPayslip.hoursAt150 * result.breakdown.advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
-                          </div>
-                        )}
-                        {result.breakdown.advancedPayslip.hoursAt200 > 0 && (
-                          <div className="flex justify-between text-sm text-muted-foreground">
-                            <span>Double time ({result.breakdown.advancedPayslip.hoursAt200} hrs × ${(result.breakdown.advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
-                            <span>${(result.breakdown.advancedPayslip.hoursAt200 * result.breakdown.advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </CollapsibleContent>
-            </Collapsible>
+          {!isUnsureMode && result.rateWarning && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                {result.rateWarning}
+              </AlertDescription>
+            </Alert>
           )}
 
           <div className="flex gap-3">
