@@ -8,7 +8,7 @@ import { NavBar } from "@/components/NavBar";
 export default function NewCheck_Step3_Result() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { result, shiftDetails } = location.state || {};
+  const { result, shiftDetails, advancedPayslip } = location.state || {};
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -29,6 +29,34 @@ export default function NewCheck_Step3_Result() {
           <CardDescription>Here's what we found</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {advancedPayslip && (
+            <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
+              <div className="font-bold text-base">What you were paid (from your payslip):</div>
+              {advancedPayslip.hoursAtBase > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Base hours ({advancedPayslip.hoursAtBase} hrs × ${advancedPayslip.payslipBaseRate}/hr)</span>
+                  <span className="font-semibold">${(advancedPayslip.hoursAtBase * advancedPayslip.payslipBaseRate).toFixed(2)}</span>
+                </div>
+              )}
+              {advancedPayslip.hoursAt150 > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Time & half ({advancedPayslip.hoursAt150} hrs × ${(advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
+                  <span className="font-semibold">${(advancedPayslip.hoursAt150 * advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
+                </div>
+              )}
+              {advancedPayslip.hoursAt200 > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Double time ({advancedPayslip.hoursAt200} hrs × ${(advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
+                  <span className="font-semibold">${(advancedPayslip.hoursAt200 * advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
+                </div>
+              )}
+              <div className="border-t-2 border-primary/30 pt-2 flex justify-between font-bold text-lg">
+                <span>Total you were paid</span>
+                <span className="text-primary">${parseFloat(shiftDetails.actualPaid).toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+
           {isUnsureMode ? (
             <>
               <Alert variant="destructive">
@@ -104,25 +132,25 @@ export default function NewCheck_Step3_Result() {
                 </Alert>
               )}
 
-              {result.breakdown?.advancedPayslip && (
+              {advancedPayslip && (
                 <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
                   <div className="font-semibold text-sm">What you were paid (your payslip):</div>
-                  {result.breakdown.advancedPayslip.hoursAtBase > 0 && (
+                  {advancedPayslip.hoursAtBase > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Base hours ({result.breakdown.advancedPayslip.hoursAtBase} hrs × ${result.breakdown.advancedPayslip.payslipBaseRate}/hr)</span>
-                      <span>${(result.breakdown.advancedPayslip.hoursAtBase * result.breakdown.advancedPayslip.payslipBaseRate).toFixed(2)}</span>
+                      <span>Base hours ({advancedPayslip.hoursAtBase} hrs × ${advancedPayslip.payslipBaseRate}/hr)</span>
+                      <span>${(advancedPayslip.hoursAtBase * advancedPayslip.payslipBaseRate).toFixed(2)}</span>
                     </div>
                   )}
-                  {result.breakdown.advancedPayslip.hoursAt150 > 0 && (
+                  {advancedPayslip.hoursAt150 > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Time & half ({result.breakdown.advancedPayslip.hoursAt150} hrs × ${(result.breakdown.advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
-                      <span>${(result.breakdown.advancedPayslip.hoursAt150 * result.breakdown.advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
+                      <span>Time & half ({advancedPayslip.hoursAt150} hrs × ${(advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
+                      <span>${(advancedPayslip.hoursAt150 * advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
                     </div>
                   )}
-                  {result.breakdown.advancedPayslip.hoursAt200 > 0 && (
+                  {advancedPayslip.hoursAt200 > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Double time ({result.breakdown.advancedPayslip.hoursAt200} hrs × ${(result.breakdown.advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
-                      <span>${(result.breakdown.advancedPayslip.hoursAt200 * result.breakdown.advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
+                      <span>Double time ({advancedPayslip.hoursAt200} hrs × ${(advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
+                      <span>${(advancedPayslip.hoursAt200 * advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
                     </div>
                   )}
                   <div className="border-t pt-2 flex justify-between font-bold text-base">
