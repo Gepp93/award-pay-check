@@ -83,9 +83,13 @@ export default function NewCheck_Step2_ShiftDetails() {
         },
       });
     } catch (error) {
+      console.error('Calculation error:', error);
+      const errorMessage = error?.message || 'Failed to calculate pay. Please try again.';
+      const errorDetails = (error as any)?.details;
+      
       toast({
         title: "Error",
-        description: "Failed to calculate pay. Please try again.",
+        description: errorDetails || errorMessage,
         variant: "destructive",
       });
     } finally {

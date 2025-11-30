@@ -35,10 +35,12 @@ async function calculateSingleClassification(params: any) {
   );
 
   if (!ratesResponse.ok) {
+    console.log(`Failed to fetch rates for classification ${classificationId}: ${ratesResponse.status}`);
     return null;
   }
 
   const ratesData = await ratesResponse.json();
+  console.log(`Fetched rates for classification ${classificationId}, results count:`, ratesData.results?.length || 0);
 
   // Find base hourly rate
   let baseRate = 0;
@@ -65,8 +67,11 @@ async function calculateSingleClassification(params: any) {
   }
 
   if (baseRate === 0) {
+    console.log(`No valid base rate found for classification ${classificationId}`);
     return null;
   }
+
+  console.log(`Successfully calculated for classification ${classificationId}, base rate: $${baseRate}`);
 
   // Calculate hours worked
   const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -216,6 +221,8 @@ async function handleUnsureClassification(params: any) {
   const classificationsToCheck = filteredClassifications.slice(0, 30);
   const results: any[] = [];
 
+  console.log(`Attempting to calculate pay for ${classificationsToCheck.length} classifications...`);
+
   for (const cls of classificationsToCheck) {
     try {
       const result = await calculateSingleClassification({
@@ -246,10 +253,19 @@ async function handleUnsureClassification(params: any) {
     }
   }
 
-  console.log(`Successfully calculated ${results.length} classifications`);
+  console.log(`Successfully calculated ${results.length} out of ${classificationsToCheck.length} classifications`);
 
   if (results.length === 0) {
-    throw new Error('Could not calculate pay for any classification');
+    // Return a helpful error with guidance
+    return new Response(
+      JSON.stringify({
+        error: 'Could not calculate pay for any classification',
+        details: 'Unable to find valid pay rates for the selected work area. This may be because the classifications in this category require additional information or have complex rate structures. Please try selecting "Yes, I know it" and choose your specific classification.',
+        classificationsChecked: classificationsToCheck.length,
+        workArea,
+      }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   // Sort by possible underpayment (highest first)
