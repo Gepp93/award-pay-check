@@ -15,6 +15,7 @@ import { CalendarIcon, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { NavBar } from "@/components/NavBar";
 
 export default function NewCheck_Step2_ShiftDetails() {
   const navigate = useNavigate();
@@ -121,8 +122,10 @@ export default function NewCheck_Step2_ShiftDetails() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Card className="w-full max-w-2xl">
+    <>
+      <NavBar />
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>Step 2: Your shift details</CardTitle>
           <CardDescription>Tell us about the shift you worked</CardDescription>
@@ -337,6 +340,7 @@ export default function NewCheck_Step2_ShiftDetails() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }

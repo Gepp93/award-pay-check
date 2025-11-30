@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { NavBar } from "@/components/NavBar";
 
 export default function NewCheck_Step1_WhoAreYou() {
   const navigate = useNavigate();
@@ -163,8 +164,10 @@ export default function NewCheck_Step1_WhoAreYou() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Card className="w-full max-w-2xl">
+    <>
+      <NavBar />
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>Step 1: Who are you?</CardTitle>
           <CardDescription>Let's identify your award and job classification</CardDescription>
@@ -306,6 +309,7 @@ export default function NewCheck_Step1_WhoAreYou() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
