@@ -89,9 +89,15 @@ async function calculateSingleClassification(params: any) {
   const totalMinutes = finishMinutes - startMinutes - breakMinutes;
   const totalHours = totalMinutes / 60;
 
-  // Calculate base pay
-  let basePay = totalHours * baseRate;
+  // Calculate base pay and overtime
+  const standardDayHours = employmentType === 'Casual' ? 8 : 7.6;
+  const regularHours = Math.min(totalHours, standardDayHours);
+  const overtimeHours = Math.max(0, totalHours - standardDayHours);
+  
+  let basePay = regularHours * baseRate;
   let overtimePay = 0;
+  let overtimeAt150Hours = 0;
+  let overtimeAt200Hours = 0;
   let weekendPay = 0;
   let publicHolidayPay = 0;
   let allowances = 0;
@@ -102,10 +108,11 @@ async function calculateSingleClassification(params: any) {
     basePay += casualLoading;
   }
 
-  // Check for overtime (simple rule: over 8 hours)
-  if (totalHours > 8) {
-    const overtimeHours = totalHours - 8;
-    overtimePay = overtimeHours * baseRate * 0.5;
+  // Calculate overtime: first 2 hours at 1.5x, rest at 2x
+  if (overtimeHours > 0) {
+    overtimeAt150Hours = Math.min(overtimeHours, 2);
+    overtimeAt200Hours = Math.max(0, overtimeHours - 2);
+    overtimePay = (overtimeAt150Hours * baseRate * 0.5) + (overtimeAt200Hours * baseRate);
   }
 
   // Weekend penalty (50% extra)
@@ -130,13 +137,32 @@ async function calculateSingleClassification(params: any) {
   const awardPayTotal = basePay + overtimePay + weekendPay + publicHolidayPay + allowances;
   const possibleUnderpayment = Math.max(0, awardPayTotal - actualPaid);
 
+  // Calculate expected pay from advanced payslip if provided
+  let calculatedActualPay = null;
+  let payslipValidation = null;
+  if (advancedPayslip?.hoursAtBase && advancedPayslip?.payslipBaseRate) {
+    calculatedActualPay = 
+      (advancedPayslip.hoursAtBase || 0) * advancedPayslip.payslipBaseRate +
+      (advancedPayslip.hoursAt150 || 0) * advancedPayslip.payslipBaseRate * 1.5 +
+      (advancedPayslip.hoursAt200 || 0) * advancedPayslip.payslipBaseRate * 2;
+    
+    if (Math.abs(calculatedActualPay - actualPaid) > 5) {
+      payslipValidation = `Your payslip breakdown adds up to $${calculatedActualPay.toFixed(2)}, but you entered $${actualPaid.toFixed(2)} as actual paid.`;
+    }
+  }
+
   return {
     baseRate,
     awardPayTotal,
     possibleUnderpayment,
+    matchScore,
+    calculatedActualPay,
+    payslipValidation,
     breakdown: {
-      baseHours: totalHours,
+      regularHours,
       basePay,
+      overtimeAt150Hours,
+      overtimeAt200Hours,
       overtimePay,
       weekendPay,
       publicHolidayPay,
@@ -309,7 +335,15 @@ async function handleUnsureClassification(params: any) {
   const [finishHour, finishMinute] = finishTime.split(':').map(Number);
   const totalMinutes = (finishHour * 60 + finishMinute) - (startHour * 60 + startMinute) - breakMinutes;
   const totalHours = totalMinutes / 60;
-  if (totalHours > 8) commonEntitlements.push('Overtime (worked over 8 hours)');
+  const standardDayHours = employmentType === 'Casual' ? 8 : 7.6;
+  if (totalHours > standardDayHours) {
+    const otHours = totalHours - standardDayHours;
+    if (otHours > 2) {
+      commonEntitlements.push(`Overtime at 1.5x (first 2 hrs) and 2x (${(otHours - 2).toFixed(1)} hrs)`);
+    } else {
+      commonEntitlements.push(`Overtime at 1.5x (${otHours.toFixed(1)} hrs)`);
+    }
+  }
   if (employmentType === 'Casual') commonEntitlements.push('Casual loading (25%)');
 
   return new Response(
@@ -437,9 +471,15 @@ serve(async (req) => {
     const totalMinutes = finishMinutes - startMinutes - breakMinutes;
     const totalHours = totalMinutes / 60;
 
-    // Calculate base pay
-    let basePay = totalHours * baseRate;
+    // Calculate base pay and overtime
+    const standardDayHours = employmentType === 'Casual' ? 8 : 7.6;
+    const regularHours = Math.min(totalHours, standardDayHours);
+    const overtimeHours = Math.max(0, totalHours - standardDayHours);
+    
+    let basePay = regularHours * baseRate;
     let overtimePay = 0;
+    let overtimeAt150Hours = 0;
+    let overtimeAt200Hours = 0;
     let weekendPay = 0;
     let publicHolidayPay = 0;
     let allowances = 0;
@@ -452,11 +492,21 @@ serve(async (req) => {
       reasons.push(`Casual loading (25%): +$${casualLoading.toFixed(2)}`);
     }
 
-    // Check for overtime (simple rule: over 8 hours)
-    if (totalHours > 8) {
-      const overtimeHours = totalHours - 8;
-      overtimePay = overtimeHours * baseRate * 0.5; // Time and a half for OT
-      reasons.push(`Overtime (${overtimeHours.toFixed(2)} hrs at 1.5x): +$${overtimePay.toFixed(2)}`);
+    // Calculate overtime: first 2 hours at 1.5x, rest at 2x
+    if (overtimeHours > 0) {
+      overtimeAt150Hours = Math.min(overtimeHours, 2);
+      overtimeAt200Hours = Math.max(0, overtimeHours - 2);
+      
+      const ot150Pay = overtimeAt150Hours * baseRate * 0.5;
+      const ot200Pay = overtimeAt200Hours * baseRate;
+      overtimePay = ot150Pay + ot200Pay;
+      
+      if (overtimeAt150Hours > 0) {
+        reasons.push(`Overtime at 1.5x (${overtimeAt150Hours.toFixed(2)} hrs): +$${ot150Pay.toFixed(2)}`);
+      }
+      if (overtimeAt200Hours > 0) {
+        reasons.push(`Overtime at 2x (${overtimeAt200Hours.toFixed(2)} hrs): +$${ot200Pay.toFixed(2)}`);
+      }
     }
 
     // Weekend penalty (50% extra)
@@ -493,18 +543,37 @@ serve(async (req) => {
       reasons.unshift('Your pay matches the minimum award requirements');
     }
 
+    // Add match score and payslip validation if advanced payslip provided
+    let matchScore = 0;
+    let rateWarning = null;
+    if (advancedPayslip?.payslipBaseRate) {
+      const rateDifference = Math.abs(baseRate - advancedPayslip.payslipBaseRate);
+      const percentageDifference = (rateDifference / advancedPayslip.payslipBaseRate) * 100;
+      matchScore = Math.max(0, 100 - percentageDifference * 2);
+      
+      if (percentageDifference > 10) {
+        rateWarning = `Your payslip shows $${advancedPayslip.payslipBaseRate}/hr, but the award rate for this classification is $${baseRate.toFixed(2)}/hr. You may be on a different classification level or enterprise agreement.`;
+      }
+    }
+
     const result = {
       awardPayTotal,
       actualPaid,
       underpayment,
+      baseRate,
+      matchScore,
+      rateWarning,
       reasons,
       breakdown: {
-        baseHours: totalHours,
+        regularHours,
         basePay,
+        overtimeAt150Hours,
+        overtimeAt200Hours,
         overtimePay,
         weekendPay,
         publicHolidayPay,
         allowances,
+        advancedPayslip: advancedPayslip || null,
       },
     };
 
