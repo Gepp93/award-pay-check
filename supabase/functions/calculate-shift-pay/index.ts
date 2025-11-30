@@ -327,21 +327,28 @@ async function handleUnsureClassification(params: any) {
   const commonEntitlements: string[] = [];
   if (workedWeekend) commonEntitlements.push('Weekend penalty rates');
   if (workedPublicHoliday) commonEntitlements.push('Public holiday penalty rates');
-  if (droveOwnCar) commonEntitlements.push('Motor vehicle allowance');
-  if (workedOver10Hours) commonEntitlements.push('Meal allowance (worked over 10 hours)');
+  if (droveOwnCar) commonEntitlements.push('Motor vehicle allowance ($20)');
+  if (workedOver10Hours) commonEntitlements.push('Meal allowance ($15)');
   
-  // Check for overtime
-  const [startHour, startMinute] = startTime.split(':').map(Number);
-  const [finishHour, finishMinute] = finishTime.split(':').map(Number);
-  const totalMinutes = (finishHour * 60 + finishMinute) - (startHour * 60 + startMinute) - breakMinutes;
-  const totalHours = totalMinutes / 60;
-  const standardDayHours = employmentType === 'Casual' ? 8 : 7.6;
-  if (totalHours > standardDayHours) {
-    const otHours = totalHours - standardDayHours;
-    if (otHours > 2) {
-      commonEntitlements.push(`Overtime at 1.5x (first 2 hrs) and 2x (${(otHours - 2).toFixed(1)} hrs)`);
-    } else {
-      commonEntitlements.push(`Overtime at 1.5x (${otHours.toFixed(1)} hrs)`);
+  // Check for overtime only if user didn't already enter overtime hours in payslip
+  const userEnteredOvertime = advancedPayslip && (
+    (advancedPayslip.hoursAt150 && advancedPayslip.hoursAt150 > 0) || 
+    (advancedPayslip.hoursAt200 && advancedPayslip.hoursAt200 > 0)
+  );
+  
+  if (!userEnteredOvertime) {
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [finishHour, finishMinute] = finishTime.split(':').map(Number);
+    const totalMinutes = (finishHour * 60 + finishMinute) - (startHour * 60 + startMinute) - breakMinutes;
+    const totalHours = totalMinutes / 60;
+    const standardDayHours = employmentType === 'Casual' ? 8 : 7.6;
+    if (totalHours > standardDayHours) {
+      const otHours = totalHours - standardDayHours;
+      if (otHours > 2) {
+        commonEntitlements.push(`Overtime at 1.5x (first 2 hrs) and 2x (${(otHours - 2).toFixed(1)} hrs)`);
+      } else {
+        commonEntitlements.push(`Overtime at 1.5x (${otHours.toFixed(1)} hrs)`);
+      }
     }
   }
   if (employmentType === 'Casual') commonEntitlements.push('Casual loading (25%)');
