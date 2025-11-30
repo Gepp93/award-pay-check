@@ -40,12 +40,6 @@ async function calculateSingleClassification(params: any) {
   }
 
   const ratesData = await ratesResponse.json();
-  console.log(`Fetched rates for classification ${classificationId}, results count:`, ratesData.results?.length || 0);
-  
-  // Log first rate structure for debugging
-  if (ratesData.results && ratesData.results.length > 0) {
-    console.log(`Sample rate structure for ${classificationId}:`, JSON.stringify(ratesData.results[0]));
-  }
 
   // Find base hourly rate
   let baseRate = 0;
@@ -55,15 +49,15 @@ async function calculateSingleClassification(params: any) {
     );
 
     for (const rate of sortedRates) {
-      if (rate.calculated_rate && rate.pay_rate_type === 'Hourly') {
+      if (rate.calculated_rate && rate.calculated_rate_type === 'Hourly') {
         baseRate = parseFloat(rate.calculated_rate);
         break;
       }
       if (rate.base_rate) {
-        if (rate.pay_rate_type === 'Hourly') {
+        if (rate.base_rate_type === 'Hourly') {
           baseRate = parseFloat(rate.base_rate);
           break;
-        } else if (rate.pay_rate_type === 'Weekly') {
+        } else if (rate.base_rate_type === 'Weekly') {
           baseRate = parseFloat(rate.base_rate) / 38;
           break;
         }
@@ -393,15 +387,15 @@ serve(async (req) => {
       );
 
       for (const rate of sortedRates) {
-        if (rate.calculated_rate && rate.pay_rate_type === 'Hourly') {
+        if (rate.calculated_rate && rate.calculated_rate_type === 'Hourly') {
           baseRate = parseFloat(rate.calculated_rate);
           break;
         }
         if (rate.base_rate) {
-          if (rate.pay_rate_type === 'Hourly') {
+          if (rate.base_rate_type === 'Hourly') {
             baseRate = parseFloat(rate.base_rate);
             break;
-          } else if (rate.pay_rate_type === 'Weekly') {
+          } else if (rate.base_rate_type === 'Weekly') {
             baseRate = parseFloat(rate.base_rate) / 38;
             break;
           }
