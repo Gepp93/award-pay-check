@@ -31,11 +31,10 @@ export default function NewCheck_Step2_ShiftDetails() {
   const [workedPublicHoliday, setWorkedPublicHoliday] = useState(false);
   const [droveOwnCar, setDroveOwnCar] = useState(false);
   const [workedOver10Hours, setWorkedOver10Hours] = useState(false);
-  const [actualPaid, setActualPaid] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Advanced payslip fields
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  // Payslip fields
+  const [payslipOpen, setPayslipOpen] = useState(true);
   const [payslipBaseRate, setPayslipBaseRate] = useState("");
   const [hoursAtBase, setHoursAtBase] = useState("");
   const [hoursAt150, setHoursAt150] = useState("");
@@ -49,10 +48,20 @@ export default function NewCheck_Step2_ShiftDetails() {
   }
 
   const handleCheckPay = async () => {
-    if (!date || !startTime || !finishTime || !actualPaid) {
+    if (!date || !startTime || !finishTime) {
       toast({
         title: "Missing Information",
-        description: "Please complete all required fields",
+        description: "Please complete date and shift times",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if payslip data is provided
+    if (!payslipBaseRate || !hoursAtBase) {
+      toast({
+        title: "Missing Payslip Information",
+        description: "Please provide your base hourly rate and hours worked",
         variant: "destructive",
       });
       return;
@@ -60,15 +69,23 @@ export default function NewCheck_Step2_ShiftDetails() {
 
     setLoading(true);
     try {
-      // Build advanced payslip data if section was opened and has values
-      const advancedPayslip = advancedOpen ? {
-        payslipBaseRate: payslipBaseRate ? parseFloat(payslipBaseRate) : null,
-        hoursAtBase: hoursAtBase ? parseFloat(hoursAtBase) : null,
-        hoursAt150: hoursAt150 ? parseFloat(hoursAt150) : null,
-        hoursAt200: hoursAt200 ? parseFloat(hoursAt200) : null,
+      // Calculate actual paid from payslip data
+      const baseRate = parseFloat(payslipBaseRate) || 0;
+      const hrsBase = parseFloat(hoursAtBase) || 0;
+      const hrs150 = parseFloat(hoursAt150) || 0;
+      const hrs200 = parseFloat(hoursAt200) || 0;
+      
+      const actualPaid = (baseRate * hrsBase) + (baseRate * 1.5 * hrs150) + (baseRate * 2 * hrs200);
+
+      // Build payslip data
+      const advancedPayslip = {
+        payslipBaseRate: baseRate,
+        hoursAtBase: hrsBase,
+        hoursAt150: hrs150,
+        hoursAt200: hrs200,
         paidAllowances,
         allowanceDetails: paidAllowances === 'yes' ? allowanceDetails : null,
-      } : null;
+      };
 
       const { data, error } = await supabase.functions.invoke("calculate-shift-pay", {
         body: {
@@ -84,7 +101,7 @@ export default function NewCheck_Step2_ShiftDetails() {
           workedPublicHoliday,
           droveOwnCar,
           workedOver10Hours,
-          actualPaid: parseFloat(actualPaid),
+          actualPaid: actualPaid,
           advancedPayslip,
         },
       });
@@ -102,7 +119,7 @@ export default function NewCheck_Step2_ShiftDetails() {
             startTime,
             finishTime,
             breakMinutes,
-            actualPaid,
+            actualPaid: actualPaid.toFixed(2),
           },
         },
       });
@@ -219,26 +236,11 @@ export default function NewCheck_Step2_ShiftDetails() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>How much were you actually paid (before tax)?</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2">$</span>
-              <Input
-                type="number"
-                step="0.01"
-                value={actualPaid}
-                onChange={(e) => setActualPaid(e.target.value)}
-                className="pl-7"
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen} className="space-y-2">
+          <Collapsible open={payslipOpen} onOpenChange={setPayslipOpen} className="space-y-2">
             <CollapsibleTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 w-full justify-start p-0 h-auto font-normal">
-                <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "transform rotate-180")} />
-                <span className="text-sm text-muted-foreground">I know my payslip details (optional)</span>
+                <ChevronDown className={cn("h-4 w-4 transition-transform", payslipOpen && "transform rotate-180")} />
+                <span className="text-sm font-medium">Your payslip breakdown</span>
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 pt-4">
