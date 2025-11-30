@@ -16,7 +16,9 @@ export default function NewCheck_Step1_WhoAreYou() {
   const [loadingClassifications, setLoadingClassifications] = useState(false);
   const [awards, setAwards] = useState<any[]>([]);
   const [classifications, setClassifications] = useState<any[]>([]);
+  const [workAreas, setWorkAreas] = useState<string[]>([]);
   const [selectedAward, setSelectedAward] = useState("");
+  const [selectedWorkArea, setSelectedWorkArea] = useState("");
   const [selectedClassification, setSelectedClassification] = useState("");
   const [employmentType, setEmploymentType] = useState("Full-time");
 
@@ -59,7 +61,27 @@ export default function NewCheck_Step1_WhoAreYou() {
         console.log("Sample classification:", data.results[0]);
       }
       
-      setClassifications(data.results || []);
+      const allClassifications = data.results || [];
+      setClassifications(allClassifications);
+      
+      // Extract unique work areas from clause_description
+      const areas = new Set<string>();
+      allClassifications.forEach((cls: any) => {
+        if (cls.clause_description) {
+          areas.add(cls.clause_description);
+        }
+      });
+      
+      const sortedAreas = Array.from(areas).sort();
+      setWorkAreas(sortedAreas);
+      
+      // Set default work area to first non-trainee option or first option
+      const defaultArea = sortedAreas.find(area => 
+        !area.toLowerCase().includes('trainee') && 
+        !area.toLowerCase().includes('school')
+      ) || sortedAreas[0];
+      
+      setSelectedWorkArea(defaultArea || "");
     } catch (error) {
       toast({
         title: "Error",
@@ -74,9 +96,39 @@ export default function NewCheck_Step1_WhoAreYou() {
   const handleAwardSelect = (awardCode: string) => {
     setSelectedAward(awardCode);
     setSelectedClassification("");
+    setSelectedWorkArea("");
     setClassifications([]);
+    setWorkAreas([]);
     loadClassifications(awardCode);
   };
+  
+  // Filter classifications by selected work area and exclude trainee options when not applicable
+  const filteredClassifications = classifications.filter((cls: any) => {
+    // Filter by work area if selected
+    if (selectedWorkArea && cls.clause_description !== selectedWorkArea) {
+      return false;
+    }
+    
+    // If work area is NOT a trainee/school category, exclude trainee classifications
+    const isTraineeWorkArea = selectedWorkArea?.toLowerCase().includes('trainee') || 
+                               selectedWorkArea?.toLowerCase().includes('school');
+    
+    if (!isTraineeWorkArea) {
+      const classificationName = cls.classification?.toLowerCase() || '';
+      const isTraineeClassification = 
+        classificationName.includes('school leaver') ||
+        classificationName.includes('plus 1 year') ||
+        classificationName.includes('plus 2 year') ||
+        classificationName.includes('plus 3 year') ||
+        classificationName.includes('trainee');
+      
+      if (isTraineeClassification) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
 
   const handleNext = () => {
     if (!selectedAward || !selectedClassification || !employmentType) {
@@ -129,30 +181,60 @@ export default function NewCheck_Step1_WhoAreYou() {
           </div>
 
           {selectedAward && (
-            <div className="space-y-2">
-              <Label>Job Classification / Level</Label>
-              {loadingClassifications ? (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="ml-2 text-sm text-muted-foreground">Loading classifications...</span>
+            <>
+              <div className="space-y-2">
+                <Label>Work Area / Category</Label>
+                {loadingClassifications ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="ml-2 text-sm text-muted-foreground">Loading work areas...</span>
+                  </div>
+                ) : workAreas.length > 0 ? (
+                  <Select value={selectedWorkArea} onValueChange={(value) => {
+                    setSelectedWorkArea(value);
+                    setSelectedClassification("");
+                  }}>
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="Select work area" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border border-border max-h-[300px] z-50">
+                      {workAreas.map((area) => (
+                        <SelectItem key={area} value={area}>
+                          {area}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : null}
+              </div>
+
+              {selectedWorkArea && (
+                <div className="space-y-2">
+                  <Label>Job Classification / Level</Label>
+                  {filteredClassifications.length > 0 ? (
+                    <Select value={selectedClassification} onValueChange={setSelectedClassification}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Select your classification" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border border-border max-h-[300px] z-50">
+                        {filteredClassifications.map((cls: any) => (
+                          <SelectItem key={cls.classification_fixed_id} value={cls.classification_fixed_id.toString()}>
+                            <div className="flex flex-col">
+                              <span>{cls.classification}</span>
+                              {cls.parent_classification_name && (
+                                <span className="text-xs text-muted-foreground">{cls.parent_classification_name}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No classifications available for this work area</p>
+                  )}
                 </div>
-              ) : classifications.length > 0 ? (
-                <Select value={selectedClassification} onValueChange={setSelectedClassification}>
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="Select your classification" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border border-border max-h-[300px] z-50">
-                    {classifications.map((cls) => (
-                      <SelectItem key={cls.fixed_id} value={cls.fixed_id}>
-                        {cls.classification}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <p className="text-sm text-muted-foreground">No classifications available for this award</p>
               )}
-            </div>
+            </>
           )}
 
           <div className="space-y-2">
