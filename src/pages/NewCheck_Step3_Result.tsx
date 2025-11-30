@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { NavBar } from "@/components/NavBar";
 
 export default function NewCheck_Step3_Result() {
   const navigate = useNavigate();
@@ -22,8 +23,10 @@ export default function NewCheck_Step3_Result() {
   const isUnderpaid = underpayment > 0;
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-      <Card className="w-full max-w-3xl">
+    <>
+      <NavBar />
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+        <Card className="w-full max-w-3xl">
         <CardHeader>
           <CardTitle>Step 3: Your Pay Check Result</CardTitle>
           <CardDescription>Here's what we found</CardDescription>
@@ -239,8 +242,8 @@ export default function NewCheck_Step3_Result() {
           )}
 
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => navigate("/")} className="flex-1">
-              Back to Home
+            <Button variant="outline" onClick={() => navigate("/new-check-step-1")} className="flex-1">
+              New Check
             </Button>
             <Button
               onClick={() =>
@@ -260,6 +263,7 @@ export default function NewCheck_Step3_Result() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
