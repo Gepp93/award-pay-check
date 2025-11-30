@@ -21,6 +21,7 @@ async function calculateSingleClassification(params: any) {
     workedOver10Hours,
     actualPaid,
     fwcApiKey,
+    advancedPayslip,
   } = params;
 
   // Fetch pay rates
@@ -71,6 +72,14 @@ async function calculateSingleClassification(params: any) {
   }
 
   console.log(`Successfully calculated for classification ${classificationId}, base rate: $${baseRate}`);
+
+  // Calculate match score if advanced payslip base rate is provided
+  let matchScore = 0;
+  if (advancedPayslip?.payslipBaseRate) {
+    const rateDifference = Math.abs(baseRate - advancedPayslip.payslipBaseRate);
+    const percentageDifference = (rateDifference / baseRate) * 100;
+    matchScore = Math.max(0, 100 - percentageDifference * 2); // Higher score for closer match
+  }
 
   // Calculate hours worked
   const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -152,6 +161,7 @@ async function handleUnsureClassification(params: any) {
     actualPaid,
     fwcApiKey,
     corsHeaders,
+    advancedPayslip,
   } = params;
 
   console.log('User is unsure about classification, fetching all classifications for award:', awardCode);
@@ -221,6 +231,11 @@ async function handleUnsureClassification(params: any) {
   const results: any[] = [];
 
   console.log(`Attempting to calculate pay for ${classificationsToCheck.length} classifications...`);
+  
+  // If advanced payslip base rate provided, prioritize classifications with similar rates
+  if (advancedPayslip?.payslipBaseRate) {
+    console.log(`Prioritizing classifications near payslip base rate: $${advancedPayslip.payslipBaseRate}`);
+  }
 
   for (const cls of classificationsToCheck) {
     try {
@@ -234,12 +249,13 @@ async function handleUnsureClassification(params: any) {
         workedWeekend,
         workedPublicHoliday,
         droveOwnCar,
-        workedOver10Hours,
-        actualPaid,
-        fwcApiKey,
-      });
+      workedOver10Hours,
+      actualPaid,
+      fwcApiKey,
+      advancedPayslip,
+    });
 
-      if (result) {
+    if (result) {
         results.push({
           classificationId: cls.classification_fixed_id,
           classificationName: cls.classification,
@@ -267,8 +283,14 @@ async function handleUnsureClassification(params: any) {
     );
   }
 
-  // Sort by possible underpayment (highest first)
-  results.sort((a, b) => b.possibleUnderpayment - a.possibleUnderpayment);
+  // Sort by match score (if available) then by possible underpayment
+  results.sort((a, b) => {
+    if (advancedPayslip?.payslipBaseRate) {
+      // Prioritize by match score if payslip rate provided
+      return (b.matchScore || 0) - (a.matchScore || 0);
+    }
+    return b.possibleUnderpayment - a.possibleUnderpayment;
+  });
 
   // Calculate min and max underpayment
   const underpayments = results.map(r => r.possibleUnderpayment);
@@ -332,6 +354,7 @@ serve(async (req) => {
       droveOwnCar,
       workedOver10Hours,
       actualPaid,
+      advancedPayslip,
     } = await req.json();
 
     console.log('Calculating shift pay for:', { awardCode, classificationId, employmentType, date, workArea });
@@ -353,6 +376,7 @@ serve(async (req) => {
         actualPaid,
         fwcApiKey: Deno.env.get('FWC_API_KEY'),
         corsHeaders,
+        advancedPayslip,
       });
     }
 
