@@ -41,6 +41,11 @@ async function calculateSingleClassification(params: any) {
 
   const ratesData = await ratesResponse.json();
   console.log(`Fetched rates for classification ${classificationId}, results count:`, ratesData.results?.length || 0);
+  
+  // Log first rate structure for debugging
+  if (ratesData.results && ratesData.results.length > 0) {
+    console.log(`Sample rate structure for ${classificationId}:`, JSON.stringify(ratesData.results[0]));
+  }
 
   // Find base hourly rate
   let baseRate = 0;
