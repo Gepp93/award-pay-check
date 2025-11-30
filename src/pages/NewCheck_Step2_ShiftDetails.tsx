@@ -121,6 +121,14 @@ export default function NewCheck_Step2_ShiftDetails() {
             breakMinutes,
             actualPaid: actualPaid.toFixed(2),
           },
+          advancedPayslip: {
+            payslipBaseRate: baseRate,
+            hoursAtBase: hrsBase,
+            hoursAt150: hrs150,
+            hoursAt200: hrs200,
+            paidAllowances,
+            allowanceDetails: paidAllowances === 'yes' ? allowanceDetails : null,
+          },
         },
       });
     } catch (error) {
