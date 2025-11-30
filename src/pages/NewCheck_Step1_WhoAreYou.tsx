@@ -52,6 +52,13 @@ export default function NewCheck_Step1_WhoAreYou() {
       });
 
       if (error) throw error;
+      
+      console.log("Classifications data received:", data);
+      console.log("Number of classifications:", data.results?.length);
+      if (data.results?.[0]) {
+        console.log("Sample classification:", data.results[0]);
+      }
+      
       setClassifications(data.results || []);
     } catch (error) {
       toast({
