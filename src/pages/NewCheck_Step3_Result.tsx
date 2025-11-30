@@ -17,7 +17,8 @@ export default function NewCheck_Step3_Result() {
     return null;
   }
 
-  const underpayment = result.underpayment || 0;
+  const isUnsureMode = result.mode === 'unsure';
+  const underpayment = isUnsureMode ? result.overallMaxUnderpayment : (result.underpayment || 0);
   const isUnderpaid = underpayment > 0;
 
   return (
@@ -28,38 +29,95 @@ export default function NewCheck_Step3_Result() {
           <CardDescription>Here's what we found</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {isUnderpaid ? (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                <div className="font-semibold text-lg">
-                  You may be missing: ${underpayment.toFixed(2)}
+          {isUnsureMode ? (
+            <>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <div className="font-semibold text-lg">
+                    Based on your inputs, you may be missing between ${result.overallMinUnderpayment.toFixed(2)} and ${result.overallMaxUnderpayment.toFixed(2)}
+                  </div>
+                  <p className="text-sm mt-2">
+                    We analyzed {result.breakdown?.totalClassificationsAnalyzed || 0} classifications. Here are the most likely matches:
+                  </p>
+                </AlertDescription>
+              </Alert>
+
+              {result.commonEntitlements && result.commonEntitlements.length > 0 && (
+                <div className="space-y-2">
+                  <p className="font-semibold">Potential entitlements you may be missing:</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    {result.commonEntitlements.map((entitlement: string, idx: number) => (
+                      <li key={idx} className="text-sm text-muted-foreground">
+                        {entitlement}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </AlertDescription>
-            </Alert>
+              )}
+
+              {result.likelyClassifications && result.likelyClassifications.length > 0 && (
+                <div className="space-y-3">
+                  <p className="font-semibold">Most likely classifications:</p>
+                  <div className="space-y-2">
+                    {result.likelyClassifications.slice(0, 5).map((cls: any, idx: number) => (
+                      <div key={idx} className="border rounded-lg p-3 space-y-1">
+                        <div className="font-medium">{cls.classificationName}</div>
+                        {cls.workArea && (
+                          <div className="text-xs text-muted-foreground">{cls.workArea}</div>
+                        )}
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="text-sm">Award pay total:</span>
+                          <span className="font-semibold">${cls.awardPayTotal.toFixed(2)}</span>
+                        </div>
+                        {cls.possibleUnderpayment > 0 && (
+                          <div className="flex justify-between items-center text-destructive">
+                            <span className="text-sm">Possible underpayment:</span>
+                            <span className="font-semibold">${cls.possibleUnderpayment.toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
-            <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <AlertDescription>
-                <div className="font-semibold text-lg text-green-800 dark:text-green-200">
-                  No missing pay detected
+            <>
+              {isUnderpaid ? (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    <div className="font-semibold text-lg">
+                      You may be missing: ${underpayment.toFixed(2)}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
+                  <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <AlertDescription>
+                    <div className="font-semibold text-lg text-green-800 dark:text-green-200">
+                      No missing pay detected
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Should have been paid</p>
+                  <p className="text-2xl font-bold">${result.awardPayTotal?.toFixed(2) || "0.00"}</p>
                 </div>
-              </AlertDescription>
-            </Alert>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">You were paid</p>
+                  <p className="text-2xl font-bold">${parseFloat(shiftDetails.actualPaid).toFixed(2)}</p>
+                </div>
+              </div>
+            </>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Should have been paid</p>
-              <p className="text-2xl font-bold">${result.awardPayTotal?.toFixed(2) || "0.00"}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">You were paid</p>
-              <p className="text-2xl font-bold">${parseFloat(shiftDetails.actualPaid).toFixed(2)}</p>
-            </div>
-          </div>
-
-          {result.reasons && result.reasons.length > 0 && (
+          {!isUnsureMode && result.reasons && result.reasons.length > 0 && (
             <div className="space-y-2">
               <p className="font-semibold">Why this difference?</p>
               <ul className="space-y-1 list-disc list-inside">
@@ -72,7 +130,8 @@ export default function NewCheck_Step3_Result() {
             </div>
           )}
 
-          <Collapsible open={showBreakdown} onOpenChange={setShowBreakdown}>
+          {!isUnsureMode && (
+            <Collapsible open={showBreakdown} onOpenChange={setShowBreakdown}>
             <CollapsibleTrigger asChild>
               <Button variant="outline" className="w-full">
                 {showBreakdown ? (
@@ -130,7 +189,8 @@ export default function NewCheck_Step3_Result() {
                 </div>
               )}
             </CollapsibleContent>
-          </Collapsible>
+            </Collapsible>
+          )}
 
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => navigate("/")} className="flex-1">
