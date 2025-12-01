@@ -46,8 +46,11 @@ const Subscription = () => {
   };
 
   const handleUpgrade = (plan: string) => {
-    toast.info(`Upgrading to ${plan} plan. Stripe integration coming soon!`);
-    // TODO: Implement Stripe checkout
+    const checkoutUrl = plan === "Monthly" 
+      ? "https://buy.stripe.com/fZueVeffe4F3duvek56AM01"
+      : "https://buy.stripe.com/dRmfZi7MM3AZ623b7T6AM00";
+    
+    window.location.href = checkoutUrl;
   };
 
   const features = [
