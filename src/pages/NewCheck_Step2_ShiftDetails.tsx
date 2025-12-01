@@ -64,7 +64,7 @@ export default function NewCheck_Step2_ShiftDetails() {
   const [workedOver10Hours, setWorkedOver10Hours] = useState(false);
   const [overtimeFrequency, setOvertimeFrequency] = useState<"never" | "sometimes" | "often">("never");
   
-  // NEW: Allowance-triggering conditions
+  // NEW: Allowance-triggering conditions - General
   const [workedAtHeight, setWorkedAtHeight] = useState(false);
   const [workedInConfinedSpace, setWorkedInConfinedSpace] = useState(false);
   const [usedOwnTools, setUsedOwnTools] = useState(false);
@@ -73,6 +73,19 @@ export default function NewCheck_Step2_ShiftDetails() {
   const [workedInDirtyConditions, setWorkedInDirtyConditions] = useState(false);
   const [workedInExtremeWeather, setWorkedInExtremeWeather] = useState(false);
   const [workedUnderground, setWorkedUnderground] = useState(false);
+  
+  // NEW: Multi-industry allowance conditions
+  const [workedInColdRoom, setWorkedInColdRoom] = useState(false);
+  const [woreUniform, setWoreUniform] = useState(false);
+  const [wasOnCall, setWasOnCall] = useState(false);
+  const [wasCalledBack, setWasCalledBack] = useState(false);
+  const [workedSplitShift, setWorkedSplitShift] = useState(false);
+  const [holdsSpecialLicence, setHoldsSpecialLicence] = useState(false);
+  const [transportedDangerousGoods, setTransportedDangerousGoods] = useState(false);
+  const [workedRemoteSite, setWorkedRemoteSite] = useState(false);
+  const [stayedAwayFromHome, setStayedAwayFromHome] = useState(false);
+  const [operatedForklift, setOperatedForklift] = useState(false);
+  const [holdsQualification, setHoldsQualification] = useState(false);
   
   // Enhanced allowances
   const [allowances, setAllowances] = useState<AllowanceReported[]>([
@@ -154,7 +167,7 @@ export default function NewCheck_Step2_ShiftDetails() {
           workedOver10Hours,
           actualPaid: actualPaid,
           advancedPayslip,
-          // NEW: Allowance conditions
+          // NEW: Allowance conditions - expanded for all industries
           allowanceConditions: {
             workedAtHeight,
             workedInConfinedSpace,
@@ -165,6 +178,18 @@ export default function NewCheck_Step2_ShiftDetails() {
             workedInDirtyConditions,
             workedInExtremeWeather,
             workedNights,
+            // Multi-industry conditions
+            workedInColdRoom,
+            woreUniform,
+            wasOnCall,
+            wasCalledBack,
+            workedSplitShift,
+            holdsSpecialLicence,
+            transportedDangerousGoods,
+            workedRemoteSite,
+            stayedAwayFromHome,
+            operatedForklift,
+            holdsQualification,
           },
         },
       });
@@ -391,91 +416,125 @@ export default function NewCheck_Step2_ShiftDetails() {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label>Allowance-Triggering Conditions</Label>
             <p className="text-xs text-muted-foreground">Check any that apply - these may entitle you to extra allowances</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="height"
-                  checked={workedAtHeight}
-                  onCheckedChange={(checked) => setWorkedAtHeight(checked as boolean)}
-                />
-                <label htmlFor="height" className="text-sm cursor-pointer">
-                  Worked at heights (above 15m)
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="confined"
-                  checked={workedInConfinedSpace}
-                  onCheckedChange={(checked) => setWorkedInConfinedSpace(checked as boolean)}
-                />
-                <label htmlFor="confined" className="text-sm cursor-pointer">
-                  Worked in confined spaces
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="underground"
-                  checked={workedUnderground}
-                  onCheckedChange={(checked) => setWorkedUnderground(checked as boolean)}
-                />
-                <label htmlFor="underground" className="text-sm cursor-pointer">
-                  Worked underground
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="tools"
-                  checked={usedOwnTools}
-                  onCheckedChange={(checked) => setUsedOwnTools(checked as boolean)}
-                />
-                <label htmlFor="tools" className="text-sm cursor-pointer">
-                  Used your own tools
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="first-aid"
-                  checked={isFirstAider}
-                  onCheckedChange={(checked) => setIsFirstAider(checked as boolean)}
-                />
-                <label htmlFor="first-aid" className="text-sm cursor-pointer">
-                  First aider (with certificate)
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="leading-hand"
-                  checked={isLeadingHand}
-                  onCheckedChange={(checked) => setIsLeadingHand(checked as boolean)}
-                />
-                <label htmlFor="leading-hand" className="text-sm cursor-pointer">
-                  Leading hand / supervising others
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="dirty"
-                  checked={workedInDirtyConditions}
-                  onCheckedChange={(checked) => setWorkedInDirtyConditions(checked as boolean)}
-                />
-                <label htmlFor="dirty" className="text-sm cursor-pointer">
-                  Dirty or offensive work conditions
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="weather"
-                  checked={workedInExtremeWeather}
-                  onCheckedChange={(checked) => setWorkedInExtremeWeather(checked as boolean)}
-                />
-                <label htmlFor="weather" className="text-sm cursor-pointer">
-                  Extreme heat (46°C+) or cold (0°C or below)
-                </label>
-              </div>
-            </div>
+            
+            {/* General Conditions */}
+            <Collapsible defaultOpen className="space-y-2">
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:text-primary">
+                <ChevronDown className="h-4 w-4" />
+                General Conditions
+              </CollapsibleTrigger>
+              <CollapsibleContent className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-6 pt-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="tools" checked={usedOwnTools} onCheckedChange={(checked) => setUsedOwnTools(checked as boolean)} />
+                  <label htmlFor="tools" className="text-sm cursor-pointer">Used your own tools</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="first-aid" checked={isFirstAider} onCheckedChange={(checked) => setIsFirstAider(checked as boolean)} />
+                  <label htmlFor="first-aid" className="text-sm cursor-pointer">Appointed first aider</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="leading-hand" checked={isLeadingHand} onCheckedChange={(checked) => setIsLeadingHand(checked as boolean)} />
+                  <label htmlFor="leading-hand" className="text-sm cursor-pointer">Supervise other employees</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="uniform" checked={woreUniform} onCheckedChange={(checked) => setWoreUniform(checked as boolean)} />
+                  <label htmlFor="uniform" className="text-sm cursor-pointer">Wore uniform/work clothing</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="qualification" checked={holdsQualification} onCheckedChange={(checked) => setHoldsQualification(checked as boolean)} />
+                  <label htmlFor="qualification" className="text-sm cursor-pointer">Hold Cert IV/RN/EN/trade certificate</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="licence" checked={holdsSpecialLicence} onCheckedChange={(checked) => setHoldsSpecialLicence(checked as boolean)} />
+                  <label htmlFor="licence" className="text-sm cursor-pointer">Hold special licence (forklift, electrical, etc.)</label>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Hazardous/Physical Conditions */}
+            <Collapsible className="space-y-2">
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:text-primary">
+                <ChevronDown className="h-4 w-4" />
+                Hazardous/Physical Conditions
+              </CollapsibleTrigger>
+              <CollapsibleContent className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-6 pt-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="height" checked={workedAtHeight} onCheckedChange={(checked) => setWorkedAtHeight(checked as boolean)} />
+                  <label htmlFor="height" className="text-sm cursor-pointer">Worked at heights (above 15m)</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="confined" checked={workedInConfinedSpace} onCheckedChange={(checked) => setWorkedInConfinedSpace(checked as boolean)} />
+                  <label htmlFor="confined" className="text-sm cursor-pointer">Worked in confined spaces</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="underground" checked={workedUnderground} onCheckedChange={(checked) => setWorkedUnderground(checked as boolean)} />
+                  <label htmlFor="underground" className="text-sm cursor-pointer">Worked underground</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="dirty" checked={workedInDirtyConditions} onCheckedChange={(checked) => setWorkedInDirtyConditions(checked as boolean)} />
+                  <label htmlFor="dirty" className="text-sm cursor-pointer">Dirty/dusty/offensive conditions</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="extreme-weather" checked={workedInExtremeWeather} onCheckedChange={(checked) => setWorkedInExtremeWeather(checked as boolean)} />
+                  <label htmlFor="extreme-weather" className="text-sm cursor-pointer">Extreme heat (46°C+) or cold (0°C or below)</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="cold-room" checked={workedInColdRoom} onCheckedChange={(checked) => setWorkedInColdRoom(checked as boolean)} />
+                  <label htmlFor="cold-room" className="text-sm cursor-pointer">Worked in freezer/cool room</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="dangerous-goods" checked={transportedDangerousGoods} onCheckedChange={(checked) => setTransportedDangerousGoods(checked as boolean)} />
+                  <label htmlFor="dangerous-goods" className="text-sm cursor-pointer">Handled/transported dangerous goods</label>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Shift/Roster Conditions */}
+            <Collapsible className="space-y-2">
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:text-primary">
+                <ChevronDown className="h-4 w-4" />
+                Shift/Roster Conditions
+              </CollapsibleTrigger>
+              <CollapsibleContent className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-6 pt-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="on-call" checked={wasOnCall} onCheckedChange={(checked) => setWasOnCall(checked as boolean)} />
+                  <label htmlFor="on-call" className="text-sm cursor-pointer">Was on-call / available to be called in</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="called-back" checked={wasCalledBack} onCheckedChange={(checked) => setWasCalledBack(checked as boolean)} />
+                  <label htmlFor="called-back" className="text-sm cursor-pointer">Called back to work after finishing shift</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="split-shift" checked={workedSplitShift} onCheckedChange={(checked) => setWorkedSplitShift(checked as boolean)} />
+                  <label htmlFor="split-shift" className="text-sm cursor-pointer">Worked a split/broken shift</label>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Location/Travel Conditions */}
+            <Collapsible className="space-y-2">
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium hover:text-primary">
+                <ChevronDown className="h-4 w-4" />
+                Location & Travel
+              </CollapsibleTrigger>
+              <CollapsibleContent className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-6 pt-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="remote-site" checked={workedRemoteSite} onCheckedChange={(checked) => setWorkedRemoteSite(checked as boolean)} />
+                  <label htmlFor="remote-site" className="text-sm cursor-pointer">Worked at remote site / away from usual base</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="away-from-home" checked={stayedAwayFromHome} onCheckedChange={(checked) => setStayedAwayFromHome(checked as boolean)} />
+                  <label htmlFor="away-from-home" className="text-sm cursor-pointer">Stayed overnight / away from home</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox id="forklift" checked={operatedForklift} onCheckedChange={(checked) => setOperatedForklift(checked as boolean)} />
+                  <label htmlFor="forklift" className="text-sm cursor-pointer">Operated forklift / heavy machinery</label>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
 
           <AllowancesSection
