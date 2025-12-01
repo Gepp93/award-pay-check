@@ -9,28 +9,69 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { CalendarIcon, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { NavBar } from "@/components/NavBar";
+import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
+import { MultiDayShiftEntry } from "@/components/wizard/MultiDayShiftEntry";
+import { AllowancesSection } from "@/components/wizard/AllowancesSection";
+import { HoursWorked, AllowanceReported } from "@/types/payCheck";
 
 export default function NewCheck_Step2_ShiftDetails() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { awardCode, classificationId, employmentType, knowsClassification, workArea } = location.state || {};
+  const { 
+    awardCode, 
+    awardName,
+    classificationId, 
+    employmentType, 
+    knowsClassification, 
+    workArea,
+    jobDescription,
+    industry,
+    state 
+  } = location.state || {};
 
+  // Pay period type
+  const [payPeriodType, setPayPeriodType] = useState<"single" | "weekly" | "fortnightly">("single");
+  
+  // Single shift fields (existing)
   const [date, setDate] = useState<Date>();
   const [startTime, setStartTime] = useState("");
   const [finishTime, setFinishTime] = useState("");
   const [breakMinutes, setBreakMinutes] = useState("30");
+  
+  // Multi-day shifts
+  const [shifts, setShifts] = useState<HoursWorked[]>([
+    { date: "", day_of_week: "", start: "", finish: "", break_minutes: 30 }
+  ]);
+  
+  // Free-text shift input (stub for AI parsing)
+  const [freeTextShifts, setFreeTextShifts] = useState("");
+  
+  // Enhanced conditions
   const [workedWeekend, setWorkedWeekend] = useState(false);
   const [workedPublicHoliday, setWorkedPublicHoliday] = useState(false);
+  const [workedNights, setWorkedNights] = useState(false);
   const [droveOwnCar, setDroveOwnCar] = useState(false);
   const [workedOver10Hours, setWorkedOver10Hours] = useState(false);
+  const [overtimeFrequency, setOvertimeFrequency] = useState<"never" | "sometimes" | "often">("never");
+  
+  // Enhanced allowances
+  const [allowances, setAllowances] = useState<AllowanceReported[]>([
+    { type: "travel", received: false, amount_per_period: 0 },
+    { type: "meal", received: false, amount_per_period: 0 },
+    { type: "site", received: false, amount_per_period: 0 },
+    { type: "remote work", received: false, amount_per_period: 0 },
+  ]);
+  
   const [loading, setLoading] = useState(false);
 
   // Payslip fields
@@ -152,54 +193,110 @@ export default function NewCheck_Step2_ShiftDetails() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle>Step 2: Your shift details</CardTitle>
-          <CardDescription>Tell us about the shift you worked</CardDescription>
+          <ProgressIndicator currentStep={2} />
+          <CardTitle>Step 2: Hours & Pay</CardTitle>
+          <CardDescription>Tell us about your shift(s) and pay details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>Shift Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
-              </PopoverContent>
-            </Popover>
+            <Label>Pay Period Type</Label>
+            <Select value={payPeriodType} onValueChange={(value: any) => setPayPeriodType(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="single">Single Shift</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="fortnightly">Fortnightly</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Start Time</Label>
-              <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Finish Time</Label>
-              <Input type="time" value={finishTime} onChange={(e) => setFinishTime(e.target.value)} />
-            </div>
-          </div>
+          {payPeriodType === "single" ? (
+            <>
+              <div className="space-y-2">
+                <Label>Shift Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date ? format(date, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={date} onSelect={setDate} initialFocus />
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-          <div className="space-y-2">
-            <Label>Unpaid Break (minutes)</Label>
-            <Input
-              type="number"
-              value={breakMinutes}
-              onChange={(e) => setBreakMinutes(e.target.value)}
-              placeholder="30"
-            />
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Time</Label>
+                  <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Finish Time</Label>
+                  <Input type="time" value={finishTime} onChange={(e) => setFinishTime(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Unpaid Break (minutes)</Label>
+                <Input
+                  type="number"
+                  value={breakMinutes}
+                  onChange={(e) => setBreakMinutes(e.target.value)}
+                  placeholder="30"
+                />
+              </div>
+            </>
+          ) : (
+            <Tabs defaultValue="structured" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="structured">Day by Day</TabsTrigger>
+                <TabsTrigger value="freetext">Quick Entry</TabsTrigger>
+              </TabsList>
+              <TabsContent value="structured" className="space-y-4 mt-4">
+                <MultiDayShiftEntry
+                  shifts={shifts}
+                  onUpdateShift={(index, shift) => {
+                    const newShifts = [...shifts];
+                    newShifts[index] = shift;
+                    setShifts(newShifts);
+                  }}
+                  onAddShift={() => {
+                    setShifts([...shifts, { date: "", day_of_week: "", start: "", finish: "", break_minutes: 30 }]);
+                  }}
+                  onRemoveShift={(index) => {
+                    setShifts(shifts.filter((_, i) => i !== index));
+                  }}
+                />
+              </TabsContent>
+              <TabsContent value="freetext" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>Describe your shifts</Label>
+                  <Textarea
+                    placeholder="e.g., Mon 6am-2:30pm, Tue 3:30pm-4am, Sat 6am-1:30pm, no lunch Saturday"
+                    value={freeTextShifts}
+                    onChange={(e) => setFreeTextShifts(e.target.value)}
+                    className="min-h-[120px]"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    We'll parse this automatically (AI-powered parsing coming soon)
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
 
           <div className="space-y-3">
-            <Label>Shift Conditions</Label>
+            <Label>Shift Conditions & Allowances</Label>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -223,6 +320,16 @@ export default function NewCheck_Step2_ShiftDetails() {
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
+                  id="nights"
+                  checked={workedNights}
+                  onCheckedChange={(checked) => setWorkedNights(checked as boolean)}
+                />
+                <label htmlFor="nights" className="text-sm cursor-pointer">
+                  Worked night shifts (between 8pm-6am)
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
                   id="own-car"
                   checked={droveOwnCar}
                   onCheckedChange={(checked) => setDroveOwnCar(checked as boolean)}
@@ -238,11 +345,38 @@ export default function NewCheck_Step2_ShiftDetails() {
                   onCheckedChange={(checked) => setWorkedOver10Hours(checked as boolean)}
                 />
                 <label htmlFor="over-10" className="text-sm cursor-pointer">
-                  Worked more than 10 hours
+                  Worked more than 10 hours in a day
                 </label>
               </div>
             </div>
+            
+            <div className="space-y-2 mt-4">
+              <Label>How often do you work overtime?</Label>
+              <RadioGroup value={overtimeFrequency} onValueChange={(value: any) => setOvertimeFrequency(value)}>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="never" id="ot-never" />
+                  <Label htmlFor="ot-never" className="font-normal cursor-pointer">Never</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="sometimes" id="ot-sometimes" />
+                  <Label htmlFor="ot-sometimes" className="font-normal cursor-pointer">Sometimes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="often" id="ot-often" />
+                  <Label htmlFor="ot-often" className="font-normal cursor-pointer">Often</Label>
+                </div>
+              </RadioGroup>
+            </div>
           </div>
+
+          <AllowancesSection
+            allowances={allowances}
+            onUpdateAllowance={(index, allowance) => {
+              const newAllowances = [...allowances];
+              newAllowances[index] = allowance;
+              setAllowances(newAllowances);
+            }}
+          />
 
           <Collapsible open={payslipOpen} onOpenChange={setPayslipOpen} className="space-y-2">
             <CollapsibleTrigger asChild>

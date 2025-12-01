@@ -11,3 +11,15 @@ verify_jwt = false
 
 [functions.get-classification-details]
 verify_jwt = false
+
+[functions.calculate-shift-pay]
+verify_jwt = false
+
+[functions.generate-pdf-report]
+verify_jwt = false
+
+[functions.send-email-report]
+verify_jwt = false
+
+[functions.ai-parse-shifts]
+verify_jwt = false
