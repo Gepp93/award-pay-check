@@ -135,34 +135,61 @@ export default function NewCheck_Step3_Result() {
                 </h3>
               </div>
               <div className="space-y-3">
-                {potentialAllowances.map((allowance) => (
-                  <div 
-                    key={allowance.id} 
-                    className="rounded-lg border border-amber-200 dark:border-amber-800 bg-white dark:bg-background p-3 space-y-2"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{allowance.icon}</span>
-                        <div>
-                          <div className="font-semibold">{allowance.name}</div>
-                          <div className="text-sm text-primary font-medium">{allowance.amount}</div>
-                        </div>
-                      </div>
-                      {allowance.estimatedValue > 0 && (
-                        <div className="text-right">
-                          <div className="text-xs text-muted-foreground">Est. value</div>
-                          <div className="font-bold text-green-600 dark:text-green-400">
-                            ${allowance.estimatedValue.toFixed(2)}
+                {potentialAllowances.map((allowance) => {
+                  // Calculate yearly estimate based on allowance type
+                  const getYearlyEstimate = () => {
+                    if (allowance.estimatedValue <= 0) return 0;
+                    const amountLower = allowance.amount.toLowerCase();
+                    if (amountLower.includes('per week')) {
+                      return allowance.estimatedValue * 52;
+                    } else if (amountLower.includes('per hour')) {
+                      // Assume 38hr week, 52 weeks
+                      return allowance.estimatedValue * 38 * 52;
+                    } else if (amountLower.includes('per day') || amountLower.includes('per meal')) {
+                      // Assume 5 days/week, 52 weeks = 260 days
+                      return allowance.estimatedValue * 260;
+                    }
+                    // Default: assume daily occurrence
+                    return allowance.estimatedValue * 260;
+                  };
+                  const yearlyEstimate = getYearlyEstimate();
+                  
+                  return (
+                    <div 
+                      key={allowance.id} 
+                      className="rounded-lg border border-amber-200 dark:border-amber-800 bg-white dark:bg-background p-3 space-y-2"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{allowance.icon}</span>
+                          <div>
+                            <div className="font-semibold">{allowance.name}</div>
+                            <div className="text-sm text-primary font-medium">{allowance.amount}</div>
                           </div>
                         </div>
+                        {allowance.estimatedValue > 0 && (
+                          <div className="text-right">
+                            <div className="text-xs text-muted-foreground">Est. today</div>
+                            <div className="font-bold text-green-600 dark:text-green-400">
+                              ${allowance.estimatedValue.toFixed(2)}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {yearlyEstimate > 0 && (
+                        <div className="bg-green-50 dark:bg-green-950/30 rounded-md p-2 text-center">
+                          <span className="text-sm font-semibold text-green-700 dark:text-green-300">
+                            That's ${yearlyEstimate.toLocaleString('en-AU', { maximumFractionDigits: 0 })} extra per year
+                          </span>
+                        </div>
                       )}
+                      <div className="text-sm text-muted-foreground bg-muted/50 rounded p-2">
+                        <span className="font-medium text-foreground">WHY: </span>
+                        {allowance.reason}
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground bg-muted/50 rounded p-2">
-                      <span className="font-medium text-foreground">WHY: </span>
-                      {allowance.reason}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <p className="text-xs text-amber-700 dark:text-amber-300">
                 These are potential entitlements based on your shift conditions. Check your award for exact amounts and eligibility.
