@@ -243,29 +243,55 @@ const allowanceRules: AllowanceRule[] = [
   },
 ];
 
-// List of all common award allowances for education
-const allCommonAllowances = [
+// Fallback list if FWC API fails - only used as last resort
+const fallbackAllowances = [
   { name: 'Meal Allowance', description: 'When working overtime or extended hours without notice' },
   { name: 'Travel Allowance', description: 'Using personal vehicle for work purposes' },
   { name: 'Tool Allowance', description: 'Tradespersons supplying their own tools' },
   { name: 'First Aid Allowance', description: 'Appointed first aiders with certificates' },
   { name: 'Leading Hand Allowance', description: 'Supervising 1 or more employees' },
-  { name: 'Height Allowance', description: 'Working at heights above 15 metres' },
-  { name: 'Confined Space Allowance', description: 'Working in confined or restricted areas' },
-  { name: 'Underground Allowance', description: 'Working below ground level' },
-  { name: 'Dirty Work Allowance', description: 'Dirty, dusty, or offensive conditions' },
-  { name: 'Wet Work Allowance', description: 'Working in wet conditions' },
-  { name: 'Site Allowance', description: 'Construction site work' },
-  { name: 'Living Away Allowance', description: 'Working away from usual residence' },
-  { name: 'Adverse Weather Allowance', description: 'Extreme heat or cold conditions' },
-  { name: 'Night Shift Allowance', description: 'Working between 8pm and 6am' },
-  { name: 'On-Call Allowance', description: 'Being available outside normal hours' },
-  { name: 'Cold Places Allowance', description: 'Working in refrigerated areas' },
-  { name: 'Hot Places Allowance', description: 'Working near furnaces or extreme heat' },
-  { name: 'Laser Equipment Allowance', description: 'Operating laser equipment' },
-  { name: 'Explosive Powered Tools', description: 'Using explosive powered tools' },
-  { name: 'Scaffolding Allowance', description: 'Erecting scaffolding over certain heights' },
 ];
+
+// Fetch award-specific allowances from the FWC API
+async function fetchAwardAllowances(awardCode: string, fwcApiKey: string): Promise<{ name: string; description: string }[]> {
+  try {
+    console.log(`Fetching allowances for award: ${awardCode}`);
+    
+    const response = await fetch(
+      `https://api.fwc.gov.au/api/v1/awards/${awardCode}/allowances`,
+      {
+        headers: {
+          'Ocp-Apim-Subscription-Key': fwcApiKey,
+          'Accept': 'application/json',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.log(`Failed to fetch allowances for ${awardCode}: ${response.status}`);
+      return fallbackAllowances;
+    }
+
+    const data = await response.json();
+    
+    if (!data.results || data.results.length === 0) {
+      console.log(`No allowances found for award ${awardCode}`);
+      return fallbackAllowances;
+    }
+
+    // Transform FWC API response to our format
+    const allowances = data.results.map((allowance: any) => ({
+      name: allowance.allowance || allowance.description || 'Allowance',
+      description: allowance.clause_description || allowance.rate_description || 'Check your award for details',
+    }));
+
+    console.log(`Fetched ${allowances.length} allowances for award ${awardCode}`);
+    return allowances;
+  } catch (error) {
+    console.error('Error fetching award allowances:', error);
+    return fallbackAllowances;
+  }
+}
 
 // Detect potential allowances based on conditions
 function detectPotentialAllowances(params: any): any[] {
@@ -639,6 +665,9 @@ async function handleUnsureClassification(params: any) {
   }
   if (employmentType === 'Casual') commonEntitlements.push('Casual loading (25%)');
 
+  // Fetch award-specific allowances from FWC API
+  const awardAllowances = await fetchAwardAllowances(awardCode, fwcApiKey);
+
   return new Response(
     JSON.stringify({
       mode: 'unsure',
@@ -653,7 +682,7 @@ async function handleUnsureClassification(params: any) {
       })),
       commonEntitlements,
       potentialAllowances,
-      allAwardAllowances: allCommonAllowances,
+      allAwardAllowances: awardAllowances,
       breakdown: {
         totalClassificationsAnalyzed: results.length,
         totalClassificationsAvailable: filteredClassifications.length,
@@ -864,6 +893,9 @@ serve(async (req) => {
       }
     }
 
+    // Fetch award-specific allowances from FWC API
+    const awardAllowances = await fetchAwardAllowances(awardCode, fwcApiKey);
+
     const result = {
       awardPayTotal,
       actualPaid,
@@ -873,7 +905,7 @@ serve(async (req) => {
       rateWarning,
       reasons,
       potentialAllowances,
-      allAwardAllowances: allCommonAllowances,
+      allAwardAllowances: awardAllowances,
       breakdown: {
         regularHours,
         basePay,
