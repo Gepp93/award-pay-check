@@ -24,60 +24,8 @@ const Pricing = () => {
 
       {/* Section 2 - Pricing Cards */}
       <section className="py-12 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Free Plan */}
-            <Card className="flex flex-col">
-              <CardHeader>
-                <CardTitle className="text-2xl">Free</CardTitle>
-                <CardDescription>
-                  <span className="text-3xl font-bold text-foreground">$0</span>
-                  <span className="text-muted-foreground"> / month</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>5 calculations per month</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Basic award presets</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Basic penalties</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Limited allowances</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="h-5 w-5 text-muted-foreground mt-0.5" />
-                    <span className="text-muted-foreground">No shift saving</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="h-5 w-5 text-muted-foreground mt-0.5" />
-                    <span className="text-muted-foreground">No payslip comparison</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="h-5 w-5 text-muted-foreground mt-0.5" />
-                    <span className="text-muted-foreground">No PDF exports</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="h-5 w-5 text-muted-foreground mt-0.5" />
-                    <span className="text-muted-foreground">No email reports</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full" asChild>
-                  <Link to="/auth">Get Started</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-
+        <div className="container mx-auto max-w-5xl">
+          <div className="grid md:grid-cols-2 gap-8">
             {/* Pro Monthly Plan */}
             <Card className="flex flex-col border-primary shadow-lg relative">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
@@ -86,7 +34,7 @@ const Pricing = () => {
               <CardHeader className="pt-8">
                 <CardTitle className="text-2xl">Pro Monthly</CardTitle>
                 <CardDescription>
-                  <span className="text-3xl font-bold text-foreground">$14.99</span>
+                  <span className="text-3xl font-bold text-foreground">$29</span>
                   <span className="text-muted-foreground"> / month</span>
                 </CardDescription>
               </CardHeader>
@@ -152,12 +100,12 @@ const Pricing = () => {
             {/* Pro Yearly Plan */}
             <Card className="flex flex-col relative">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground px-4 py-1 rounded-full text-sm font-semibold whitespace-nowrap">
-                Best Value — Save 34%
+                Best Value — Save $299
               </div>
               <CardHeader className="pt-8">
                 <CardTitle className="text-2xl">Pro Yearly</CardTitle>
                 <CardDescription>
-                  <span className="text-3xl font-bold text-foreground">$119</span>
+                  <span className="text-3xl font-bold text-foreground">$49</span>
                   <span className="text-muted-foreground"> / year</span>
                 </CardDescription>
               </CardHeader>
@@ -190,43 +138,36 @@ const Pricing = () => {
 
       {/* Section 3 - Feature Comparison Table */}
       <section className="py-20 px-4 bg-muted/30">
-        <div className="container mx-auto max-w-6xl">
+        <div className="container mx-auto max-w-4xl">
           <h2 className="text-3xl font-bold text-center mb-12">Compare Plans</h2>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b">
                   <th className="text-left p-4 font-semibold">Feature</th>
-                  <th className="text-center p-4 font-semibold">Free</th>
                   <th className="text-center p-4 font-semibold">Pro Monthly</th>
                   <th className="text-center p-4 font-semibold">Pro Yearly</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { feature: "Award-accurate calculations", free: "5/month", pro: "Unlimited", yearly: "Unlimited" },
-                  { feature: "Penalty rates", free: "Basic", pro: "All", yearly: "All" },
-                  { feature: "Allowances", free: "Limited", pro: "All", yearly: "All" },
-                  { feature: "RDO tracking", free: false, pro: true, yearly: true },
-                  { feature: "Save shifts", free: false, pro: true, yearly: true },
-                  { feature: "Save payslips", free: false, pro: true, yearly: true },
-                  { feature: "Payslip comparison", free: false, pro: true, yearly: true },
-                  { feature: "Underpayment alerts", free: false, pro: true, yearly: true },
-                  { feature: "PDF export", free: false, pro: true, yearly: true },
-                  { feature: "Email export", free: false, pro: true, yearly: true },
-                  { feature: "AI Award explainer", free: false, pro: true, yearly: true },
-                  { feature: "Support level", free: "Community", pro: "Priority", yearly: "Priority+" },
-                  { feature: "Yearly savings", free: "-", pro: "-", yearly: "$61" },
+                  { feature: "Award-accurate calculations", pro: "Unlimited", yearly: "Unlimited" },
+                  { feature: "Penalty rates", pro: "All", yearly: "All" },
+                  { feature: "Allowances", pro: "All", yearly: "All" },
+                  { feature: "RDO tracking", pro: true, yearly: true },
+                  { feature: "Save shifts", pro: true, yearly: true },
+                  { feature: "Save payslips", pro: true, yearly: true },
+                  { feature: "Payslip comparison", pro: true, yearly: true },
+                  { feature: "Underpayment alerts", pro: true, yearly: true },
+                  { feature: "PDF export", pro: true, yearly: true },
+                  { feature: "Email export", pro: true, yearly: true },
+                  { feature: "AI Award explainer", pro: true, yearly: true },
+                  { feature: "Support level", pro: "Priority", yearly: "Priority+" },
+                  { feature: "Cost per month", pro: "$29", yearly: "$4.08" },
+                  { feature: "Annual savings", pro: "-", yearly: "$299" },
                 ].map((row, i) => (
                   <tr key={i} className="border-b">
                     <td className="p-4">{row.feature}</td>
-                    <td className="text-center p-4">
-                      {typeof row.free === "boolean" ? (
-                        row.free ? <Check className="h-5 w-5 text-primary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                      ) : (
-                        row.free
-                      )}
-                    </td>
                     <td className="text-center p-4">
                       {typeof row.pro === "boolean" ? (
                         row.pro ? <Check className="h-5 w-5 text-primary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />
