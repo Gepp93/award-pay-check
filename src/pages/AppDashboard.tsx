@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calculator, FileText, TrendingDown, CheckCircle } from "lucide-react";
+import { Calculator, FileText, TrendingDown, CheckCircle, Trash2 } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
 import { format } from "date-fns";
 
@@ -42,6 +42,19 @@ const AppDashboard = () => {
       : (breakdown.underpayment || 0);
     return sum + underpayment;
   }, 0);
+
+  const handleDeleteCalculation = async (calcId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent navigation when clicking delete
+    
+    const { error } = await supabase
+      .from('calculations')
+      .delete()
+      .eq('id', calcId);
+
+    if (!error) {
+      setCalculations(calculations.filter(calc => calc.id !== calcId));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -101,39 +114,50 @@ const AppDashboard = () => {
                       const isUnderpaid = underpayment > 0;
 
                       return (
-                        <button
+                        <div
                           key={calc.id}
-                          onClick={() => navigate('/new-check-step-3', { 
-                            state: { 
-                              result: calc.breakdown, 
-                              shiftDetails: calc.shift_data,
-                              fromDashboard: true
-                            } 
-                          })}
-                          className="w-full border rounded-lg p-3 space-y-1 hover:bg-accent hover:shadow-md transition-all cursor-pointer text-left"
+                          className="relative group border rounded-lg p-3 space-y-1 hover:bg-accent hover:shadow-md transition-all"
                         >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground">
-                              {format(new Date(calc.created_at), 'MMM dd, yyyy')}
-                            </span>
-                            {isUnderpaid ? (
-                              <span className="flex items-center gap-1 text-xs text-destructive">
-                                <TrendingDown className="h-3 w-3" />
-                                Underpaid
+                          <button
+                            onClick={() => navigate('/new-check-step-3', { 
+                              state: { 
+                                result: calc.breakdown, 
+                                shiftDetails: calc.shift_data,
+                                fromDashboard: true
+                              } 
+                            })}
+                            className="w-full text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(calc.created_at), 'MMM dd, yyyy')}
                               </span>
-                            ) : (
-                              <span className="flex items-center gap-1 text-xs text-green-600">
-                                <CheckCircle className="h-3 w-3" />
-                                Correct
-                              </span>
-                            )}
-                          </div>
-                          {isUnderpaid && (
-                            <div className="text-sm font-semibold text-destructive">
-                              ${underpayment.toFixed(2)} underpayment
+                              {isUnderpaid ? (
+                                <span className="flex items-center gap-1 text-xs text-destructive">
+                                  <TrendingDown className="h-3 w-3" />
+                                  Underpaid
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 text-xs text-green-600">
+                                  <CheckCircle className="h-3 w-3" />
+                                  Correct
+                                </span>
+                              )}
                             </div>
-                          )}
-                        </button>
+                            {isUnderpaid && (
+                              <div className="text-sm font-semibold text-destructive">
+                                ${underpayment.toFixed(2)} underpayment
+                              </div>
+                            )}
+                          </button>
+                          <button
+                            onClick={(e) => handleDeleteCalculation(calc.id, e)}
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1.5 hover:bg-destructive/10 rounded-md transition-all"
+                            title="Delete check"
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
