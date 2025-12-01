@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
+import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
 
 export default function NewCheck_Step1_WhoAreYou() {
   const navigate = useNavigate();
@@ -23,6 +25,26 @@ export default function NewCheck_Step1_WhoAreYou() {
   const [selectedClassification, setSelectedClassification] = useState("");
   const [employmentType, setEmploymentType] = useState("Full-time");
   const [knowsClassification, setKnowsClassification] = useState<'yes' | 'no'>('yes');
+  
+  // New fields for enhanced Step 1
+  const [jobDescription, setJobDescription] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [state, setState] = useState("NSW");
+  
+  const industries = [
+    "Retail",
+    "Hospitality",
+    "Healthcare",
+    "Manufacturing",
+    "Construction",
+    "Education",
+    "Transport & Logistics",
+    "Professional Services",
+    "IT & Technology",
+    "Other",
+  ];
+  
+  const states = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT"];
 
   useEffect(() => {
     loadAllAwards();
@@ -152,13 +174,20 @@ export default function NewCheck_Step1_WhoAreYou() {
       return;
     }
 
+    // Get full award name from awards list
+    const selectedAwardObj = awards.find(a => a.code === selectedAward);
+    
     navigate("/new-check-step-2", {
       state: {
         awardCode: selectedAward,
+        awardName: selectedAwardObj?.name || "",
         classificationId: knowsClassification === 'yes' ? selectedClassification : null,
         employmentType,
         knowsClassification,
         workArea: selectedWorkArea,
+        jobDescription,
+        industry,
+        state,
       },
     });
   };
@@ -169,10 +198,54 @@ export default function NewCheck_Step1_WhoAreYou() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle>Step 1: Who are you?</CardTitle>
-          <CardDescription>Let's identify your award and job classification</CardDescription>
+          <ProgressIndicator currentStep={1} />
+          <CardTitle>Step 1: Job Details</CardTitle>
+          <CardDescription>Tell us about your work situation</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label>Describe your job (optional)</Label>
+            <Textarea
+              placeholder="e.g., I work as a barista in a cafe..."
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              className="min-h-[80px]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Industry</Label>
+              <Select value={industry} onValueChange={setIndustry}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border border-border">
+                  {industries.map((ind) => (
+                    <SelectItem key={ind} value={ind}>
+                      {ind}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>State</Label>
+              <Select value={state} onValueChange={setState}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background border border-border">
+                  {states.map((st) => (
+                    <SelectItem key={st} value={st}>
+                      {st}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label>Select your Award</Label>
             {loading ? (

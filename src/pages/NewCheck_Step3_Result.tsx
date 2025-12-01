@@ -2,13 +2,19 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle } from "lucide-react";
+import { AlertCircle, CheckCircle, Download, Mail, Loader2 } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
+import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 export default function NewCheck_Step3_Result() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const { result, shiftDetails, advancedPayslip } = location.state || {};
+  const [downloading, setDownloading] = useState(false);
+  const [emailing, setEmailing] = useState(false);
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -18,6 +24,30 @@ export default function NewCheck_Step3_Result() {
   const isUnsureMode = result.mode === 'unsure';
   const underpayment = isUnsureMode ? result.overallMaxUnderpayment : (result.underpayment || 0);
   const isUnderpaid = underpayment > 0;
+  
+  const handleDownloadPDF = async () => {
+    setDownloading(true);
+    try {
+      toast({
+        title: "Coming Soon",
+        description: "PDF download feature will be available soon",
+      });
+    } finally {
+      setDownloading(false);
+    }
+  };
+  
+  const handleEmailReport = async () => {
+    setEmailing(true);
+    try {
+      toast({
+        title: "Coming Soon",
+        description: "Email report feature will be available soon",
+      });
+    } finally {
+      setEmailing(false);
+    }
+  };
 
   return (
     <>
@@ -25,10 +55,33 @@ export default function NewCheck_Step3_Result() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-3xl">
         <CardHeader>
-          <CardTitle>Step 3: Your Pay Check Result</CardTitle>
-          <CardDescription>Here's what we found</CardDescription>
+          <ProgressIndicator currentStep={3} />
+          <CardTitle>Step 3: Results</CardTitle>
+          <CardDescription>Your pay check analysis</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Big headline based on underpayment */}
+          <div className="text-center py-6 border-2 border-dashed rounded-lg">
+            {isUnderpaid ? (
+              <div className="space-y-2">
+                <h2 className="text-3xl md:text-4xl font-bold text-destructive">
+                  You may have been underpaid by approximately ${underpayment.toFixed(2)}
+                </h2>
+                <p className="text-muted-foreground">
+                  {isUnsureMode ? "Based on likely classifications for your work area" : "For this pay period"}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <h2 className="text-3xl md:text-4xl font-bold text-green-600 dark:text-green-400">
+                  Your pay looks roughly correct for this period
+                </h2>
+                <p className="text-muted-foreground">
+                  No significant underpayment detected
+                </p>
+              </div>
+            )}
+          </div>
           {advancedPayslip && (
             <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
               <div className="font-bold text-base">What you were paid (from your payslip):</div>
@@ -221,8 +274,33 @@ export default function NewCheck_Step3_Result() {
               </AlertDescription>
             </Alert>
           )}
+          
+          {/* Disclaimer */}
+          <Alert className="border-muted-foreground/30 bg-muted/50">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-xs leading-relaxed">
+              <strong>Disclaimer:</strong> These calculations are based on Fair Work modern award pay data and your answers. 
+              They are general guidance only and are not legal or financial advice. For specific advice about your situation, 
+              please consult with a qualified professional or contact the Fair Work Ombudsman.
+            </AlertDescription>
+          </Alert>
+
+          {/* Action Buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Button variant="outline" onClick={handleDownloadPDF} disabled={downloading} className="gap-2">
+              {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              Download PDF Summary
+            </Button>
+            <Button variant="outline" onClick={handleEmailReport} disabled={emailing} className="gap-2">
+              {emailing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+              Email This Report
+            </Button>
+          </div>
 
           <div className="flex gap-3">
+            <Button variant="outline" onClick={() => navigate("/app-dashboard")} className="flex-1">
+              Dashboard
+            </Button>
             <Button variant="outline" onClick={() => navigate("/new-check-step-1")} className="flex-1">
               New Check
             </Button>

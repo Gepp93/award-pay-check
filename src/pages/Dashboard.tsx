@@ -12,8 +12,8 @@ const Dashboard = () => {
         navigate("/auth");
         return;
       }
-      // Redirect authenticated users to the new wizard
-      navigate("/new-check-step-1");
+      // Redirect authenticated users to the app dashboard
+      navigate("/app-dashboard");
     };
 
     checkUserAndRedirect();

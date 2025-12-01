@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import NewCheck_Step1_WhoAreYou from "./pages/NewCheck_Step1_WhoAreYou";
 import NewCheck_Step2_ShiftDetails from "./pages/NewCheck_Step2_ShiftDetails";
 import NewCheck_Step3_Result from "./pages/NewCheck_Step3_Result";
+import AppDashboard from "./pages/AppDashboard";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/debug-classifications" element={<DebugClassifications />} />
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/app-dashboard" element={<AppDashboard />} />
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
