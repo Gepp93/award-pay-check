@@ -2,12 +2,28 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle, Download, Loader2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AlertCircle, CheckCircle, Download, Loader2, ChevronDown, Coins } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+
+interface PotentialAllowance {
+  id: string;
+  name: string;
+  amount: string;
+  estimatedValue: number;
+  reason: string;
+  icon: string;
+}
+
+interface AwardAllowance {
+  name: string;
+  description: string;
+}
 
 export default function NewCheck_Step3_Result() {
   const navigate = useNavigate();
@@ -15,6 +31,7 @@ export default function NewCheck_Step3_Result() {
   const { toast } = useToast();
   const { result, shiftDetails, advancedPayslip } = location.state || {};
   const [downloading, setDownloading] = useState(false);
+  const [allAllowancesOpen, setAllAllowancesOpen] = useState(false);
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -24,12 +41,13 @@ export default function NewCheck_Step3_Result() {
   const isUnsureMode = result.mode === 'unsure';
   const underpayment = isUnsureMode ? result.overallMaxUnderpayment : (result.underpayment || 0);
   const isUnderpaid = underpayment > 0;
+  const potentialAllowances: PotentialAllowance[] = result.potentialAllowances || [];
+  const allAwardAllowances: AwardAllowance[] = result.allAwardAllowances || [];
 
   // Save calculation to database (only if not viewing from dashboard)
   const fromDashboard = location.state?.fromDashboard;
   
   useEffect(() => {
-    // Skip saving if viewing from dashboard
     if (fromDashboard) return;
     
     const saveCalculation = async () => {
@@ -50,12 +68,9 @@ export default function NewCheck_Step3_Result() {
     saveCalculation();
   }, [shiftDetails, result, fromDashboard]);
   
-  
-  
   const handleDownloadPDF = async () => {
     setDownloading(true);
     try {
-      // Use browser's print dialog which allows saving as PDF
       window.print();
       
       toast({
@@ -109,6 +124,52 @@ export default function NewCheck_Step3_Result() {
               </div>
             )}
           </div>
+
+          {/* Potential Allowances Section */}
+          {potentialAllowances.length > 0 && (
+            <div className="rounded-lg border-2 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <Coins className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <h3 className="font-bold text-lg text-amber-800 dark:text-amber-200">
+                  You May Be Entitled To These Allowances
+                </h3>
+              </div>
+              <div className="space-y-3">
+                {potentialAllowances.map((allowance) => (
+                  <div 
+                    key={allowance.id} 
+                    className="rounded-lg border border-amber-200 dark:border-amber-800 bg-white dark:bg-background p-3 space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{allowance.icon}</span>
+                        <div>
+                          <div className="font-semibold">{allowance.name}</div>
+                          <div className="text-sm text-primary font-medium">{allowance.amount}</div>
+                        </div>
+                      </div>
+                      {allowance.estimatedValue > 0 && (
+                        <div className="text-right">
+                          <div className="text-xs text-muted-foreground">Est. value</div>
+                          <div className="font-bold text-green-600 dark:text-green-400">
+                            ${allowance.estimatedValue.toFixed(2)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground bg-muted/50 rounded p-2">
+                      <span className="font-medium text-foreground">WHY: </span>
+                      {allowance.reason}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                These are potential entitlements based on your shift conditions. Check your award for exact amounts and eligibility.
+              </p>
+            </div>
+          )}
+
           {advancedPayslip && (
             <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
               <div className="font-bold text-base">What you were paid (from your payslip):</div>
@@ -300,6 +361,33 @@ export default function NewCheck_Step3_Result() {
                 {result.rateWarning}
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* All Award Allowances - Collapsible for education */}
+          {allAwardAllowances.length > 0 && (
+            <Collapsible open={allAllowancesOpen} onOpenChange={setAllAllowancesOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 w-full justify-start p-0 h-auto font-normal hover:bg-transparent">
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", allAllowancesOpen && "transform rotate-180")} />
+                  <span className="text-sm font-medium">📚 Other Allowances Under Your Award</span>
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-3">
+                <div className="rounded-lg border border-border bg-muted/30 p-4">
+                  <p className="text-xs text-muted-foreground mb-3">
+                    These allowances may apply depending on your specific work circumstances:
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {allAwardAllowances.map((allowance, idx) => (
+                      <div key={idx} className="text-sm">
+                        <span className="font-medium">{allowance.name}</span>
+                        <p className="text-xs text-muted-foreground">{allowance.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           )}
           
           {/* Disclaimer */}
