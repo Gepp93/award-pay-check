@@ -6,6 +6,181 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Allowance detection rules engine
+interface AllowanceRule {
+  id: string;
+  name: string;
+  amount: string;
+  estimatedValue: number;
+  condition: (params: any) => boolean;
+  reason: (params: any) => string;
+  icon: string;
+}
+
+const allowanceRules: AllowanceRule[] = [
+  {
+    id: 'meal_allowance',
+    name: 'Meal Allowance',
+    amount: '$20.50 per meal',
+    estimatedValue: 20.50,
+    condition: (p) => p.workedOver10Hours || p.totalHours > 10,
+    reason: (p) => `You worked ${p.totalHours?.toFixed(1) || 'over 10'} hours. After 10 hours, most awards require a meal allowance if you weren't given notice the day before.`,
+    icon: '🍽️',
+  },
+  {
+    id: 'travel_allowance',
+    name: 'Travel/Vehicle Allowance',
+    amount: '$0.99 per km',
+    estimatedValue: 20.00,
+    condition: (p) => p.droveOwnCar,
+    reason: (p) => `You used your own vehicle for work purposes. You may be entitled to a per-kilometre allowance.`,
+    icon: '🚗',
+  },
+  {
+    id: 'height_allowance',
+    name: 'Height Work Allowance',
+    amount: '$3.50 per hour',
+    estimatedValue: 35.00,
+    condition: (p) => p.allowanceConditions?.workedAtHeight,
+    reason: (p) => `You worked at heights above 15 metres. This typically triggers height money of approximately $3.50/hr.`,
+    icon: '🏗️',
+  },
+  {
+    id: 'confined_space',
+    name: 'Confined Space Allowance',
+    amount: '$2.98 per hour',
+    estimatedValue: 29.80,
+    condition: (p) => p.allowanceConditions?.workedInConfinedSpace,
+    reason: (p) => `You worked in a confined space. This hazardous work condition attracts additional pay.`,
+    icon: '🚧',
+  },
+  {
+    id: 'underground_allowance',
+    name: 'Underground Allowance',
+    amount: '$4.20 per hour',
+    estimatedValue: 42.00,
+    condition: (p) => p.allowanceConditions?.workedUnderground,
+    reason: (p) => `You worked underground. This attracts an additional allowance under most awards.`,
+    icon: '⛏️',
+  },
+  {
+    id: 'tool_allowance',
+    name: 'Tool Allowance',
+    amount: '$28.00 per week',
+    estimatedValue: 28.00,
+    condition: (p) => p.allowanceConditions?.usedOwnTools,
+    reason: (p) => `You're supplying your own tools. Tradespersons are often entitled to a tool maintenance/replacement allowance.`,
+    icon: '🧰',
+  },
+  {
+    id: 'first_aid_allowance',
+    name: 'First Aid Allowance',
+    amount: '$17.95 per week',
+    estimatedValue: 17.95,
+    condition: (p) => p.allowanceConditions?.isFirstAider,
+    reason: (p) => `You hold a first aid certificate and perform first aid duties. This entitles you to a weekly allowance.`,
+    icon: '🩹',
+  },
+  {
+    id: 'leading_hand',
+    name: 'Leading Hand Allowance',
+    amount: '$25-65 per week',
+    estimatedValue: 45.00,
+    condition: (p) => p.allowanceConditions?.isLeadingHand,
+    reason: (p) => `You're supervising other employees. Leading hands receive additional pay based on the number of people supervised.`,
+    icon: '👷',
+  },
+  {
+    id: 'dirty_work',
+    name: 'Dirty Work Allowance',
+    amount: '$1.38 per hour',
+    estimatedValue: 13.80,
+    condition: (p) => p.allowanceConditions?.workedInDirtyConditions,
+    reason: (p) => `You worked in dirty, dusty, or offensive conditions. This attracts an hourly allowance.`,
+    icon: '🧹',
+  },
+  {
+    id: 'extreme_weather',
+    name: 'Adverse Weather Allowance',
+    amount: '$0.62 per hour',
+    estimatedValue: 6.20,
+    condition: (p) => p.allowanceConditions?.workedInExtremeWeather,
+    reason: (p) => `You worked in extreme temperatures (46°C+ heat or 0°C or below). This attracts weather/climate allowance.`,
+    icon: '🌡️',
+  },
+  {
+    id: 'night_shift',
+    name: 'Night Shift Allowance',
+    amount: '15% loading',
+    estimatedValue: 0, // Calculated dynamically
+    condition: (p) => p.allowanceConditions?.workedNights,
+    reason: (p) => `You worked night shifts (between 8pm-6am). Night shift work attracts a 15% loading on top of your base rate.`,
+    icon: '🌙',
+  },
+  {
+    id: 'weekend_penalty',
+    name: 'Weekend Penalty Rates',
+    amount: '150-200%',
+    estimatedValue: 0,
+    condition: (p) => p.workedWeekend,
+    reason: (p) => `You worked on Saturday or Sunday. Weekend work typically attracts penalty rates of 150% (Saturday) or 200% (Sunday).`,
+    icon: '📅',
+  },
+  {
+    id: 'public_holiday',
+    name: 'Public Holiday Penalty',
+    amount: '250%',
+    estimatedValue: 0,
+    condition: (p) => p.workedPublicHoliday,
+    reason: (p) => `You worked on a public holiday. This attracts double time and a half (250%) under most awards.`,
+    icon: '🎉',
+  },
+];
+
+// List of all common award allowances for education
+const allCommonAllowances = [
+  { name: 'Meal Allowance', description: 'When working overtime or extended hours without notice' },
+  { name: 'Travel Allowance', description: 'Using personal vehicle for work purposes' },
+  { name: 'Tool Allowance', description: 'Tradespersons supplying their own tools' },
+  { name: 'First Aid Allowance', description: 'Appointed first aiders with certificates' },
+  { name: 'Leading Hand Allowance', description: 'Supervising 1 or more employees' },
+  { name: 'Height Allowance', description: 'Working at heights above 15 metres' },
+  { name: 'Confined Space Allowance', description: 'Working in confined or restricted areas' },
+  { name: 'Underground Allowance', description: 'Working below ground level' },
+  { name: 'Dirty Work Allowance', description: 'Dirty, dusty, or offensive conditions' },
+  { name: 'Wet Work Allowance', description: 'Working in wet conditions' },
+  { name: 'Site Allowance', description: 'Construction site work' },
+  { name: 'Living Away Allowance', description: 'Working away from usual residence' },
+  { name: 'Adverse Weather Allowance', description: 'Extreme heat or cold conditions' },
+  { name: 'Night Shift Allowance', description: 'Working between 8pm and 6am' },
+  { name: 'On-Call Allowance', description: 'Being available outside normal hours' },
+  { name: 'Cold Places Allowance', description: 'Working in refrigerated areas' },
+  { name: 'Hot Places Allowance', description: 'Working near furnaces or extreme heat' },
+  { name: 'Laser Equipment Allowance', description: 'Operating laser equipment' },
+  { name: 'Explosive Powered Tools', description: 'Using explosive powered tools' },
+  { name: 'Scaffolding Allowance', description: 'Erecting scaffolding over certain heights' },
+];
+
+// Detect potential allowances based on conditions
+function detectPotentialAllowances(params: any): any[] {
+  const detected: any[] = [];
+  
+  for (const rule of allowanceRules) {
+    if (rule.condition(params)) {
+      detected.push({
+        id: rule.id,
+        name: rule.name,
+        amount: rule.amount,
+        estimatedValue: rule.estimatedValue,
+        reason: rule.reason(params),
+        icon: rule.icon,
+      });
+    }
+  }
+  
+  return detected;
+}
+
 // Helper function to calculate pay for a single classification
 async function calculateSingleClassification(params: any) {
   const {
@@ -22,6 +197,7 @@ async function calculateSingleClassification(params: any) {
     actualPaid,
     fwcApiKey,
     advancedPayslip,
+    allowanceConditions,
   } = params;
 
   // Fetch pay rates
@@ -78,7 +254,7 @@ async function calculateSingleClassification(params: any) {
   if (advancedPayslip?.payslipBaseRate) {
     const rateDifference = Math.abs(baseRate - advancedPayslip.payslipBaseRate);
     const percentageDifference = (rateDifference / baseRate) * 100;
-    matchScore = Math.max(0, 100 - percentageDifference * 2); // Higher score for closer match
+    matchScore = Math.max(0, 100 - percentageDifference * 2);
   }
 
   // Calculate hours worked
@@ -137,27 +313,23 @@ async function calculateSingleClassification(params: any) {
   const awardPayTotal = basePay + overtimePay + weekendPay + publicHolidayPay + allowances;
   const possibleUnderpayment = Math.max(0, awardPayTotal - actualPaid);
 
-  // Calculate expected pay from advanced payslip if provided
-  let calculatedActualPay = null;
-  let payslipValidation = null;
-  if (advancedPayslip?.hoursAtBase && advancedPayslip?.payslipBaseRate) {
-    calculatedActualPay = 
-      (advancedPayslip.hoursAtBase || 0) * advancedPayslip.payslipBaseRate +
-      (advancedPayslip.hoursAt150 || 0) * advancedPayslip.payslipBaseRate * 1.5 +
-      (advancedPayslip.hoursAt200 || 0) * advancedPayslip.payslipBaseRate * 2;
-    
-    if (Math.abs(calculatedActualPay - actualPaid) > 5) {
-      payslipValidation = `Your payslip breakdown adds up to $${calculatedActualPay.toFixed(2)}, but you entered $${actualPaid.toFixed(2)} as actual paid.`;
-    }
-  }
+  // Detect potential allowances
+  const potentialAllowances = detectPotentialAllowances({
+    workedOver10Hours,
+    droveOwnCar,
+    workedWeekend,
+    workedPublicHoliday,
+    allowanceConditions,
+    totalHours,
+    baseRate,
+  });
 
   return {
     baseRate,
     awardPayTotal,
     possibleUnderpayment,
     matchScore,
-    calculatedActualPay,
-    payslipValidation,
+    potentialAllowances,
     breakdown: {
       regularHours,
       basePay,
@@ -188,6 +360,7 @@ async function handleUnsureClassification(params: any) {
     fwcApiKey,
     corsHeaders,
     advancedPayslip,
+    allowanceConditions,
   } = params;
 
   console.log('User is unsure about classification, fetching all classifications for award:', awardCode);
@@ -224,18 +397,15 @@ async function handleUnsureClassification(params: any) {
 
   // Filter classifications
   const filteredClassifications = allClassifications.filter((cls: any) => {
-    // Filter by work area if provided - use partial case-insensitive match
     if (workArea && cls.clause_description) {
       const workAreaLower = workArea.toLowerCase();
       const clauseDescLower = cls.clause_description.toLowerCase();
       
-      // Try partial matching - if neither contains the other, exclude
       if (!workAreaLower.includes(clauseDescLower) && !clauseDescLower.includes(workAreaLower)) {
         return false;
       }
     }
 
-    // Exclude trainee classifications unless work area is trainee-related
     const isTraineeWorkArea = workArea?.toLowerCase().includes('trainee') || 
                                workArea?.toLowerCase().includes('school');
     
@@ -258,16 +428,10 @@ async function handleUnsureClassification(params: any) {
 
   console.log(`After filtering: ${filteredClassifications.length} classifications`);
 
-  // Calculate for each classification (limit to first 30 to avoid timeout)
   const classificationsToCheck = filteredClassifications.slice(0, 30);
   const results: any[] = [];
 
   console.log(`Attempting to calculate pay for ${classificationsToCheck.length} classifications...`);
-  
-  // If advanced payslip base rate provided, prioritize classifications with similar rates
-  if (advancedPayslip?.payslipBaseRate) {
-    console.log(`Prioritizing classifications near payslip base rate: $${advancedPayslip.payslipBaseRate}`);
-  }
 
   for (const cls of classificationsToCheck) {
     try {
@@ -281,13 +445,14 @@ async function handleUnsureClassification(params: any) {
         workedWeekend,
         workedPublicHoliday,
         droveOwnCar,
-      workedOver10Hours,
-      actualPaid,
-      fwcApiKey,
-      advancedPayslip,
-    });
+        workedOver10Hours,
+        actualPaid,
+        fwcApiKey,
+        advancedPayslip,
+        allowanceConditions,
+      });
 
-    if (result) {
+      if (result) {
         results.push({
           classificationId: cls.classification_fixed_id,
           classificationName: cls.classification,
@@ -303,11 +468,10 @@ async function handleUnsureClassification(params: any) {
   console.log(`Successfully calculated ${results.length} out of ${classificationsToCheck.length} classifications`);
 
   if (results.length === 0) {
-    // Return a helpful error with guidance
     return new Response(
       JSON.stringify({
         error: 'Could not calculate pay for any classification',
-        details: 'Unable to find valid pay rates for the selected work area. This may be because the classifications in this category require additional information or have complex rate structures. Please try selecting "Yes, I know it" and choose your specific classification.',
+        details: 'Unable to find valid pay rates for the selected work area.',
         classificationsChecked: classificationsToCheck.length,
         workArea,
       }),
@@ -315,38 +479,48 @@ async function handleUnsureClassification(params: any) {
     );
   }
 
-  // Sort by match score (if available) then by possible underpayment
+  // Sort by match score then by possible underpayment
   results.sort((a, b) => {
     if (advancedPayslip?.payslipBaseRate) {
-      // Prioritize by match score if payslip rate provided
       return (b.matchScore || 0) - (a.matchScore || 0);
     }
     return b.possibleUnderpayment - a.possibleUnderpayment;
   });
 
-  // Calculate min and max underpayment
   const underpayments = results.map(r => r.possibleUnderpayment);
   const overallMinUnderpayment = Math.min(...underpayments);
   const overallMaxUnderpayment = Math.max(...underpayments);
 
-  // Determine common entitlements based on shift conditions
+  // Calculate total hours for allowance detection
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  const [finishHour, finishMinute] = finishTime.split(':').map(Number);
+  const totalMinutes = (finishHour * 60 + finishMinute) - (startHour * 60 + startMinute) - breakMinutes;
+  const totalHours = totalMinutes / 60;
+
+  // Detect potential allowances
+  const potentialAllowances = detectPotentialAllowances({
+    workedOver10Hours,
+    droveOwnCar,
+    workedWeekend,
+    workedPublicHoliday,
+    allowanceConditions,
+    totalHours,
+    baseRate: results[0]?.baseRate || 0,
+  });
+
+  // Determine common entitlements
   const commonEntitlements: string[] = [];
   if (workedWeekend) commonEntitlements.push('Weekend penalty rates');
   if (workedPublicHoliday) commonEntitlements.push('Public holiday penalty rates');
   if (droveOwnCar) commonEntitlements.push('Motor vehicle allowance ($20)');
   if (workedOver10Hours) commonEntitlements.push('Meal allowance ($15)');
   
-  // Check for overtime only if user didn't already enter overtime hours in payslip
   const userEnteredOvertime = advancedPayslip && (
     (advancedPayslip.hoursAt150 && advancedPayslip.hoursAt150 > 0) || 
     (advancedPayslip.hoursAt200 && advancedPayslip.hoursAt200 > 0)
   );
   
   if (!userEnteredOvertime) {
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const [finishHour, finishMinute] = finishTime.split(':').map(Number);
-    const totalMinutes = (finishHour * 60 + finishMinute) - (startHour * 60 + startMinute) - breakMinutes;
-    const totalHours = totalMinutes / 60;
     const standardDayHours = employmentType === 'Casual' ? 8 : 7.6;
     if (totalHours > standardDayHours) {
       const otHours = totalHours - standardDayHours;
@@ -372,6 +546,8 @@ async function handleUnsureClassification(params: any) {
         possibleUnderpayment: r.possibleUnderpayment,
       })),
       commonEntitlements,
+      potentialAllowances,
+      allAwardAllowances: allCommonAllowances,
       breakdown: {
         totalClassificationsAnalyzed: results.length,
         totalClassificationsAvailable: filteredClassifications.length,
@@ -402,6 +578,7 @@ serve(async (req) => {
       workedOver10Hours,
       actualPaid,
       advancedPayslip,
+      allowanceConditions,
     } = await req.json();
 
     console.log('Calculating shift pay for:', { awardCode, classificationId, employmentType, date, workArea });
@@ -424,6 +601,7 @@ serve(async (req) => {
         fwcApiKey: Deno.env.get('FWC_API_KEY'),
         corsHeaders,
         advancedPayslip,
+        allowanceConditions,
       });
     }
 
@@ -536,12 +714,12 @@ serve(async (req) => {
 
     // Allowances
     if (droveOwnCar) {
-      allowances += 20; // Example allowance
+      allowances += 20;
       reasons.push('Motor vehicle allowance: +$20.00');
     }
 
     if (workedOver10Hours) {
-      allowances += 15; // Example meal allowance
+      allowances += 15;
       reasons.push('Meal allowance (over 10 hours): +$15.00');
     }
 
@@ -555,6 +733,17 @@ serve(async (req) => {
     } else {
       reasons.unshift('Your pay matches the minimum award requirements');
     }
+
+    // Detect potential allowances
+    const potentialAllowances = detectPotentialAllowances({
+      workedOver10Hours,
+      droveOwnCar,
+      workedWeekend,
+      workedPublicHoliday,
+      allowanceConditions,
+      totalHours,
+      baseRate,
+    });
 
     // Add match score and payslip validation if advanced payslip provided
     let matchScore = 0;
@@ -577,6 +766,8 @@ serve(async (req) => {
       matchScore,
       rateWarning,
       reasons,
+      potentialAllowances,
+      allAwardAllowances: allCommonAllowances,
       breakdown: {
         regularHours,
         basePay,

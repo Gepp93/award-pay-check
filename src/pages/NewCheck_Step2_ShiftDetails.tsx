@@ -64,6 +64,16 @@ export default function NewCheck_Step2_ShiftDetails() {
   const [workedOver10Hours, setWorkedOver10Hours] = useState(false);
   const [overtimeFrequency, setOvertimeFrequency] = useState<"never" | "sometimes" | "often">("never");
   
+  // NEW: Allowance-triggering conditions
+  const [workedAtHeight, setWorkedAtHeight] = useState(false);
+  const [workedInConfinedSpace, setWorkedInConfinedSpace] = useState(false);
+  const [usedOwnTools, setUsedOwnTools] = useState(false);
+  const [isFirstAider, setIsFirstAider] = useState(false);
+  const [isLeadingHand, setIsLeadingHand] = useState(false);
+  const [workedInDirtyConditions, setWorkedInDirtyConditions] = useState(false);
+  const [workedInExtremeWeather, setWorkedInExtremeWeather] = useState(false);
+  const [workedUnderground, setWorkedUnderground] = useState(false);
+  
   // Enhanced allowances
   const [allowances, setAllowances] = useState<AllowanceReported[]>([
     { type: "travel", received: false, amount_per_period: 0 },
@@ -144,6 +154,18 @@ export default function NewCheck_Step2_ShiftDetails() {
           workedOver10Hours,
           actualPaid: actualPaid,
           advancedPayslip,
+          // NEW: Allowance conditions
+          allowanceConditions: {
+            workedAtHeight,
+            workedInConfinedSpace,
+            workedUnderground,
+            usedOwnTools,
+            isFirstAider,
+            isLeadingHand,
+            workedInDirtyConditions,
+            workedInExtremeWeather,
+            workedNights,
+          },
         },
       });
 
@@ -296,7 +318,7 @@ export default function NewCheck_Step2_ShiftDetails() {
           )}
 
           <div className="space-y-3">
-            <Label>Shift Conditions & Allowances</Label>
+            <Label>Shift Conditions</Label>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -366,6 +388,93 @@ export default function NewCheck_Step2_ShiftDetails() {
                   <Label htmlFor="ot-often" className="font-normal cursor-pointer">Often</Label>
                 </div>
               </RadioGroup>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label>Allowance-Triggering Conditions</Label>
+            <p className="text-xs text-muted-foreground">Check any that apply - these may entitle you to extra allowances</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="height"
+                  checked={workedAtHeight}
+                  onCheckedChange={(checked) => setWorkedAtHeight(checked as boolean)}
+                />
+                <label htmlFor="height" className="text-sm cursor-pointer">
+                  Worked at heights (above 15m)
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="confined"
+                  checked={workedInConfinedSpace}
+                  onCheckedChange={(checked) => setWorkedInConfinedSpace(checked as boolean)}
+                />
+                <label htmlFor="confined" className="text-sm cursor-pointer">
+                  Worked in confined spaces
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="underground"
+                  checked={workedUnderground}
+                  onCheckedChange={(checked) => setWorkedUnderground(checked as boolean)}
+                />
+                <label htmlFor="underground" className="text-sm cursor-pointer">
+                  Worked underground
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="tools"
+                  checked={usedOwnTools}
+                  onCheckedChange={(checked) => setUsedOwnTools(checked as boolean)}
+                />
+                <label htmlFor="tools" className="text-sm cursor-pointer">
+                  Used your own tools
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="first-aid"
+                  checked={isFirstAider}
+                  onCheckedChange={(checked) => setIsFirstAider(checked as boolean)}
+                />
+                <label htmlFor="first-aid" className="text-sm cursor-pointer">
+                  First aider (with certificate)
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="leading-hand"
+                  checked={isLeadingHand}
+                  onCheckedChange={(checked) => setIsLeadingHand(checked as boolean)}
+                />
+                <label htmlFor="leading-hand" className="text-sm cursor-pointer">
+                  Leading hand / supervising others
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="dirty"
+                  checked={workedInDirtyConditions}
+                  onCheckedChange={(checked) => setWorkedInDirtyConditions(checked as boolean)}
+                />
+                <label htmlFor="dirty" className="text-sm cursor-pointer">
+                  Dirty or offensive work conditions
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="weather"
+                  checked={workedInExtremeWeather}
+                  onCheckedChange={(checked) => setWorkedInExtremeWeather(checked as boolean)}
+                />
+                <label htmlFor="weather" className="text-sm cursor-pointer">
+                  Extreme heat (46°C+) or cold (0°C or below)
+                </label>
+              </div>
             </div>
           </div>
 
