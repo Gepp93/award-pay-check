@@ -45,8 +45,8 @@ const Subscription = () => {
     }
   };
 
-  const handleUpgrade = () => {
-    toast.info("Stripe integration coming soon! This will redirect to checkout.");
+  const handleUpgrade = (plan: string) => {
+    toast.info(`Upgrading to ${plan} plan. Stripe integration coming soon!`);
     // TODO: Implement Stripe checkout
   };
 
@@ -71,55 +71,12 @@ const Subscription = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Free Tier */}
+          {/* Monthly Plan */}
           <Card className="bg-card/50 backdrop-blur-lg border-border">
             <CardHeader>
-              <CardTitle className="text-2xl">Free</CardTitle>
+              <CardTitle className="text-2xl">Pro Monthly</CardTitle>
               <CardDescription className="text-lg">
-                Perfect for trying out AwardPay
-              </CardDescription>
-              <div className="mt-4">
-                <span className="text-4xl font-bold">$0</span>
-                <span className="text-muted-foreground">/month</span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-accent" />
-                  <span>5 free calculations</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-accent" />
-                  <span>Basic award calculations</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-accent" />
-                  <span>Penalty rate breakdowns</span>
-                </li>
-              </ul>
-              <Button
-                variant="outline"
-                className="w-full"
-                disabled={subscriptionStatus === "free"}
-              >
-                {subscriptionStatus === "free" ? "Current Plan" : "Downgrade"}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Pro Tier */}
-          <Card className="bg-gradient-card backdrop-blur-lg border-accent shadow-glow relative">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <div className="bg-accent text-accent-foreground px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                <Zap className="h-4 w-4" />
-                Most Popular
-              </div>
-            </div>
-            <CardHeader>
-              <CardTitle className="text-2xl">Pro</CardTitle>
-              <CardDescription className="text-lg">
-                For professionals who need unlimited access
+                Pay month-to-month
               </CardDescription>
               <div className="mt-4">
                 <span className="text-4xl font-bold">$29</span>
@@ -136,11 +93,52 @@ const Subscription = () => {
                 ))}
               </ul>
               <Button
-                onClick={handleUpgrade}
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
-                disabled={subscriptionStatus === "active"}
+                onClick={() => handleUpgrade("Monthly")}
+                className="w-full"
+                variant="outline"
+                disabled={subscriptionStatus === "monthly"}
               >
-                {subscriptionStatus === "active" ? "Current Plan" : "Upgrade to Pro"}
+                {subscriptionStatus === "monthly" ? "Current Plan" : "Subscribe Monthly"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Yearly Plan */}
+          <Card className="bg-gradient-card backdrop-blur-lg border-accent shadow-glow relative">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <div className="bg-accent text-accent-foreground px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                <Zap className="h-4 w-4" />
+                Best Value
+              </div>
+            </div>
+            <CardHeader>
+              <CardTitle className="text-2xl">Pro Yearly</CardTitle>
+              <CardDescription className="text-lg">
+                Save with annual billing
+              </CardDescription>
+              <div className="mt-4">
+                <span className="text-4xl font-bold">$49</span>
+                <span className="text-muted-foreground">/year</span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Just $4.08/month - Save $299/year!
+              </p>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3 mb-6">
+                {features.map((feature, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <Check className="h-5 w-5 text-accent" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                onClick={() => handleUpgrade("Yearly")}
+                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                disabled={subscriptionStatus === "yearly"}
+              >
+                {subscriptionStatus === "yearly" ? "Current Plan" : "Subscribe Yearly"}
               </Button>
             </CardContent>
           </Card>
