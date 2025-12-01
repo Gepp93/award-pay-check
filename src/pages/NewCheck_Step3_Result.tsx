@@ -6,7 +6,8 @@ import { AlertCircle, CheckCircle, Download, Mail, Loader2 } from "lucide-react"
 import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function NewCheck_Step3_Result() {
   const navigate = useNavigate();
@@ -24,6 +25,26 @@ export default function NewCheck_Step3_Result() {
   const isUnsureMode = result.mode === 'unsure';
   const underpayment = isUnsureMode ? result.overallMaxUnderpayment : (result.underpayment || 0);
   const isUnderpaid = underpayment > 0;
+
+  // Save calculation to database
+  useEffect(() => {
+    const saveCalculation = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        await supabase.from('calculations').insert({
+          user_id: user.id,
+          shift_data: shiftDetails,
+          breakdown: result,
+        });
+      } catch (error) {
+        console.error('Error saving calculation:', error);
+      }
+    };
+
+    saveCalculation();
+  }, [shiftDetails, result]);
   
   const handleDownloadPDF = async () => {
     setDownloading(true);
