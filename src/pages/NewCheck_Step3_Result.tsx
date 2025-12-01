@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, CheckCircle, Download, Mail, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle, Download, Loader2 } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
 import { useToast } from "@/hooks/use-toast";
@@ -15,7 +15,6 @@ export default function NewCheck_Step3_Result() {
   const { toast } = useToast();
   const { result, shiftDetails, advancedPayslip } = location.state || {};
   const [downloading, setDownloading] = useState(false);
-  const [emailing, setEmailing] = useState(false);
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -51,27 +50,48 @@ export default function NewCheck_Step3_Result() {
     saveCalculation();
   }, [shiftDetails, result, fromDashboard]);
   
+  
   const handleDownloadPDF = async () => {
     setDownloading(true);
     try {
+      const { data, error } = await supabase.functions.invoke('generate-pdf-report', {
+        body: {
+          result,
+          shiftDetails,
+          advancedPayslip
+        }
+      });
+
+      if (error) throw error;
+
+      // Convert base64 to blob and download
+      const pdfBlob = new Blob(
+        [Uint8Array.from(atob(data.pdf), c => c.charCodeAt(0))],
+        { type: 'application/pdf' }
+      );
+      
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pay-check-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
       toast({
-        title: "Coming Soon",
-        description: "PDF download feature will be available soon",
+        title: "PDF Downloaded",
+        description: "Your pay check report has been downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast({
+        title: "Download Failed",
+        description: "There was an error generating your PDF report",
+        variant: "destructive"
       });
     } finally {
       setDownloading(false);
-    }
-  };
-  
-  const handleEmailReport = async () => {
-    setEmailing(true);
-    try {
-      toast({
-        title: "Coming Soon",
-        description: "Email report feature will be available soon",
-      });
-    } finally {
-      setEmailing(false);
     }
   };
 
@@ -312,14 +332,10 @@ export default function NewCheck_Step3_Result() {
           </Alert>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Button variant="outline" onClick={handleDownloadPDF} disabled={downloading} className="gap-2">
+          <div className="flex justify-center">
+            <Button onClick={handleDownloadPDF} disabled={downloading} className="gap-2">
               {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               Download PDF Summary
-            </Button>
-            <Button variant="outline" onClick={handleEmailReport} disabled={emailing} className="gap-2">
-              {emailing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
-              Email This Report
             </Button>
           </div>
 
