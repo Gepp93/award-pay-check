@@ -6,6 +6,14 @@ import { Link } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
 
 const Pricing = () => {
+  const handleUpgrade = (plan: "monthly" | "yearly") => {
+    const checkoutUrl = plan === "monthly" 
+      ? "https://buy.stripe.com/fZueVeffe4F3duvek56AM01"
+      : "https://buy.stripe.com/dRmfZi7MM3AZ623b7T6AM00";
+    
+    window.location.href = checkoutUrl;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
@@ -91,8 +99,8 @@ const Pricing = () => {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" asChild>
-                  <Link to="/subscription">Get AwardPay Pro</Link>
+                <Button className="w-full" onClick={() => handleUpgrade("monthly")}>
+                  Get AwardPay Pro
                 </Button>
               </CardFooter>
             </Card>
@@ -127,8 +135,8 @@ const Pricing = () => {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button className="w-full" asChild>
-                  <Link to="/subscription">Save With Yearly Plan</Link>
+                <Button className="w-full" onClick={() => handleUpgrade("yearly")}>
+                  Save With Yearly Plan
                 </Button>
               </CardFooter>
             </Card>
