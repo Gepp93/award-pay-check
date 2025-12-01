@@ -11,6 +11,7 @@ const Subscription = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string>("free");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -20,6 +21,7 @@ const Subscription = () => {
       }
       setUser(session.user);
       loadSubscriptionStatus(session.user.id);
+      setLoading(false);
     });
 
     const {
@@ -52,6 +54,17 @@ const Subscription = () => {
     
     window.location.href = checkoutUrl;
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-hero">
+        <NavBar />
+        <div className="container mx-auto px-4 py-16 text-center">
+          <p className="text-xl">Loading plans...</p>
+        </div>
+      </div>
+    );
+  }
 
   const features = [
     "Unlimited calculations",
