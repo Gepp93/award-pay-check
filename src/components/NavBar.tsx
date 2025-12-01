@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Calculator, ClipboardCheck, CreditCard, LogOut } from "lucide-react";
+import { Calculator, ClipboardCheck, CreditCard, LogOut, Home } from "lucide-react";
 import { toast } from "sonner";
 
 export const NavBar = () => {
@@ -28,6 +28,14 @@ export const NavBar = () => {
               AwardPay
             </button>
             <div className="hidden md:flex items-center gap-4">
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/app-dashboard")}
+                className="flex items-center gap-2"
+              >
+                <Home className="h-4 w-4" />
+                Dashboard
+              </Button>
               <Button
                 variant="ghost"
                 onClick={() => navigate("/new-check-step-1")}
