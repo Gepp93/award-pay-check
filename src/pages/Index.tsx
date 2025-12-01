@@ -128,7 +128,7 @@ const Index = () => {
                       onClick={() => navigate("/auth")}
                       className="bg-gradient-primary text-primary-foreground hover:opacity-90 text-lg px-8 py-6 h-14 font-semibold"
                     >
-                      Try Calculator Free
+                      Get Started
                     </Button>
                     <Button
                       size="lg"
@@ -334,7 +334,7 @@ const Index = () => {
                   </h2>
                   <p className="text-primary-foreground/90 mb-8 text-lg max-w-2xl mx-auto">
                     Join 10,000+ Australian workers who've taken control of their pay entitlements. 
-                    Get 5 free calculations to start.
+                    Create your free account and choose the plan that works for you.
                   </p>
                   <Button
                     size="lg"
@@ -344,7 +344,7 @@ const Index = () => {
                     Create Free Account
                   </Button>
                   <p className="text-primary-foreground/80 text-sm mt-6">
-                    No credit card required • 5 free calculations • Upgrade anytime
+                    Free to sign up • Flexible pricing plans • Cancel anytime
                   </p>
                 </CardContent>
               </Card>

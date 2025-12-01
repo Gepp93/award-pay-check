@@ -57,7 +57,7 @@ const HowItWorks = () => {
               <Button variant="ghost" onClick={() => navigate("/auth")}>
                 Sign In
               </Button>
-              <Button onClick={() => navigate("/calculator")} className="bg-gradient-primary">
+              <Button onClick={() => navigate("/auth")} className="bg-gradient-primary">
                 Get Started
               </Button>
             </nav>
@@ -535,9 +535,9 @@ const HowItWorks = () => {
               <Button
                 size="lg"
                 className="bg-gradient-primary text-lg"
-                onClick={() => navigate("/calculator")}
+                onClick={() => navigate("/auth")}
               >
-                Try the Calculator Free
+                Get Started
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button
