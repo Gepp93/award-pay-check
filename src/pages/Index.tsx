@@ -173,14 +173,15 @@ const Index = () => {
                         </div>
                         
                         {/* Checkmarks */}
-                        <div className="space-y-3 pt-4">
+                        <div className="space-y-3 pt-4 flex flex-col items-center">
                           {[
                             "Fair Work Compliant",
                             "Modern Award Rules",
-                            "Instant Verification"
+                            "Instant Verification",
+                            "Tax Deductible"
                           ].map((item, i) => (
-                            <div key={i} className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                              <CheckCircle2 className="w-5 h-5 text-primary" />
+                            <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground w-48">
+                              <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
                               <span>{item}</span>
                             </div>
                           ))}
