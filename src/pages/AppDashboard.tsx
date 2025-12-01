@@ -116,7 +116,7 @@ const AppDashboard = () => {
                       return (
                         <div
                           key={calc.id}
-                          className="relative group border rounded-lg p-3 space-y-1 hover:bg-accent hover:shadow-md transition-all"
+                          className="relative group border rounded-lg p-3 pr-10 space-y-1 hover:bg-accent hover:shadow-md transition-all"
                         >
                           <button
                             onClick={() => navigate('/new-check-step-3', { 
