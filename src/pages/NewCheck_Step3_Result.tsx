@@ -26,8 +26,13 @@ export default function NewCheck_Step3_Result() {
   const underpayment = isUnsureMode ? result.overallMaxUnderpayment : (result.underpayment || 0);
   const isUnderpaid = underpayment > 0;
 
-  // Save calculation to database
+  // Save calculation to database (only if not viewing from dashboard)
+  const fromDashboard = location.state?.fromDashboard;
+  
   useEffect(() => {
+    // Skip saving if viewing from dashboard
+    if (fromDashboard) return;
+    
     const saveCalculation = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -44,7 +49,7 @@ export default function NewCheck_Step3_Result() {
     };
 
     saveCalculation();
-  }, [shiftDetails, result]);
+  }, [shiftDetails, result, fromDashboard]);
   
   const handleDownloadPDF = async () => {
     setDownloading(true);

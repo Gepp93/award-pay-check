@@ -101,7 +101,17 @@ const AppDashboard = () => {
                       const isUnderpaid = underpayment > 0;
 
                       return (
-                        <div key={calc.id} className="border rounded-lg p-3 space-y-1">
+                        <button
+                          key={calc.id}
+                          onClick={() => navigate('/new-check-step-3', { 
+                            state: { 
+                              result: calc.breakdown, 
+                              shiftDetails: calc.shift_data,
+                              fromDashboard: true
+                            } 
+                          })}
+                          className="w-full border rounded-lg p-3 space-y-1 hover:bg-accent hover:shadow-md transition-all cursor-pointer text-left"
+                        >
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-muted-foreground">
                               {format(new Date(calc.created_at), 'MMM dd, yyyy')}
@@ -123,7 +133,7 @@ const AppDashboard = () => {
                               ${underpayment.toFixed(2)} underpayment
                             </div>
                           )}
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
