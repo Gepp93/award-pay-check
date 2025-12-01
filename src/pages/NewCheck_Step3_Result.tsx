@@ -64,30 +64,30 @@ export default function NewCheck_Step3_Result() {
 
       if (error) throw error;
 
-      // Convert base64 to blob and download
-      const pdfBlob = new Blob(
+      // Convert base64 to blob and download as text file
+      const reportBlob = new Blob(
         [Uint8Array.from(atob(data.pdf), c => c.charCodeAt(0))],
-        { type: 'application/pdf' }
+        { type: 'text/plain' }
       );
       
-      const url = URL.createObjectURL(pdfBlob);
+      const url = URL.createObjectURL(reportBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `pay-check-${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = `pay-check-report-${new Date().toISOString().split('T')[0]}.txt`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       toast({
-        title: "PDF Downloaded",
+        title: "Report Downloaded",
         description: "Your pay check report has been downloaded successfully",
       });
     } catch (error) {
-      console.error('Error downloading PDF:', error);
+      console.error('Error downloading report:', error);
       toast({
         title: "Download Failed",
-        description: "There was an error generating your PDF report",
+        description: "There was an error generating your report",
         variant: "destructive"
       });
     } finally {
@@ -335,7 +335,7 @@ export default function NewCheck_Step3_Result() {
           <div className="flex justify-center">
             <Button onClick={handleDownloadPDF} disabled={downloading} className="gap-2">
               {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              Download PDF Summary
+              Download Report
             </Button>
           </div>
 
