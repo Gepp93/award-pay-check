@@ -469,12 +469,12 @@ const WhyAwardPay = () => {
             size="lg" 
             variant="secondary"
             className="text-lg px-8 py-6"
-            onClick={() => navigate("/calculator")}
+            onClick={() => navigate("/auth")}
           >
-            Try AwardPay Free
+            Get Started
           </Button>
           <p className="text-white/90">
-            No credit card needed for the basic calculator
+            Free to sign up • Choose your plan
           </p>
         </div>
       </section>

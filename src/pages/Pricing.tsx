@@ -17,7 +17,7 @@ const Pricing = () => {
             Choose a Plan That Protects Your Pay
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            AwardPay helps Australians check if their payslips match their Modern Award. Start free and upgrade anytime.
+            AwardPay helps Australians check if their payslips match their Modern Award. Free to sign up, choose your plan.
           </p>
         </div>
       </section>
@@ -73,7 +73,7 @@ const Pricing = () => {
               </CardContent>
               <CardFooter>
                 <Button variant="outline" className="w-full" asChild>
-                  <Link to="/auth">Start Free</Link>
+                  <Link to="/auth">Get Started</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -418,9 +418,9 @@ const Pricing = () => {
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to check your next payslip?</h2>
           <Button size="lg" variant="secondary" asChild>
-            <Link to="/auth">Try AwardPay Free</Link>
+            <Link to="/auth">Create Free Account</Link>
           </Button>
-          <p className="mt-4 text-sm opacity-90">No credit card required.</p>
+          <p className="mt-4 text-sm opacity-90">Free to sign up • Choose your plan</p>
         </div>
       </section>
     </div>
