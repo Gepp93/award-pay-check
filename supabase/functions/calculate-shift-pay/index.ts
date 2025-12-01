@@ -224,9 +224,15 @@ async function handleUnsureClassification(params: any) {
 
   // Filter classifications
   const filteredClassifications = allClassifications.filter((cls: any) => {
-    // Filter by work area if provided
-    if (workArea && cls.clause_description !== workArea) {
-      return false;
+    // Filter by work area if provided - use partial case-insensitive match
+    if (workArea && cls.clause_description) {
+      const workAreaLower = workArea.toLowerCase();
+      const clauseDescLower = cls.clause_description.toLowerCase();
+      
+      // Try partial matching - if neither contains the other, exclude
+      if (!workAreaLower.includes(clauseDescLower) && !clauseDescLower.includes(workAreaLower)) {
+        return false;
+      }
     }
 
     // Exclude trainee classifications unless work area is trainee-related
