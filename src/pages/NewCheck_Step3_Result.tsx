@@ -51,43 +51,22 @@ export default function NewCheck_Step3_Result() {
   }, [shiftDetails, result, fromDashboard]);
   
   
+  
   const handleDownloadPDF = async () => {
     setDownloading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-pdf-report', {
-        body: {
-          result,
-          shiftDetails,
-          advancedPayslip
-        }
-      });
-
-      if (error) throw error;
-
-      // Convert base64 to blob and download as text file
-      const reportBlob = new Blob(
-        [Uint8Array.from(atob(data.pdf), c => c.charCodeAt(0))],
-        { type: 'text/plain' }
-      );
+      // Use browser's print dialog which allows saving as PDF
+      window.print();
       
-      const url = URL.createObjectURL(reportBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `pay-check-report-${new Date().toISOString().split('T')[0]}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
       toast({
-        title: "Report Downloaded",
-        description: "Your pay check report has been downloaded successfully",
+        title: "Print Dialog Opened",
+        description: "Use 'Save as PDF' in the print dialog to download your report",
       });
     } catch (error) {
-      console.error('Error downloading report:', error);
+      console.error('Error opening print dialog:', error);
       toast({
-        title: "Download Failed",
-        description: "There was an error generating your report",
+        title: "Print Failed",
+        description: "There was an error opening the print dialog",
         variant: "destructive"
       });
     } finally {
@@ -101,7 +80,9 @@ export default function NewCheck_Step3_Result() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-3xl">
         <CardHeader>
-          <ProgressIndicator currentStep={3} />
+          <div className="no-print">
+            <ProgressIndicator currentStep={3} />
+          </div>
           <CardTitle>Step 3: Results</CardTitle>
           <CardDescription>Your pay check analysis</CardDescription>
         </CardHeader>
@@ -332,14 +313,14 @@ export default function NewCheck_Step3_Result() {
           </Alert>
 
           {/* Action Buttons */}
-          <div className="flex justify-center">
+          <div className="flex justify-center no-print">
             <Button onClick={handleDownloadPDF} disabled={downloading} className="gap-2">
               {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              Download Report
+              Save as PDF
             </Button>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 no-print">
             <Button variant="outline" onClick={() => navigate("/app-dashboard")} className="flex-1">
               Dashboard
             </Button>
