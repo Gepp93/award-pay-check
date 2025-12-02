@@ -1,12 +1,36 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, X, Shield, FileText, Brain, Heart, Info } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavBar } from "@/components/NavBar";
+import { supabase } from "@/integrations/supabase/client";
 
 const Pricing = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleUpgrade = (plan: "monthly" | "yearly") => {
+    if (!user) {
+      // Not logged in - redirect to auth with plan info
+      navigate(`/auth?redirect=checkout&plan=${plan}`);
+      return;
+    }
+
+    // Logged in - go directly to Stripe
     const checkoutUrl = plan === "monthly" 
       ? "https://buy.stripe.com/bJe14o0kk7Rfcqr8ZL6AM03"
       : "https://buy.stripe.com/6oU14o6II2wV2PR0tf6AM02";
