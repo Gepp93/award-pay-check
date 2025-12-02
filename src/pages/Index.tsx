@@ -365,7 +365,7 @@ const Index = () => {
               </div>
               <div className="text-center md:text-right">
                 <p className="text-muted-foreground text-sm mb-1">
-                  © 2024 AwardPay. Empowering Australian workers.
+                  © 2025 AwardPay. Empowering Australian workers.
                 </p>
                 <p className="text-muted-foreground/60 text-xs">
                   Based on Fair Work Commission Modern Award standards
