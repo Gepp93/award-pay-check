@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Allowance detection rules engine
+// ====== EXISTING ALLOWANCE DETECTION ENGINE ======
 interface AllowanceRule {
   id: string;
   name: string;
@@ -243,6 +243,540 @@ const allowanceRules: AllowanceRule[] = [
   },
 ];
 
+// ====== AWARD-SPECIFIC RULES ENGINE (NEW) ======
+
+// Input shape for entitlement calculation
+interface ShiftInput {
+  awardCode: string;
+  employmentType: 'Full-time' | 'Part-time' | 'Casual';
+  date: string;
+  startTime: string;
+  finishTime: string;
+  breakMinutes: number;
+  workedWeekend: boolean;
+  workedPublicHoliday: boolean;
+  allowanceConditions: {
+    workedAtHeight?: boolean;
+    workedInConfinedSpace?: boolean;
+    workedUnderground?: boolean;
+    workedInDirtyConditions?: boolean;
+    workedInExtremeWeather?: boolean;
+    workedInColdRoom?: boolean;
+    workedNights?: boolean;
+    wasOnCall?: boolean;
+    wasCalledBack?: boolean;
+    workedSplitShift?: boolean;
+    usedOwnTools?: boolean;
+    isFirstAider?: boolean;
+    isLeadingHand?: boolean;
+    droveOwnCar?: boolean;
+    workedRemoteSite?: boolean;
+    stayedAwayFromHome?: boolean;
+    woreUniform?: boolean;
+    holdsSpecialLicence?: boolean;
+    holdsQualification?: boolean;
+    transportedDangerousGoods?: boolean;
+    operatedForklift?: boolean;
+    mealProvided?: boolean;
+  };
+  actualPaid?: number;
+}
+
+// Award-specific allowance rule
+interface AwardAllowanceRule {
+  id: string;
+  awardCode: string;           // e.g. "MA000009" for Hospitality
+  allowanceCode: string;       // Must match FWC API allowance key
+  name: string;
+  description: string;
+  conditions: {
+    minShiftLengthHours?: number;
+    requiresOvertime?: boolean;
+    minOvertimeHours?: number;
+    requiresBeyondRoster?: boolean;
+    requiresNoMealProvided?: boolean;
+    requiredFlags?: string[];  // Keys from allowanceConditions
+  };
+}
+
+// Output from entitlement engine
+interface EntitlementResult {
+  totalHours: number;
+  ordinaryHours: number;
+  overtimeHours: number;
+  allowances: {
+    id: string;
+    name: string;
+    amount: number;
+    reason: string;
+  }[];
+}
+
+// ====== AWARD-SPECIFIC ALLOWANCE RULES DATABASE ======
+const awardSpecificRules: AwardAllowanceRule[] = [
+  // === HOSPITALITY AWARD (MA000009) ===
+  {
+    id: "hospitality_meal_allowance",
+    awardCode: "MA000009",
+    allowanceCode: "meal_allowance",
+    name: "Meal Allowance",
+    description: "Applies when an employee works more than 1 hour of overtime beyond their rostered finish time and no meal is provided.",
+    conditions: {
+      requiresOvertime: true,
+      minOvertimeHours: 1,
+      requiresBeyondRoster: true,
+      requiresNoMealProvided: true
+    }
+  },
+  {
+    id: "hospitality_split_shift",
+    awardCode: "MA000009",
+    allowanceCode: "split_shift_allowance",
+    name: "Split Shift Allowance",
+    description: "Applies when shift has unpaid break of more than 2 hours.",
+    conditions: {
+      requiredFlags: ["workedSplitShift"]
+    }
+  },
+  {
+    id: "hospitality_uniform",
+    awardCode: "MA000009",
+    allowanceCode: "laundry_allowance",
+    name: "Laundry/Uniform Allowance",
+    description: "When required to wear and launder a uniform or special clothing.",
+    conditions: {
+      requiredFlags: ["woreUniform"]
+    }
+  },
+  
+  // === GENERAL RETAIL AWARD (MA000004) ===
+  {
+    id: "retail_meal_allowance",
+    awardCode: "MA000004",
+    allowanceCode: "meal_allowance",
+    name: "Meal Allowance",
+    description: "When required to work overtime of more than 1.5 hours without being given 24 hours notice.",
+    conditions: {
+      requiresOvertime: true,
+      minOvertimeHours: 1.5,
+      requiresNoMealProvided: true
+    }
+  },
+  {
+    id: "retail_cold_work",
+    awardCode: "MA000004",
+    allowanceCode: "cold_work_allowance",
+    name: "Cold Work Allowance",
+    description: "Working in cold room/freezer at 0°C or below.",
+    conditions: {
+      requiredFlags: ["workedInColdRoom"]
+    }
+  },
+  {
+    id: "retail_first_aid",
+    awardCode: "MA000004",
+    allowanceCode: "first_aid_allowance",
+    name: "First Aid Allowance",
+    description: "Appointed first aider holding current first aid certificate.",
+    conditions: {
+      requiredFlags: ["isFirstAider"]
+    }
+  },
+  
+  // === FAST FOOD AWARD (MA000003) ===
+  {
+    id: "fastfood_meal_allowance",
+    awardCode: "MA000003",
+    allowanceCode: "meal_allowance",
+    name: "Meal Allowance",
+    description: "Entitled to a meal break or meal allowance after 5 hours work.",
+    conditions: {
+      minShiftLengthHours: 5,
+      requiresNoMealProvided: true
+    }
+  },
+  {
+    id: "fastfood_laundry",
+    awardCode: "MA000003",
+    allowanceCode: "laundry_allowance",
+    name: "Laundry Allowance",
+    description: "When required to launder uniform or special clothing.",
+    conditions: {
+      requiredFlags: ["woreUniform"]
+    }
+  },
+  
+  // === BUILDING & CONSTRUCTION AWARD (MA000020) ===
+  {
+    id: "construction_meal_allowance",
+    awardCode: "MA000020",
+    allowanceCode: "meal_allowance",
+    name: "Meal Allowance",
+    description: "When required to work overtime and unable to return home for meal.",
+    conditions: {
+      requiresOvertime: true,
+      minOvertimeHours: 1.5,
+      requiresNoMealProvided: true
+    }
+  },
+  {
+    id: "construction_tool_allowance",
+    awardCode: "MA000020",
+    allowanceCode: "tool_allowance",
+    name: "Tool Allowance",
+    description: "Tradesperson required to provide own tools.",
+    conditions: {
+      requiredFlags: ["usedOwnTools"]
+    }
+  },
+  {
+    id: "construction_height_allowance",
+    awardCode: "MA000020",
+    allowanceCode: "height_allowance",
+    name: "Height Allowance",
+    description: "Working at heights above specified levels.",
+    conditions: {
+      requiredFlags: ["workedAtHeight"]
+    }
+  },
+  {
+    id: "construction_confined_space",
+    awardCode: "MA000020",
+    allowanceCode: "confined_space_allowance",
+    name: "Confined Space Allowance",
+    description: "Working in confined or restricted areas.",
+    conditions: {
+      requiredFlags: ["workedInConfinedSpace"]
+    }
+  },
+  {
+    id: "construction_underground",
+    awardCode: "MA000020",
+    allowanceCode: "underground_allowance",
+    name: "Underground Allowance",
+    description: "Working below ground level.",
+    conditions: {
+      requiredFlags: ["workedUnderground"]
+    }
+  },
+  {
+    id: "construction_dirty_work",
+    awardCode: "MA000020",
+    allowanceCode: "dirty_work_allowance",
+    name: "Dirty Work Allowance",
+    description: "Working in dirty, dusty, or offensive conditions.",
+    conditions: {
+      requiredFlags: ["workedInDirtyConditions"]
+    }
+  },
+  {
+    id: "construction_first_aid",
+    awardCode: "MA000020",
+    allowanceCode: "first_aid_allowance",
+    name: "First Aid Allowance",
+    description: "Appointed first aider with current qualifications.",
+    conditions: {
+      requiredFlags: ["isFirstAider"]
+    }
+  },
+  {
+    id: "construction_leading_hand",
+    awardCode: "MA000020",
+    allowanceCode: "leading_hand_allowance",
+    name: "Leading Hand Allowance",
+    description: "Supervising other employees.",
+    conditions: {
+      requiredFlags: ["isLeadingHand"]
+    }
+  },
+  
+  // === NURSES AWARD (MA000034) ===
+  {
+    id: "nurses_on_call",
+    awardCode: "MA000034",
+    allowanceCode: "on_call_allowance",
+    name: "On-Call Allowance",
+    description: "Required to be available outside normal hours.",
+    conditions: {
+      requiredFlags: ["wasOnCall"]
+    }
+  },
+  {
+    id: "nurses_uniform",
+    awardCode: "MA000034",
+    allowanceCode: "uniform_allowance",
+    name: "Uniform Allowance",
+    description: "Required to wear and launder a uniform.",
+    conditions: {
+      requiredFlags: ["woreUniform"]
+    }
+  },
+  {
+    id: "nurses_qualification",
+    awardCode: "MA000034",
+    allowanceCode: "qualification_allowance",
+    name: "Qualification Allowance",
+    description: "Holding relevant nursing qualifications (RN, EN, etc.).",
+    conditions: {
+      requiredFlags: ["holdsQualification"]
+    }
+  },
+  
+  // === CLEANING AWARD (MA000022) ===
+  {
+    id: "cleaning_height",
+    awardCode: "MA000022",
+    allowanceCode: "height_allowance",
+    name: "Height Allowance",
+    description: "Working at heights above specified levels.",
+    conditions: {
+      requiredFlags: ["workedAtHeight"]
+    }
+  },
+  {
+    id: "cleaning_first_aid",
+    awardCode: "MA000022",
+    allowanceCode: "first_aid_allowance",
+    name: "First Aid Allowance",
+    description: "Appointed first aider.",
+    conditions: {
+      requiredFlags: ["isFirstAider"]
+    }
+  },
+  {
+    id: "cleaning_cold_work",
+    awardCode: "MA000022",
+    allowanceCode: "cold_work_allowance",
+    name: "Cold Work Allowance",
+    description: "Working in refrigerated areas at 0°C or below.",
+    conditions: {
+      requiredFlags: ["workedInColdRoom"]
+    }
+  },
+  
+  // === ROAD TRANSPORT AWARD (MA000038) ===
+  {
+    id: "transport_dangerous_goods",
+    awardCode: "MA000038",
+    allowanceCode: "dangerous_goods_allowance",
+    name: "Dangerous Goods Allowance",
+    description: "Transporting dangerous goods.",
+    conditions: {
+      requiredFlags: ["transportedDangerousGoods"]
+    }
+  },
+  {
+    id: "transport_living_away",
+    awardCode: "MA000038",
+    allowanceCode: "living_away_allowance",
+    name: "Living Away From Home Allowance",
+    description: "Required to stay overnight away from home.",
+    conditions: {
+      requiredFlags: ["stayedAwayFromHome"]
+    }
+  },
+  {
+    id: "transport_meal_allowance",
+    awardCode: "MA000038",
+    allowanceCode: "meal_allowance",
+    name: "Meal Allowance",
+    description: "When required to work overtime and no meal provided.",
+    conditions: {
+      requiresOvertime: true,
+      minOvertimeHours: 1,
+      requiresNoMealProvided: true
+    }
+  },
+  
+  // === MANUFACTURING AWARD (MA000010) ===
+  {
+    id: "manufacturing_tool_allowance",
+    awardCode: "MA000010",
+    allowanceCode: "tool_allowance",
+    name: "Tool Allowance",
+    description: "Tradesperson required to provide own tools.",
+    conditions: {
+      requiredFlags: ["usedOwnTools"]
+    }
+  },
+  {
+    id: "manufacturing_first_aid",
+    awardCode: "MA000010",
+    allowanceCode: "first_aid_allowance",
+    name: "First Aid Allowance",
+    description: "Appointed first aider.",
+    conditions: {
+      requiredFlags: ["isFirstAider"]
+    }
+  },
+  {
+    id: "manufacturing_leading_hand",
+    awardCode: "MA000010",
+    allowanceCode: "leading_hand_allowance",
+    name: "Leading Hand Allowance",
+    description: "Supervising other employees.",
+    conditions: {
+      requiredFlags: ["isLeadingHand"]
+    }
+  },
+  {
+    id: "manufacturing_forklift",
+    awardCode: "MA000010",
+    allowanceCode: "forklift_allowance",
+    name: "Forklift Allowance",
+    description: "Operating forklift or heavy machinery.",
+    conditions: {
+      requiredFlags: ["operatedForklift"]
+    }
+  },
+  {
+    id: "manufacturing_cold_work",
+    awardCode: "MA000010",
+    allowanceCode: "cold_work_allowance",
+    name: "Cold Work Allowance",
+    description: "Working in cold environments at 0°C or below.",
+    conditions: {
+      requiredFlags: ["workedInColdRoom"]
+    }
+  },
+  
+  // === CLERKS AWARD (MA000002) ===
+  {
+    id: "clerks_meal_allowance",
+    awardCode: "MA000002",
+    allowanceCode: "meal_allowance",
+    name: "Meal Allowance",
+    description: "When required to work overtime of more than 2 hours without notice.",
+    conditions: {
+      requiresOvertime: true,
+      minOvertimeHours: 2,
+      requiresNoMealProvided: true
+    }
+  },
+  {
+    id: "clerks_first_aid",
+    awardCode: "MA000002",
+    allowanceCode: "first_aid_allowance",
+    name: "First Aid Allowance",
+    description: "Appointed first aider.",
+    conditions: {
+      requiredFlags: ["isFirstAider"]
+    }
+  },
+];
+
+// ====== ENTITLEMENT ENGINE ======
+function calculateEntitlements(
+  input: ShiftInput, 
+  awardAllowances: any[]
+): EntitlementResult {
+  // Calculate hours
+  const [startHour, startMinute] = input.startTime.split(':').map(Number);
+  const [finishHour, finishMinute] = input.finishTime.split(':').map(Number);
+  const startMinutes = startHour * 60 + startMinute;
+  const finishMinutes = finishHour * 60 + finishMinute;
+  const totalMinutes = finishMinutes - startMinutes - input.breakMinutes;
+  const totalHours = totalMinutes / 60;
+  
+  // Standard hours threshold
+  const standardDayHours = input.employmentType === 'Casual' ? 8 : 7.6;
+  const ordinaryHours = Math.min(totalHours, standardDayHours);
+  const overtimeHours = Math.max(0, totalHours - standardDayHours);
+  
+  // Find matching allowances
+  const detectedAllowances: EntitlementResult['allowances'] = [];
+  
+  // Filter rules for this award
+  const rulesForAward = awardSpecificRules.filter(
+    rule => rule.awardCode === input.awardCode
+  );
+  
+  console.log(`Entitlement engine: Found ${rulesForAward.length} rules for award ${input.awardCode}`);
+  
+  for (const rule of rulesForAward) {
+    let conditionsMet = true;
+    let reason = rule.description;
+    
+    // Check minShiftLengthHours
+    if (rule.conditions.minShiftLengthHours !== undefined) {
+      if (totalHours < rule.conditions.minShiftLengthHours) {
+        conditionsMet = false;
+      }
+    }
+    
+    // Check requiresOvertime
+    if (rule.conditions.requiresOvertime) {
+      if (overtimeHours <= 0) {
+        conditionsMet = false;
+      }
+    }
+    
+    // Check minOvertimeHours
+    if (rule.conditions.minOvertimeHours !== undefined) {
+      if (overtimeHours < rule.conditions.minOvertimeHours) {
+        conditionsMet = false;
+      }
+    }
+    
+    // Check requiresNoMealProvided
+    if (rule.conditions.requiresNoMealProvided) {
+      if (input.allowanceConditions?.mealProvided === true) {
+        conditionsMet = false;
+      }
+    }
+    
+    // Check requiredFlags
+    if (rule.conditions.requiredFlags) {
+      for (const flag of rule.conditions.requiredFlags) {
+        const flagKey = flag as keyof typeof input.allowanceConditions;
+        if (!input.allowanceConditions?.[flagKey]) {
+          conditionsMet = false;
+          break;
+        }
+      }
+    }
+    
+    if (conditionsMet) {
+      // Find amount from FWC API allowances
+      let amount = 0;
+      const searchTerms = rule.allowanceCode.replace(/_/g, ' ').toLowerCase();
+      
+      const matchingAllowance = awardAllowances.find(a => {
+        const allowanceName = (a.name || a.allowance || '').toLowerCase();
+        const allowanceDesc = (a.description || '').toLowerCase();
+        return allowanceName.includes(searchTerms) || 
+               allowanceDesc.includes(searchTerms) ||
+               searchTerms.split(' ').some(term => allowanceName.includes(term));
+      });
+      
+      if (matchingAllowance) {
+        // Extract numeric value from rate if available
+        const rateStr = matchingAllowance.rate || matchingAllowance.amount || matchingAllowance.description || '0';
+        const numericMatch = rateStr.toString().match(/\$?([\d.]+)/);
+        amount = numericMatch ? parseFloat(numericMatch[1]) : 0;
+      }
+      
+      console.log(`Entitlement engine: Rule ${rule.id} matched, amount: $${amount}`);
+      
+      detectedAllowances.push({
+        id: rule.id,
+        name: rule.name,
+        amount,
+        reason,
+      });
+    }
+  }
+  
+  console.log(`Entitlement engine: Detected ${detectedAllowances.length} award-specific allowances`);
+  
+  return {
+    totalHours,
+    ordinaryHours,
+    overtimeHours,
+    allowances: detectedAllowances,
+  };
+}
+
 // Fallback list if FWC API fails - only used as last resort
 const fallbackAllowances = [
   { name: 'Meal Allowance', description: 'When working overtime or extended hours without notice' },
@@ -293,7 +827,7 @@ async function fetchAwardAllowances(awardCode: string, fwcApiKey: string): Promi
   }
 }
 
-// Detect potential allowances based on conditions
+// Detect potential allowances based on conditions (existing generic engine)
 function detectPotentialAllowances(params: any): any[] {
   const detected: any[] = [];
   
@@ -481,6 +1015,7 @@ async function handleUnsureClassification(params: any) {
     awardCode,
     employmentType,
     workArea,
+    date,
     startTime,
     finishTime,
     breakMinutes,
@@ -629,7 +1164,7 @@ async function handleUnsureClassification(params: any) {
   const totalMinutes = (finishHour * 60 + finishMinute) - (startHour * 60 + startMinute) - breakMinutes;
   const totalHours = totalMinutes / 60;
 
-  // Detect potential allowances
+  // Detect potential allowances (generic engine)
   const potentialAllowances = detectPotentialAllowances({
     workedOver10Hours,
     droveOwnCar,
@@ -639,6 +1174,37 @@ async function handleUnsureClassification(params: any) {
     totalHours,
     baseRate: results[0]?.baseRate || 0,
   });
+
+  // Fetch award-specific allowances from FWC API
+  const awardAllowances = await fetchAwardAllowances(awardCode, fwcApiKey);
+
+  // NEW: Run entitlement engine for award-specific allowances
+  const entitlementResult = calculateEntitlements({
+    awardCode,
+    employmentType: employmentType as 'Full-time' | 'Part-time' | 'Casual',
+    date: date || new Date().toISOString().split('T')[0],
+    startTime,
+    finishTime,
+    breakMinutes,
+    workedWeekend,
+    workedPublicHoliday,
+    allowanceConditions: allowanceConditions || {},
+  }, awardAllowances);
+
+  // Merge award-specific allowances into potentialAllowances
+  const mergedAllowances = [...potentialAllowances];
+  for (const allowance of entitlementResult.allowances) {
+    if (!mergedAllowances.find(a => a.id === allowance.id)) {
+      mergedAllowances.push({
+        id: allowance.id,
+        name: allowance.name,
+        amount: allowance.amount > 0 ? `$${allowance.amount.toFixed(2)}` : 'See award',
+        estimatedValue: allowance.amount,
+        reason: allowance.reason,
+        icon: '📋', // Award-specific icon
+      });
+    }
+  }
 
   // Determine common entitlements
   const commonEntitlements: string[] = [];
@@ -665,9 +1231,6 @@ async function handleUnsureClassification(params: any) {
   }
   if (employmentType === 'Casual') commonEntitlements.push('Casual loading (25%)');
 
-  // Fetch award-specific allowances from FWC API
-  const awardAllowances = await fetchAwardAllowances(awardCode, fwcApiKey);
-
   return new Response(
     JSON.stringify({
       mode: 'unsure',
@@ -681,11 +1244,17 @@ async function handleUnsureClassification(params: any) {
         possibleUnderpayment: r.possibleUnderpayment,
       })),
       commonEntitlements,
-      potentialAllowances,
+      potentialAllowances: mergedAllowances,
       allAwardAllowances: awardAllowances,
       breakdown: {
         totalClassificationsAnalyzed: results.length,
         totalClassificationsAvailable: filteredClassifications.length,
+        entitlementEngine: {
+          totalHours: entitlementResult.totalHours,
+          ordinaryHours: entitlementResult.ordinaryHours,
+          overtimeHours: entitlementResult.overtimeHours,
+          awardSpecificAllowancesDetected: entitlementResult.allowances.length,
+        },
       },
     }),
     { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -869,7 +1438,7 @@ serve(async (req) => {
       reasons.unshift('Your pay matches the minimum award requirements');
     }
 
-    // Detect potential allowances
+    // Detect potential allowances (generic engine)
     const potentialAllowances = detectPotentialAllowances({
       workedOver10Hours,
       droveOwnCar,
@@ -879,6 +1448,37 @@ serve(async (req) => {
       totalHours,
       baseRate,
     });
+
+    // Fetch award-specific allowances from FWC API
+    const awardAllowances = await fetchAwardAllowances(awardCode, fwcApiKey);
+
+    // NEW: Run entitlement engine for award-specific allowances
+    const entitlementResult = calculateEntitlements({
+      awardCode,
+      employmentType: employmentType as 'Full-time' | 'Part-time' | 'Casual',
+      date: date || new Date().toISOString().split('T')[0],
+      startTime,
+      finishTime,
+      breakMinutes,
+      workedWeekend,
+      workedPublicHoliday,
+      allowanceConditions: allowanceConditions || {},
+    }, awardAllowances);
+
+    // Merge award-specific allowances into potentialAllowances
+    const mergedAllowances = [...potentialAllowances];
+    for (const allowance of entitlementResult.allowances) {
+      if (!mergedAllowances.find(a => a.id === allowance.id)) {
+        mergedAllowances.push({
+          id: allowance.id,
+          name: allowance.name,
+          amount: allowance.amount > 0 ? `$${allowance.amount.toFixed(2)}` : 'See award',
+          estimatedValue: allowance.amount,
+          reason: allowance.reason,
+          icon: '📋', // Award-specific icon
+        });
+      }
+    }
 
     // Add match score and payslip validation if advanced payslip provided
     let matchScore = 0;
@@ -893,9 +1493,6 @@ serve(async (req) => {
       }
     }
 
-    // Fetch award-specific allowances from FWC API
-    const awardAllowances = await fetchAwardAllowances(awardCode, fwcApiKey);
-
     const result = {
       awardPayTotal,
       actualPaid,
@@ -904,7 +1501,7 @@ serve(async (req) => {
       matchScore,
       rateWarning,
       reasons,
-      potentialAllowances,
+      potentialAllowances: mergedAllowances,
       allAwardAllowances: awardAllowances,
       breakdown: {
         regularHours,
@@ -916,6 +1513,12 @@ serve(async (req) => {
         publicHolidayPay,
         allowances,
         advancedPayslip: advancedPayslip || null,
+        entitlementEngine: {
+          totalHours: entitlementResult.totalHours,
+          ordinaryHours: entitlementResult.ordinaryHours,
+          overtimeHours: entitlementResult.overtimeHours,
+          awardSpecificAllowancesDetected: entitlementResult.allowances.length,
+        },
       },
     };
 
