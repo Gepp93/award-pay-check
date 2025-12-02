@@ -42,7 +42,7 @@ const Pricing = () => {
               <CardHeader className="pt-8">
                 <CardTitle className="text-2xl">Pro Monthly</CardTitle>
                 <CardDescription>
-                  <span className="text-3xl font-bold text-foreground">$29</span>
+                  <span className="text-3xl font-bold text-foreground">$9.99</span>
                   <span className="text-muted-foreground"> / month</span>
                 </CardDescription>
               </CardHeader>
@@ -108,12 +108,12 @@ const Pricing = () => {
             {/* Pro Yearly Plan */}
             <Card className="flex flex-col relative">
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground px-4 py-1 rounded-full text-sm font-semibold whitespace-nowrap">
-                Best Value — Save $299
+                Best Value — Save $40.88
               </div>
               <CardHeader className="pt-8">
                 <CardTitle className="text-2xl">Pro Yearly</CardTitle>
                 <CardDescription>
-                  <span className="text-3xl font-bold text-foreground">$49</span>
+                  <span className="text-3xl font-bold text-foreground">$79</span>
                   <span className="text-muted-foreground"> / year</span>
                 </CardDescription>
               </CardHeader>
@@ -171,8 +171,8 @@ const Pricing = () => {
                   { feature: "Email export", pro: true, yearly: true },
                   { feature: "AI Award explainer", pro: true, yearly: true },
                   { feature: "Support level", pro: "Priority", yearly: "Priority+" },
-                  { feature: "Cost per month", pro: "$29", yearly: "$4.08" },
-                  { feature: "Annual savings", pro: "-", yearly: "$299" },
+                  { feature: "Cost per month", pro: "$9.99", yearly: "$6.58" },
+                  { feature: "Annual savings", pro: "-", yearly: "$40.88" },
                 ].map((row, i) => (
                   <tr key={i} className="border-b">
                     <td className="p-4">{row.feature}</td>
