@@ -1231,12 +1231,27 @@ async function handleUnsureClassification(params: any) {
   }
   if (employmentType === 'Casual') commonEntitlements.push('Casual loading (25%)');
 
+  // Deduplicate classifications by name, keeping the one with highest underpayment
+  const uniqueClassifications = results.reduce((acc: any[], curr) => {
+    const existing = acc.find(c => c.classificationName === curr.classificationName);
+    if (!existing) {
+      acc.push(curr);
+    } else if (curr.possibleUnderpayment > existing.possibleUnderpayment) {
+      // Replace with higher underpayment
+      const idx = acc.indexOf(existing);
+      acc[idx] = curr;
+    }
+    return acc;
+  }, []);
+
+  console.log(`Deduplicated from ${results.length} to ${uniqueClassifications.length} unique classifications`);
+
   return new Response(
     JSON.stringify({
       mode: 'unsure',
       overallMinUnderpayment,
       overallMaxUnderpayment,
-      likelyClassifications: results.slice(0, 10).map(r => ({
+      likelyClassifications: uniqueClassifications.slice(0, 10).map(r => ({
         classificationId: r.classificationId,
         classificationName: r.classificationName,
         workArea: r.workArea,
