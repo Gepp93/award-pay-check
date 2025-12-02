@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Calculator } from "lucide-react";
 
+const STRIPE_URLS = {
+  monthly: "https://buy.stripe.com/bJe14o0kk7Rfcqr8ZL6AM03",
+  yearly: "https://buy.stripe.com/6oU14o6II2wV2PR0tf6AM02",
+};
+
 const Auth = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Check for redirect params
+  const redirectParam = searchParams.get("redirect");
+  const planParam = searchParams.get("plan") as "monthly" | "yearly" | null;
+  const isCheckoutRedirect = redirectParam === "checkout" && planParam;
+
+  const handlePostAuthRedirect = () => {
+    if (isCheckoutRedirect && planParam && STRIPE_URLS[planParam]) {
+      // Redirect to Stripe checkout
+      window.location.href = STRIPE_URLS[planParam];
+    } else {
+      // Default redirect
+      navigate("/new-check-step-1");
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +48,7 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success("Welcome back!");
-        navigate("/new-check-step-1");
+        handlePostAuthRedirect();
       } else {
         const redirectUrl = `${window.location.origin}/new-check-step-1`;
         const { error } = await supabase.auth.signUp({
@@ -39,7 +60,7 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success("Account created! Please check your email.");
-        navigate("/new-check-step-1");
+        handlePostAuthRedirect();
       }
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");
@@ -88,9 +109,11 @@ const Auth = () => {
             {isLogin ? "Welcome back" : "Create account"}
           </CardTitle>
           <CardDescription>
-            {isLogin
-              ? "Sign in to access your calculations"
-              : "Start checking your award pay today"}
+            {isCheckoutRedirect
+              ? `Sign ${isLogin ? "in" : "up"} to complete your ${planParam} subscription`
+              : isLogin
+                ? "Sign in to access your calculations"
+                : "Start checking your award pay today"}
           </CardDescription>
         </CardHeader>
         <CardContent>
