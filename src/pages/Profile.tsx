@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { NavBar } from "@/components/NavBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { User, CreditCard, AlertTriangle, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { User, CreditCard, AlertTriangle, Loader2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -17,9 +18,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useSubscription();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -86,7 +89,15 @@ const Profile = () => {
     <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        <h1 className="text-3xl font-bold mb-8">Profile</h1>
+        <div className="flex items-center gap-3 mb-8">
+          <h1 className="text-3xl font-bold">Profile</h1>
+          {isAdmin && (
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Shield className="h-3 w-3" />
+              Admin
+            </Badge>
+          )}
+        </div>
 
         {/* Account Info */}
         <Card className="mb-6">
@@ -135,13 +146,24 @@ const Profile = () => {
           <CardContent className="space-y-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Status</label>
-              <p className={`font-medium ${isSubscribed ? "text-success" : subscriptionStatus === "cancelled" ? "text-destructive" : "text-muted-foreground"}`}>
-                {subscriptionStatus === "active" || subscriptionStatus === "monthly" || subscriptionStatus === "yearly" 
-                  ? "Active" 
-                  : subscriptionStatus === "cancelled" 
-                    ? "Cancelled" 
-                    : "Free Plan"}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className={`font-medium ${isSubscribed ? "text-success" : subscriptionStatus === "cancelled" ? "text-destructive" : "text-muted-foreground"}`}>
+                  {subscriptionStatus === "monthly" 
+                    ? "Pro Monthly ($9.99/mo)" 
+                    : subscriptionStatus === "yearly"
+                      ? "Pro Yearly ($79/yr)"
+                      : subscriptionStatus === "active"
+                        ? "Active"
+                        : subscriptionStatus === "cancelled" 
+                          ? "Cancelled" 
+                          : "Free Plan"}
+                </p>
+                {isAdmin && (
+                  <Badge variant="outline" className="text-xs">
+                    Admin Access
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {isSubscribed ? (
