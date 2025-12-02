@@ -8,8 +8,8 @@ import { NavBar } from "@/components/NavBar";
 const Pricing = () => {
   const handleUpgrade = (plan: "monthly" | "yearly") => {
     const checkoutUrl = plan === "monthly" 
-      ? "https://buy.stripe.com/fZueVeffe4F3duvek56AM01"
-      : "https://buy.stripe.com/dRmfZi7MM3AZ623b7T6AM00";
+      ? "https://buy.stripe.com/bJe14o0kk7Rfcqr8ZL6AM03"
+      : "https://buy.stripe.com/6oU14o6II2wV2PR0tf6AM02";
     
     window.location.href = checkoutUrl;
   };
