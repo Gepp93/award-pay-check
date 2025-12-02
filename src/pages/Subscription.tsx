@@ -95,7 +95,7 @@ const Subscription = () => {
                 Pay month-to-month
               </CardDescription>
               <div className="mt-4">
-                <span className="text-4xl font-bold">$29</span>
+                <span className="text-4xl font-bold">$9.99</span>
                 <span className="text-muted-foreground">/month</span>
               </div>
               <p className="text-sm text-muted-foreground mt-2 h-5">
@@ -136,11 +136,11 @@ const Subscription = () => {
                 Save with annual billing
               </CardDescription>
               <div className="mt-4">
-                <span className="text-4xl font-bold">$49</span>
+                <span className="text-4xl font-bold">$79</span>
                 <span className="text-muted-foreground">/year</span>
               </div>
               <p className="text-sm text-muted-foreground mt-2 h-5">
-                Just $4.08/month - Save $299/year!
+                Just $6.58/month - Save $40.88/year!
               </p>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col">
