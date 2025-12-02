@@ -11,8 +11,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export default function NewCheck_Step1_WhoAreYou() {
+  const { isPremium, loading: subLoading } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -49,6 +51,17 @@ export default function NewCheck_Step1_WhoAreYou() {
   useEffect(() => {
     loadAllAwards();
   }, []);
+
+  // Paywall check - redirect non-premium users
+  useEffect(() => {
+    if (!subLoading && !isPremium) {
+      toast({
+        title: "Subscription Required",
+        description: "Please subscribe to access pay checks",
+      });
+      navigate("/subscription");
+    }
+  }, [subLoading, isPremium, navigate, toast]);
 
   const loadAllAwards = async () => {
     setLoading(true);
