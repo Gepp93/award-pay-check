@@ -11,17 +11,38 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
-// Screenshot carousel component
+// Screenshot carousel component - Images should be placed in public/screenshots/
+// To add your screenshots: Save them as dashboard.png, job-details.png, results-underpaid.png, results-correct.png in public/screenshots/
 const AppScreenshotCarousel = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
 
   const screenshots = [
-    { src: "/placeholder.svg", alt: "Dashboard - View your saved pay checks" },
-    { src: "/placeholder.svg", alt: "Job Details - Enter your work information" },
-    { src: "/placeholder.svg", alt: "Results - See underpayment detection" },
-    { src: "/placeholder.svg", alt: "Allowances - Discover your entitlements" },
+    { 
+      src: "/screenshots/dashboard.png",
+      fallbackTitle: "Dashboard",
+      fallbackDesc: "Track your pay checks and see your history",
+      alt: "Dashboard - View your saved pay checks" 
+    },
+    { 
+      src: "/screenshots/job-details.png",
+      fallbackTitle: "Job Details",
+      fallbackDesc: "Enter your work details in our simple wizard",
+      alt: "Job Details - Enter your work information" 
+    },
+    { 
+      src: "/screenshots/results-underpaid.png",
+      fallbackTitle: "Underpayment Detection",
+      fallbackDesc: "Find out if you're being underpaid",
+      alt: "Results - See underpayment detection" 
+    },
+    { 
+      src: "/screenshots/results-correct.png",
+      fallbackTitle: "Allowance Discovery",
+      fallbackDesc: "Discover entitlements you may be missing",
+      alt: "Allowances - Discover your entitlements" 
+    },
   ];
 
   useEffect(() => {
@@ -34,6 +55,12 @@ const AppScreenshotCarousel = () => {
       setCurrent(api.selectedScrollSnap());
     });
   }, [api]);
+
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
+
+  const handleImageError = (index: number) => {
+    setImageErrors(prev => ({ ...prev, [index]: true }));
+  };
 
   return (
     <div className="space-y-6">
@@ -53,11 +80,22 @@ const AppScreenshotCarousel = () => {
           {screenshots.map((screenshot, index) => (
             <CarouselItem key={index}>
               <div className="rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-background">
-                <img
-                  src={screenshot.src}
-                  alt={screenshot.alt}
-                  className="w-full h-auto object-cover aspect-[16/10]"
-                />
+                {imageErrors[index] ? (
+                  <div className="w-full aspect-[16/10] bg-gradient-to-br from-secondary/50 to-secondary flex flex-col items-center justify-center p-8">
+                    <div className="h-16 w-16 rounded-full bg-gradient-primary flex items-center justify-center mb-4">
+                      <Calculator className="h-8 w-8 text-primary-foreground" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">{screenshot.fallbackTitle}</h3>
+                    <p className="text-muted-foreground text-center">{screenshot.fallbackDesc}</p>
+                  </div>
+                ) : (
+                  <img
+                    src={screenshot.src}
+                    alt={screenshot.alt}
+                    className="w-full h-auto object-cover aspect-[16/10]"
+                    onError={() => handleImageError(index)}
+                  />
+                )}
               </div>
             </CarouselItem>
           ))}
