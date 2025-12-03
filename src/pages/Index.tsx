@@ -92,7 +92,7 @@ const AppScreenshotCarousel = () => {
                   <img
                     src={screenshot.src}
                     alt={screenshot.alt}
-                    className="w-full h-auto object-cover aspect-[16/10]"
+                    className="w-full h-auto"
                     onError={() => handleImageError(index)}
                   />
                 )}
