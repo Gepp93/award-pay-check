@@ -20,25 +20,25 @@ const AppScreenshotCarousel = () => {
 
   const screenshots = [
     { 
-      src: "/screenshots/dashboard.png",
+      src: "/screenshots/dashboard.png?v=2",
       fallbackTitle: "Dashboard",
       fallbackDesc: "Track your pay checks and see your history",
       alt: "Dashboard - View your saved pay checks" 
     },
     { 
-      src: "/screenshots/job-details.png",
+      src: "/screenshots/job-details.png?v=2",
       fallbackTitle: "Job Details",
       fallbackDesc: "Enter your work details in our simple wizard",
       alt: "Job Details - Enter your work information" 
     },
     { 
-      src: "/screenshots/results-underpaid.png",
+      src: "/screenshots/results-underpaid.png?v=2",
       fallbackTitle: "Underpayment Detection",
       fallbackDesc: "Find out if you're being underpaid",
       alt: "Results - See underpayment detection" 
     },
     { 
-      src: "/screenshots/results-correct.png",
+      src: "/screenshots/results-correct.png?v=2",
       fallbackTitle: "Allowance Discovery",
       fallbackDesc: "Discover entitlements you may be missing",
       alt: "Allowances - Discover your entitlements" 
