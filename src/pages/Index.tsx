@@ -79,7 +79,7 @@ const AppScreenshotCarousel = () => {
         <CarouselContent>
           {screenshots.map((screenshot, index) => (
             <CarouselItem key={index}>
-              <div className="rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-background">
+              <div className="rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-background flex items-center justify-center">
                 {imageErrors[index] ? (
                   <div className="w-full aspect-[16/10] bg-gradient-to-br from-secondary/50 to-secondary flex flex-col items-center justify-center p-8">
                     <div className="h-16 w-16 rounded-full bg-gradient-primary flex items-center justify-center mb-4">
@@ -92,7 +92,7 @@ const AppScreenshotCarousel = () => {
                   <img
                     src={screenshot.src}
                     alt={screenshot.alt}
-                    className="w-full h-auto"
+                    className="w-auto h-auto max-h-[70vh] mx-auto"
                     onError={() => handleImageError(index)}
                   />
                 )}
