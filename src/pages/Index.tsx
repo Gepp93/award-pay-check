@@ -1,7 +1,87 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calculator, Shield, TrendingUp, FileText, DollarSign, Clock, CheckCircle2 } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+
+// Screenshot carousel component
+const AppScreenshotCarousel = () => {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  const screenshots = [
+    { src: "/placeholder.svg", alt: "Dashboard - View your saved pay checks" },
+    { src: "/placeholder.svg", alt: "Job Details - Enter your work information" },
+    { src: "/placeholder.svg", alt: "Results - See underpayment detection" },
+    { src: "/placeholder.svg", alt: "Allowances - Discover your entitlements" },
+  ];
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
+  return (
+    <div className="space-y-6">
+      <Carousel
+        setApi={setApi}
+        opts={{ loop: true }}
+        plugins={[
+          Autoplay({
+            delay: 4000,
+            stopOnInteraction: false,
+            stopOnMouseEnter: true,
+          }),
+        ]}
+        className="w-full"
+      >
+        <CarouselContent>
+          {screenshots.map((screenshot, index) => (
+            <CarouselItem key={index}>
+              <div className="rounded-2xl overflow-hidden shadow-2xl border border-border/50 bg-background">
+                <img
+                  src={screenshot.src}
+                  alt={screenshot.alt}
+                  className="w-full h-auto object-cover aspect-[16/10]"
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+      </Carousel>
+
+      {/* Navigation Dots */}
+      <div className="flex justify-center gap-2">
+        {Array.from({ length: count }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => api?.scrollTo(index)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              index === current
+                ? "w-8 bg-primary"
+                : "w-2 bg-primary/30 hover:bg-primary/50"
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const Index = () => {
   const navigate = useNavigate();
@@ -191,6 +271,15 @@ const Index = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* App Screenshots Carousel Section */}
+        <section className="py-12 bg-gradient-to-b from-white to-secondary/10">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <AppScreenshotCarousel />
             </div>
           </div>
         </section>
