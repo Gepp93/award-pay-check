@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calculator, Shield, TrendingUp, FileText, DollarSign, Clock, CheckCircle2 } from "lucide-react";
+import { Calculator, Shield, TrendingUp, FileText, DollarSign, Clock, CheckCircle2, Menu, X } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -123,6 +123,7 @@ const AppScreenshotCarousel = () => {
 
 const Index = () => {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const features = [
     {
@@ -202,23 +203,68 @@ const Index = () => {
             </nav>
 
             {/* Mobile Menu Button */}
-            <div className="md:hidden flex gap-2">
+            <div className="md:hidden">
               <Button
                 variant="ghost"
-                size="sm"
-                onClick={() => navigate("/auth")}
+                size="icon"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
-                Sign In
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => navigate("/auth")}
-                className="bg-gradient-primary text-primary-foreground hover:opacity-90"
-              >
-                Get Started
+                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
             </div>
           </div>
+
+          {/* Mobile Menu Dropdown */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-border/50 py-4">
+              <nav className="flex flex-col gap-2">
+                <a 
+                  href="/why-awardpay" 
+                  className="px-4 py-2 text-foreground/70 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Why AwardPay
+                </a>
+                <a 
+                  href="/how-it-works" 
+                  className="px-4 py-2 text-foreground/70 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  How It Works
+                </a>
+                <a 
+                  href="/pricing" 
+                  className="px-4 py-2 text-foreground/70 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Pricing
+                </a>
+                <a 
+                  href="/contact" 
+                  className="px-4 py-2 text-foreground/70 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Contact
+                </a>
+                <div className="flex gap-2 px-4 pt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { navigate("/auth"); setMobileMenuOpen(false); }}
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => { navigate("/auth"); setMobileMenuOpen(false); }}
+                    className="bg-gradient-primary text-primary-foreground hover:opacity-90"
+                  >
+                    Get Started
+                  </Button>
+                </div>
+              </nav>
+            </div>
+          )}
         </div>
       </header>
 
