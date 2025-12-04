@@ -51,8 +51,11 @@ const HowItWorks = () => {
               <a href="/how-it-works" className="text-primary font-medium">
                 How It Works
               </a>
-              <a href="#" className="text-foreground/70 hover:text-foreground transition-colors">
+              <a href="/pricing" className="text-foreground/70 hover:text-foreground transition-colors">
                 Pricing
+              </a>
+              <a href="/contact" className="text-foreground/70 hover:text-foreground transition-colors">
+                Contact
               </a>
               <Button variant="ghost" onClick={() => navigate("/auth")}>
                 Sign In
