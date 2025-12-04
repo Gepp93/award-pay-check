@@ -17,6 +17,7 @@ import AwardOverview from "./pages/AwardOverview";
 import WeeklyPayCheck from "./pages/WeeklyPayCheck";
 import DebugClassifications from "./pages/DebugClassifications";
 import NotFound from "./pages/NotFound";
+import Contact from "./pages/Contact";
 import NewCheck_Step1_WhoAreYou from "./pages/NewCheck_Step1_WhoAreYou";
 import NewCheck_Step2_ShiftDetails from "./pages/NewCheck_Step2_ShiftDetails";
 import NewCheck_Step3_Result from "./pages/NewCheck_Step3_Result";
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/new-check-step-1" element={<NewCheck_Step1_WhoAreYou />} />
           <Route path="/new-check-step-2" element={<NewCheck_Step2_ShiftDetails />} />
           <Route path="/new-check-step-3" element={<NewCheck_Step3_Result />} />
+          <Route path="/contact" element={<Contact />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
