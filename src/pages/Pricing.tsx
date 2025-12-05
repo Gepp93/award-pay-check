@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, X, Shield, FileText, Brain, Heart, Info } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { NavBar } from "@/components/NavBar";
+import { PublicNavBar } from "@/components/PublicNavBar";
 import { supabase } from "@/integrations/supabase/client";
 
 const Pricing = () => {
@@ -40,7 +40,7 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <NavBar />
+      <PublicNavBar />
       
       {/* Section 1 - Hero Header */}
       <section className="py-20 px-4">

@@ -1,4 +1,4 @@
-import { NavBar } from "@/components/NavBar";
+import { PublicNavBar } from "@/components/PublicNavBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Scale, MapPin, CheckCircle2, FileText, AlertTriangle, Users, Clock, DollarSign, Shield, RefreshCw, Calculator, TrendingUp, Hammer, ShoppingCart, Heart, Factory, Wrench, Utensils, UserCheck, Sparkles } from "lucide-react";
@@ -9,7 +9,7 @@ const WhyAwardPay = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
-      <NavBar />
+      <PublicNavBar />
       
       {/* Hero Section */}
       <section className="container mx-auto px-4 pt-32 pb-20 text-center">
