@@ -53,8 +53,9 @@ export default function NewCheck_Step2_ShiftDetails() {
     { date: "", day_of_week: "", start: "", finish: "", break_minutes: 30 }
   ]);
   
-  // Free-text shift input (stub for AI parsing)
+  // Free-text shift input for AI parsing
   const [freeTextShifts, setFreeTextShifts] = useState("");
+  const [parsingShifts, setParsingShifts] = useState(false);
   
   // Enhanced conditions
   const [workedWeekend, setWorkedWeekend] = useState(false);
@@ -110,6 +111,51 @@ export default function NewCheck_Step2_ShiftDetails() {
     navigate("/new-check-step-1");
     return null;
   }
+
+  const handleParseShifts = async () => {
+    if (!freeTextShifts.trim()) return;
+    
+    setParsingShifts(true);
+    try {
+      // Get the start of current week as context
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // Monday
+      
+      const { data, error } = await supabase.functions.invoke("ai-parse-shifts", {
+        body: {
+          freeTextShifts,
+          weekStartDate: weekStart.toISOString().split('T')[0],
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.shifts && data.shifts.length > 0) {
+        setShifts(data.shifts);
+        toast({
+          title: "Shifts Parsed",
+          description: `Successfully parsed ${data.shifts.length} shift(s). Review them in the "Day by Day" tab.`,
+        });
+      } else {
+        toast({
+          title: "No Shifts Found",
+          description: "Could not parse any shifts from your input. Try rephrasing.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Parse error:', error);
+      toast({
+        title: "Parsing Failed",
+        description: "Could not parse shifts. Please try again or enter manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setParsingShifts(false);
+    }
+  };
 
   const handleCheckPay = async () => {
     if (!date || !startTime || !finishTime) {
@@ -329,14 +375,35 @@ export default function NewCheck_Step2_ShiftDetails() {
                 <div className="space-y-2">
                   <Label>Describe your shifts</Label>
                   <Textarea
-                    placeholder="e.g., Mon 6am-2:30pm, Tue 3:30pm-4am, Sat 6am-1:30pm, no lunch Saturday"
+                    placeholder="e.g., Monday to Friday 6am-2:30pm, Saturday 8am-12pm no break"
                     value={freeTextShifts}
                     onChange={(e) => setFreeTextShifts(e.target.value)}
                     className="min-h-[120px]"
                   />
                   <p className="text-xs text-muted-foreground">
-                    We'll parse this automatically (AI-powered parsing coming soon)
+                    Enter your shifts in plain English - AI will parse them for you
                   </p>
+                  <Button 
+                    type="button" 
+                    variant="secondary" 
+                    onClick={handleParseShifts}
+                    disabled={parsingShifts || !freeTextShifts.trim()}
+                    className="w-full"
+                  >
+                    {parsingShifts ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Parsing...
+                      </>
+                    ) : (
+                      "Parse Shifts with AI"
+                    )}
+                  </Button>
+                  {shifts.length > 0 && shifts[0].date && (
+                    <p className="text-sm text-green-600">
+                      ✓ {shifts.length} shift(s) parsed - review in "Day by Day" tab
+                    </p>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>
