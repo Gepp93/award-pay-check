@@ -29,7 +29,11 @@ export const ManualAwardSelection = ({ onSelect }: ManualAwardSelectionProps) =>
 
       if (error) throw error;
 
-      setAwards(data?.results || []);
+      // Sort awards alphabetically by title
+      const sortedAwards = (data?.results || []).sort((a: any, b: any) => 
+        (a.title || "").localeCompare(b.title || "")
+      );
+      setAwards(sortedAwards);
     } catch (error) {
       console.error("Error fetching awards:", error);
       toast.error("Failed to fetch awards");

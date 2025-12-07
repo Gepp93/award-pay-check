@@ -145,10 +145,10 @@ const Contact = () => {
 
                 <a 
                   href="mailto:support@awardpay.com.au"
-                  className="inline-flex items-center gap-3 text-2xl md:text-3xl font-bold text-primary hover:text-primary/80 transition-colors"
+                  className="inline-flex items-center gap-3 text-lg sm:text-2xl md:text-3xl font-bold text-primary hover:text-primary/80 transition-colors break-all"
                 >
-                  <Mail className="h-8 w-8" />
-                  support@awardpay.com.au
+                  <Mail className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0" />
+                  <span className="break-all">support@awardpay.com.au</span>
                 </a>
 
                 <div className="pt-8 border-t border-border">
