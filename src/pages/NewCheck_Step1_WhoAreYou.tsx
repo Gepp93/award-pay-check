@@ -59,7 +59,11 @@ export default function NewCheck_Step1_WhoAreYou() {
       });
 
       if (error) throw error;
-      setAwards(data.results || []);
+      // Sort awards alphabetically by name
+      const sortedAwards = (data.results || []).sort((a: any, b: any) => 
+        (a.name || "").localeCompare(b.name || "")
+      );
+      setAwards(sortedAwards);
     } catch (error) {
       toast({
         title: "Error",
