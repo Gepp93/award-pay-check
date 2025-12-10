@@ -195,10 +195,10 @@ const Index = () => {
                 Sign In
               </Button>
               <Button
-                onClick={() => navigate("/auth")}
+                onClick={() => navigate("/new-check-step-1")}
                 className="bg-gradient-primary text-primary-foreground hover:opacity-90 px-6"
               >
-                Get Started
+                Check My Pay Now
               </Button>
             </nav>
 
@@ -256,10 +256,10 @@ const Index = () => {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => { navigate("/auth"); setMobileMenuOpen(false); }}
+                    onClick={() => { navigate("/new-check-step-1"); setMobileMenuOpen(false); }}
                     className="bg-gradient-primary text-primary-foreground hover:opacity-90"
                   >
-                    Get Started
+                    Check My Pay Now
                   </Button>
                 </div>
               </nav>
@@ -290,10 +290,10 @@ const Index = () => {
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
                     <Button
                       size="lg"
-                      onClick={() => navigate("/auth")}
+                      onClick={() => navigate("/new-check-step-1")}
                       className="bg-gradient-primary text-primary-foreground hover:opacity-90 text-lg px-8 py-6 h-14 font-semibold"
                     >
-                      Get Started
+                      Check My Pay Now
                     </Button>
                     <Button
                       size="lg"

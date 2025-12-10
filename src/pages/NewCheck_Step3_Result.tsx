@@ -3,14 +3,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, CheckCircle, Download, Loader2, ChevronDown, Coins, Lock } from "lucide-react";
+import { AlertCircle, CheckCircle, Download, Loader2, ChevronDown, Coins, Lock, UserPlus } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
+import { PublicNavBar } from "@/components/PublicNavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
+import type { User } from "@supabase/supabase-js";
 
 interface PotentialAllowance {
   id: string;
@@ -34,6 +36,24 @@ export default function NewCheck_Step3_Result() {
   const { result, shiftDetails, advancedPayslip } = location.state || {};
   const [downloading, setDownloading] = useState(false);
   const [allAllowancesOpen, setAllAllowancesOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setAuthLoading(false);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -45,6 +65,7 @@ export default function NewCheck_Step3_Result() {
   const isUnderpaid = underpayment > 0;
   const potentialAllowances: PotentialAllowance[] = result.potentialAllowances || [];
   const allAwardAllowances: AwardAllowance[] = result.allAwardAllowances || [];
+  const isAuthenticated = !!user;
 
   // Save calculation to database (only if not viewing from dashboard)
   const fromDashboard = location.state?.fromDashboard;
@@ -113,7 +134,7 @@ export default function NewCheck_Step3_Result() {
     );
   };
 
-  // Upgrade CTA Card
+  // Upgrade CTA Card (for authenticated but non-premium users)
   const UpgradeCTA = () => (
     <Card className="border-2 border-primary bg-primary/5">
       <CardContent className="p-6 text-center space-y-4">
@@ -133,9 +154,58 @@ export default function NewCheck_Step3_Result() {
     </Card>
   );
 
+  // Auth Wall for unauthenticated users
+  const AuthWall = () => (
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-2 border-primary shadow-2xl">
+        <CardContent className="p-8 text-center space-y-6">
+          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center">
+            <UserPlus className="h-8 w-8 text-primary-foreground" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Your Results Are Ready!</h2>
+            <p className="text-muted-foreground">
+              Create a free account to see if you're being underpaid and discover allowances you may be missing.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <Button 
+              onClick={() => navigate("/auth", { state: { returnTo: location.pathname, returnState: location.state } })} 
+              size="lg" 
+              className="w-full bg-gradient-primary text-primary-foreground"
+            >
+              Create Free Account
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/auth", { state: { returnTo: location.pathname, returnState: location.state, mode: 'signin' } })} 
+              size="lg" 
+              className="w-full"
+            >
+              I Already Have an Account
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Free to sign up • Choose your plan after
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Show loading state while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <>
-      <NavBar />
+      {isAuthenticated ? <NavBar /> : <PublicNavBar />}
+      {!isAuthenticated && <AuthWall />}
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-3xl">
         <CardHeader>
