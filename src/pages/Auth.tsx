@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,21 +15,39 @@ const STRIPE_URLS = {
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Check for redirect params
+  // Check for redirect params from URL and location state
   const redirectParam = searchParams.get("redirect");
   const planParam = searchParams.get("plan") as "monthly" | "yearly" | null;
   const isCheckoutRedirect = redirectParam === "checkout" && planParam;
+  
+  // Support return navigation from pay check wizard
+  const returnTo = (location.state as any)?.returnTo;
+  const returnState = (location.state as any)?.returnState;
+  const modeFromState = (location.state as any)?.mode;
+
+  // Set initial login/signup mode from state
+  useEffect(() => {
+    if (modeFromState === 'signin') {
+      setIsLogin(true);
+    } else if (modeFromState === 'signup') {
+      setIsLogin(false);
+    }
+  }, [modeFromState]);
 
   const handlePostAuthRedirect = () => {
     if (isCheckoutRedirect && planParam && STRIPE_URLS[planParam]) {
       // Redirect to Stripe checkout
       window.location.href = STRIPE_URLS[planParam];
+    } else if (returnTo && returnState) {
+      // Return to the page the user came from with their state preserved
+      navigate(returnTo, { state: returnState });
     } else {
       // Default redirect
       navigate("/new-check-step-1");
@@ -111,9 +129,11 @@ const Auth = () => {
           <CardDescription>
             {isCheckoutRedirect
               ? `Sign ${isLogin ? "in" : "up"} to complete your ${planParam} subscription`
-              : isLogin
-                ? "Sign in to access your calculations"
-                : "Start checking your award pay today"}
+              : returnTo
+                ? `Sign ${isLogin ? "in" : "up"} to see your pay check results`
+                : isLogin
+                  ? "Sign in to access your calculations"
+                  : "Start checking your award pay today"}
           </CardDescription>
         </CardHeader>
         <CardContent>
