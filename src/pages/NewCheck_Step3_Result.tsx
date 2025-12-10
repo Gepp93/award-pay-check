@@ -154,44 +154,82 @@ export default function NewCheck_Step3_Result() {
     </Card>
   );
 
-  // Auth Wall for unauthenticated users
-  const AuthWall = () => (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-2 border-primary shadow-2xl">
-        <CardContent className="p-8 text-center space-y-6">
-          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center">
-            <UserPlus className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold">Your Results Are Ready!</h2>
-            <p className="text-muted-foreground">
-              Create a free account to see if you're being underpaid and discover allowances you may be missing.
+  // Auth Wall for unauthenticated users - with teaser info
+  const AuthWall = () => {
+    const hasAllowances = potentialAllowances.length > 0;
+    const allowanceCount = potentialAllowances.length;
+    
+    return (
+      <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-2 border-primary shadow-2xl">
+          <CardContent className="p-8 text-center space-y-6">
+            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center">
+              {isUnderpaid ? (
+                <AlertCircle className="h-8 w-8 text-primary-foreground" />
+              ) : (
+                <UserPlus className="h-8 w-8 text-primary-foreground" />
+              )}
+            </div>
+            
+            <div className="space-y-3">
+              {isUnderpaid ? (
+                <>
+                  <h2 className="text-2xl font-bold text-destructive">
+                    You May Be Getting Underpaid!
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Our analysis found a potential underpayment. Sign up to see exactly how much you could be owed.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold">Your Results Are Ready!</h2>
+                  <p className="text-muted-foreground">
+                    Your pay looks roughly correct, but create a free account to see the full breakdown.
+                  </p>
+                </>
+              )}
+              
+              {hasAllowances && (
+                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mt-2">
+                  <div className="flex items-center justify-center gap-2 text-amber-700 dark:text-amber-300">
+                    <Coins className="h-5 w-5" />
+                    <span className="font-semibold">
+                      {allowanceCount} allowance{allowanceCount > 1 ? 's' : ''} you may be entitled to!
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                    You could be missing out on extra pay each week
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-3">
+              <Button 
+                onClick={() => navigate("/auth", { state: { returnTo: location.pathname, returnState: location.state } })} 
+                size="lg" 
+                className="w-full bg-gradient-primary text-primary-foreground"
+              >
+                See My Full Results
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate("/auth", { state: { returnTo: location.pathname, returnState: location.state, mode: 'signin' } })} 
+                size="lg" 
+                className="w-full"
+              >
+                I Already Have an Account
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Free to sign up • Choose your plan after
             </p>
-          </div>
-          <div className="space-y-3">
-            <Button 
-              onClick={() => navigate("/auth", { state: { returnTo: location.pathname, returnState: location.state } })} 
-              size="lg" 
-              className="w-full bg-gradient-primary text-primary-foreground"
-            >
-              Create Free Account
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => navigate("/auth", { state: { returnTo: location.pathname, returnState: location.state, mode: 'signin' } })} 
-              size="lg" 
-              className="w-full"
-            >
-              I Already Have an Account
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Free to sign up • Choose your plan after
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
 
   // Show loading state while checking auth
   if (authLoading) {
