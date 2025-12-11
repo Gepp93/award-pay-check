@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { NavBar } from "@/components/NavBar";
+import { PublicNavBar } from "@/components/PublicNavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
 import { MultiDayShiftEntry } from "@/components/wizard/MultiDayShiftEntry";
 import { AllowancesSection } from "@/components/wizard/AllowancesSection";
@@ -27,6 +28,7 @@ export default function NewCheck_Step2_ShiftDetails() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
   const { 
     awardCode, 
     awardName,
@@ -38,6 +40,18 @@ export default function NewCheck_Step2_ShiftDetails() {
     industry,
     state 
   } = location.state || {};
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+    
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Pay period type
   const [payPeriodType, setPayPeriodType] = useState<"single" | "weekly" | "fortnightly">("single");
@@ -282,7 +296,7 @@ export default function NewCheck_Step2_ShiftDetails() {
 
   return (
     <>
-      <NavBar />
+      {user ? <NavBar /> : <PublicNavBar />}
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-2xl">
         <CardHeader>

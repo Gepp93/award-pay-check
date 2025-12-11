@@ -10,11 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
+import { PublicNavBar } from "@/components/PublicNavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
 
 export default function NewCheck_Step1_WhoAreYou() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [loadingClassifications, setLoadingClassifications] = useState(false);
   const [awards, setAwards] = useState<any[]>([]);
@@ -30,6 +32,18 @@ export default function NewCheck_Step1_WhoAreYou() {
   const [jobDescription, setJobDescription] = useState("");
   const [industry, setIndustry] = useState("");
   const [state, setState] = useState("NSW");
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+    
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
   
   const industries = [
     "Retail",
@@ -199,7 +213,7 @@ export default function NewCheck_Step1_WhoAreYou() {
 
   return (
     <>
-      <NavBar />
+      {user ? <NavBar /> : <PublicNavBar />}
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-2xl">
         <CardHeader>
