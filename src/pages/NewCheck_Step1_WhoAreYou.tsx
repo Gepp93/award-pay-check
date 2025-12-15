@@ -254,7 +254,8 @@ export default function NewCheck_Step1_WhoAreYou() {
   return (
     <TooltipProvider>
       {user ? <NavBar /> : <PublicNavBar />}
-      <div className="min-h-screen bg-background pb-24 md:pb-8">
+      {/* Add top padding to account for fixed PublicNavBar (h-20 = 80px) when not logged in */}
+      <div className={`min-h-screen bg-background pb-24 md:pb-8 ${!user ? 'pt-24' : ''}`}>
         <div className="flex items-start justify-center p-4 pt-8">
           <Card className="w-full max-w-2xl">
             <CardHeader className="space-y-4 px-4 md:px-6">
