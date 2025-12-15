@@ -244,7 +244,8 @@ export default function NewCheck_Step3_Result() {
     <>
       {isAuthenticated ? <NavBar /> : <PublicNavBar />}
       {!isAuthenticated && <AuthWall />}
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      {/* Add top padding to account for fixed PublicNavBar (h-20 = 80px) when not logged in */}
+      <div className={`min-h-screen flex items-start justify-center p-4 bg-background ${!isAuthenticated ? 'pt-24' : 'pt-4'}`}>
         <Card className="w-full max-w-3xl">
         <CardHeader>
           <div className="no-print">
