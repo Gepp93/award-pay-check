@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, HelpCircle, Search, Building2, ShoppingBag, Utensils, Heart, Wrench, GraduationCap, Truck, Briefcase, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, HelpCircle, Search, Building2, ShoppingBag, Utensils, Heart, Wrench, GraduationCap, Truck, Briefcase, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
 import { NavBar } from "@/components/NavBar";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
@@ -22,14 +22,14 @@ interface IndustryCard {
 }
 
 const industryCards: IndustryCard[] = [
-  { name: "Retail", icon: <ShoppingBag className="w-6 h-6" />, keywords: ["retail", "shop", "store", "sales"] },
-  { name: "Hospitality", icon: <Utensils className="w-6 h-6" />, keywords: ["hospitality", "restaurant", "cafe", "hotel", "food"] },
-  { name: "Healthcare", icon: <Heart className="w-6 h-6" />, keywords: ["health", "medical", "nurse", "aged care", "disability"] },
-  { name: "Construction", icon: <Wrench className="w-6 h-6" />, keywords: ["construction", "building", "plumber", "electrical", "carpentry"] },
-  { name: "Manufacturing", icon: <Building2 className="w-6 h-6" />, keywords: ["manufacturing", "factory", "production"] },
-  { name: "Education", icon: <GraduationCap className="w-6 h-6" />, keywords: ["education", "school", "teacher", "childcare"] },
-  { name: "Transport", icon: <Truck className="w-6 h-6" />, keywords: ["transport", "logistics", "driver", "warehouse"] },
-  { name: "Other", icon: <Briefcase className="w-6 h-6" />, keywords: [] },
+  { name: "Retail", icon: <ShoppingBag className="w-7 h-7 md:w-6 md:h-6" />, keywords: ["retail", "shop", "store", "sales"] },
+  { name: "Hospitality", icon: <Utensils className="w-7 h-7 md:w-6 md:h-6" />, keywords: ["hospitality", "restaurant", "cafe", "hotel", "food"] },
+  { name: "Healthcare", icon: <Heart className="w-7 h-7 md:w-6 md:h-6" />, keywords: ["health", "medical", "nurse", "aged care", "disability"] },
+  { name: "Construction", icon: <Wrench className="w-7 h-7 md:w-6 md:h-6" />, keywords: ["construction", "building", "plumber", "electrical", "carpentry"] },
+  { name: "Manufacturing", icon: <Building2 className="w-7 h-7 md:w-6 md:h-6" />, keywords: ["manufacturing", "factory", "production"] },
+  { name: "Education", icon: <GraduationCap className="w-7 h-7 md:w-6 md:h-6" />, keywords: ["education", "school", "teacher", "childcare"] },
+  { name: "Transport", icon: <Truck className="w-7 h-7 md:w-6 md:h-6" />, keywords: ["transport", "logistics", "driver", "warehouse"] },
+  { name: "Other", icon: <Briefcase className="w-7 h-7 md:w-6 md:h-6" />, keywords: [] },
 ];
 
 export default function NewCheck_Step1_WhoAreYou() {
@@ -124,7 +124,7 @@ export default function NewCheck_Step1_WhoAreYou() {
   }, [awards, selectedIndustry, awardSearch]);
 
   // Show limited awards initially on mobile
-  const displayedAwards = showAllAwards ? filteredAwards : filteredAwards.slice(0, 10);
+  const displayedAwards = showAllAwards ? filteredAwards : filteredAwards.slice(0, 8);
 
   const loadClassifications = async (awardId: string) => {
     setLoadingClassifications(true);
@@ -220,8 +220,10 @@ export default function NewCheck_Step1_WhoAreYou() {
     return true;
   });
 
+  const canProceed = selectedAward && employmentType;
+
   const handleNext = () => {
-    if (!selectedAward || !employmentType) {
+    if (!canProceed) {
       toast({
         title: "Missing Information",
         description: "Please select your award and employment type",
@@ -252,261 +254,293 @@ export default function NewCheck_Step1_WhoAreYou() {
   return (
     <TooltipProvider>
       {user ? <NavBar /> : <PublicNavBar />}
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-        <Card className="w-full max-w-2xl">
-          <CardHeader className="space-y-4">
-            <ProgressIndicator currentStep={1} />
-            <div>
-              <CardTitle className="text-xl md:text-2xl">Tell us about your job</CardTitle>
-              <CardDescription>We'll find the right award rates for you</CardDescription>
-            </div>
+      <div className="min-h-screen bg-background pb-24 md:pb-8">
+        <div className="flex items-start justify-center p-4 pt-8">
+          <Card className="w-full max-w-2xl">
+            <CardHeader className="space-y-4 px-4 md:px-6">
+              <ProgressIndicator currentStep={1} />
+              <div>
+                <CardTitle className="text-xl md:text-2xl">Tell us about your job</CardTitle>
+                <CardDescription>We'll find the right award rates for you</CardDescription>
+              </div>
+              
+              {/* Inner progress bar */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{stepsCompleted} of 3 answered</span>
+                  <span>{Math.round(progressPercentage)}%</span>
+                </div>
+                <Progress value={progressPercentage} className="h-2" />
+              </div>
+            </CardHeader>
             
-            {/* Inner progress bar */}
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{stepsCompleted} of 3 answered</span>
-                <span>{Math.round(progressPercentage)}%</span>
-              </div>
-              <Progress value={progressPercentage} className="h-2" />
-            </div>
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            {/* Step 1: Industry Selection - Visual Cards */}
-            <div className="space-y-3">
-              <Label className="text-base font-medium">What industry do you work in?</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {industryCards.map((industry) => (
-                  <button
-                    key={industry.name}
-                    onClick={() => handleIndustrySelect(industry.name)}
-                    className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all min-h-[80px] ${
-                      selectedIndustry === industry.name
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50"
-                    }`}
-                  >
-                    {industry.icon}
-                    <span className="mt-2 text-sm font-medium">{industry.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Step 2: Award Selection with Search */}
-            {selectedIndustry && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="flex items-center gap-2">
-                  <Label className="text-base font-medium">Select your Award</Label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-[280px] bg-popover text-popover-foreground">
-                      <p>An Award is a legal document that sets minimum pay rates and conditions for your job. Check your payslip or employment contract to find yours.</p>
-                    </TooltipContent>
-                  </Tooltip>
+            <CardContent className="space-y-6 px-4 md:px-6">
+              {/* Step 1: Industry Selection - Visual Cards with larger touch targets */}
+              <div className="space-y-3">
+                <Label className="text-base font-medium">What industry do you work in?</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {industryCards.map((industry) => (
+                    <button
+                      key={industry.name}
+                      onClick={() => handleIndustrySelect(industry.name)}
+                      className={`flex flex-col items-center justify-center p-5 md:p-4 rounded-xl border-2 transition-all min-h-[100px] md:min-h-[80px] active:scale-95 ${
+                        selectedIndustry === industry.name
+                          ? "border-primary bg-primary/10 text-primary shadow-md"
+                          : "border-border hover:border-primary/50 hover:bg-muted/50 active:bg-muted"
+                      }`}
+                    >
+                      {industry.icon}
+                      <span className="mt-2 text-sm font-medium text-center">{industry.name}</span>
+                    </button>
+                  ))}
                 </div>
-                
-                {loading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    <span className="ml-2 text-muted-foreground">Loading awards...</span>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {/* Search input */}
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search awards..."
-                        value={awardSearch}
-                        onChange={(e) => setAwardSearch(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
-                    
-                    {/* Awards list */}
-                    <div className="space-y-2">
-                      {filteredAwards.length === 0 ? (
-                        <p className="text-sm text-muted-foreground py-4 text-center">
-                          No awards found. Try a different search term.
-                        </p>
-                      ) : (
-                        <>
-                          {displayedAwards.map((award) => (
-                            <button
-                              key={award.code}
-                              onClick={() => handleAwardSelect(award.code)}
-                              className={`w-full text-left p-3 rounded-lg border transition-all ${
-                                selectedAward === award.code
-                                  ? "border-primary bg-primary/10"
-                                  : "border-border hover:border-primary/50 hover:bg-muted/50"
-                              }`}
-                            >
-                              <div className="font-medium text-sm">{award.name}</div>
-                              <div className="text-xs text-muted-foreground">{award.code}</div>
-                            </button>
-                          ))}
-                          
-                          {filteredAwards.length > 10 && !showAllAwards && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setShowAllAwards(true)}
-                              className="w-full"
-                            >
-                              <ChevronDown className="w-4 h-4 mr-2" />
-                              Show {filteredAwards.length - 10} more awards
-                            </Button>
-                          )}
-                          
-                          {showAllAwards && filteredAwards.length > 10 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setShowAllAwards(false)}
-                              className="w-full"
-                            >
-                              <ChevronUp className="w-4 h-4 mr-2" />
-                              Show less
-                            </Button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
-            )}
 
-            {/* Work Area (if available) */}
-            {selectedAward && workAreas.length > 0 && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                <Label>Work Area / Category</Label>
-                {loadingClassifications ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
+              {/* Step 2: Award Selection with Search */}
+              {selectedIndustry && (
+                <div className="space-y-3 animate-fade-in">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-base font-medium">Select your Award</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button className="touch-manipulation p-1">
+                          <HelpCircle className="w-5 h-5 md:w-4 md:h-4 text-muted-foreground" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[280px] bg-popover text-popover-foreground">
+                        <p>An Award is a legal document that sets minimum pay rates and conditions for your job. Check your payslip or employment contract to find yours.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
-                ) : (
-                  <Select value={selectedWorkArea} onValueChange={(value) => {
-                    setSelectedWorkArea(value);
-                    setSelectedClassification("");
-                  }}>
-                    <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="Select work area" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border border-border max-h-[300px] z-50">
-                      {workAreas.map((area) => (
-                        <SelectItem key={area} value={area}>
-                          {area}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            )}
-
-            {/* Optional: Classification picker (collapsed by default) */}
-            {selectedAward && selectedWorkArea && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                <button
-                  onClick={() => setShowClassificationPicker(!showClassificationPicker)}
-                  className="text-sm text-primary hover:underline flex items-center gap-1"
-                >
-                  {showClassificationPicker ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  {showClassificationPicker ? "Skip classification selection" : "I know my exact classification (optional)"}
-                </button>
-                
-                {showClassificationPicker && filteredClassifications.length > 0 && (
-                  <Select value={selectedClassification} onValueChange={setSelectedClassification}>
-                    <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="Select your classification" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border border-border max-h-[300px] z-50">
-                      {filteredClassifications.map((cls: any) => (
-                        <SelectItem key={cls.classification_fixed_id} value={cls.classification_fixed_id.toString()}>
-                          <div className="flex flex-col">
-                            <span>{cls.classification}</span>
-                            {cls.parent_classification_name && (
-                              <span className="text-xs text-muted-foreground">{cls.parent_classification_name}</span>
+                  
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <span className="ml-2 text-muted-foreground">Loading awards...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Search input with larger touch target */}
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          placeholder="Search awards..."
+                          value={awardSearch}
+                          onChange={(e) => setAwardSearch(e.target.value)}
+                          className="pl-10 h-12 md:h-10 text-base"
+                        />
+                      </div>
+                      
+                      {/* Awards list with larger touch targets */}
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto overscroll-contain -mx-1 px-1">
+                        {filteredAwards.length === 0 ? (
+                          <p className="text-sm text-muted-foreground py-4 text-center">
+                            No awards found. Try a different search term.
+                          </p>
+                        ) : (
+                          <>
+                            {displayedAwards.map((award) => (
+                              <button
+                                key={award.code}
+                                onClick={() => handleAwardSelect(award.code)}
+                                className={`w-full text-left p-4 md:p-3 rounded-xl md:rounded-lg border-2 transition-all active:scale-[0.98] ${
+                                  selectedAward === award.code
+                                    ? "border-primary bg-primary/10 shadow-md"
+                                    : "border-border hover:border-primary/50 hover:bg-muted/50 active:bg-muted"
+                                }`}
+                              >
+                                <div className="font-medium text-sm leading-tight">{award.name}</div>
+                                <div className="text-xs text-muted-foreground mt-1">{award.code}</div>
+                              </button>
+                            ))}
+                            
+                            {filteredAwards.length > 8 && !showAllAwards && (
+                              <Button
+                                variant="ghost"
+                                size="lg"
+                                onClick={() => setShowAllAwards(true)}
+                                className="w-full h-12 md:h-10"
+                              >
+                                <ChevronDown className="w-5 h-5 mr-2" />
+                                Show {filteredAwards.length - 8} more awards
+                              </Button>
                             )}
-                          </div>
+                            
+                            {showAllAwards && filteredAwards.length > 8 && (
+                              <Button
+                                variant="ghost"
+                                size="lg"
+                                onClick={() => setShowAllAwards(false)}
+                                className="w-full h-12 md:h-10"
+                              >
+                                <ChevronUp className="w-5 h-5 mr-2" />
+                                Show less
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Work Area (if available) */}
+              {selectedAward && workAreas.length > 0 && (
+                <div className="space-y-2 animate-fade-in">
+                  <Label>Work Area / Category</Label>
+                  {loadingClassifications ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
+                    </div>
+                  ) : (
+                    <Select value={selectedWorkArea} onValueChange={(value) => {
+                      setSelectedWorkArea(value);
+                      setSelectedClassification("");
+                    }}>
+                      <SelectTrigger className="bg-background h-12 md:h-10 text-base">
+                        <SelectValue placeholder="Select work area" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border border-border max-h-[300px] z-50">
+                        {workAreas.map((area) => (
+                          <SelectItem key={area} value={area} className="py-3 md:py-2">
+                            {area}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
+
+              {/* Optional: Classification picker (collapsed by default) */}
+              {selectedAward && selectedWorkArea && (
+                <div className="space-y-2 animate-fade-in">
+                  <button
+                    onClick={() => setShowClassificationPicker(!showClassificationPicker)}
+                    className="text-sm text-primary hover:underline flex items-center gap-1 py-2 touch-manipulation"
+                  >
+                    {showClassificationPicker ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    {showClassificationPicker ? "Skip classification selection" : "I know my exact classification (optional)"}
+                  </button>
+                  
+                  {showClassificationPicker && filteredClassifications.length > 0 && (
+                    <Select value={selectedClassification} onValueChange={setSelectedClassification}>
+                      <SelectTrigger className="bg-background h-12 md:h-10 text-base">
+                        <SelectValue placeholder="Select your classification" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border border-border max-h-[300px] z-50">
+                        {filteredClassifications.map((cls: any) => (
+                          <SelectItem key={cls.classification_fixed_id} value={cls.classification_fixed_id.toString()} className="py-3 md:py-2">
+                            <div className="flex flex-col">
+                              <span>{cls.classification}</span>
+                              {cls.parent_classification_name && (
+                                <span className="text-xs text-muted-foreground">{cls.parent_classification_name}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
+
+              {/* Step 3: Employment Type with larger touch targets */}
+              {selectedAward && (
+                <div className="space-y-3 animate-fade-in">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-base font-medium">Employment Type</Label>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button className="touch-manipulation p-1">
+                          <HelpCircle className="w-5 h-5 md:w-4 md:h-4 text-muted-foreground" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[280px] bg-popover text-popover-foreground">
+                        <p><strong>Full-time:</strong> Regular hours, usually 38/week<br/>
+                        <strong>Part-time:</strong> Regular but fewer hours<br/>
+                        <strong>Casual:</strong> No guaranteed hours, higher base rate</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  
+                  {/* Employment type as larger buttons for mobile */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {["Full-time", "Part-time", "Casual"].map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => setEmploymentType(type)}
+                        className={`py-4 md:py-3 px-3 rounded-xl md:rounded-lg border-2 font-medium text-sm transition-all active:scale-95 ${
+                          employmentType === type
+                            ? "border-primary bg-primary/10 text-primary shadow-md"
+                            : "border-border hover:border-primary/50 hover:bg-muted/50 active:bg-muted"
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* State (optional, collapsed) */}
+              {selectedAward && (
+                <div className="space-y-2 animate-fade-in">
+                  <Label className="text-sm text-muted-foreground">State (optional)</Label>
+                  <Select value={state} onValueChange={setState}>
+                    <SelectTrigger className="bg-background h-12 md:h-10 text-base">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border border-border">
+                      {states.map((st) => (
+                        <SelectItem key={st} value={st} className="py-3 md:py-2">
+                          {st}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                )}
-              </div>
-            )}
-
-            {/* Step 3: Employment Type */}
-            {selectedAward && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                <div className="flex items-center gap-2">
-                  <Label className="text-base font-medium">Employment Type</Label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <HelpCircle className="w-4 h-4 text-muted-foreground cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-[280px] bg-popover text-popover-foreground">
-                      <p><strong>Full-time:</strong> Regular hours, usually 38/week<br/>
-                      <strong>Part-time:</strong> Regular but fewer hours<br/>
-                      <strong>Casual:</strong> No guaranteed hours, higher base rate</p>
-                    </TooltipContent>
-                  </Tooltip>
                 </div>
-                <RadioGroup value={employmentType} onValueChange={setEmploymentType} className="flex flex-wrap gap-4">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Full-time" id="full-time" />
-                    <Label htmlFor="full-time" className="font-normal cursor-pointer">Full-time</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Part-time" id="part-time" />
-                    <Label htmlFor="part-time" className="font-normal cursor-pointer">Part-time</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Casual" id="casual" />
-                    <Label htmlFor="casual" className="font-normal cursor-pointer">Casual</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-            )}
+              )}
 
-            {/* State (optional, collapsed) */}
-            {selectedAward && (
-              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                <Label className="text-sm text-muted-foreground">State (optional)</Label>
-                <Select value={state} onValueChange={setState}>
-                  <SelectTrigger className="bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border border-border">
-                    {states.map((st) => (
-                      <SelectItem key={st} value={st}>
-                        {st}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Spacer for sticky button on desktop */}
+              <div className="h-4 md:h-0" />
+              
+              {/* Next Button - Desktop only (sticky button below for mobile) */}
+              <div className="hidden md:block pt-2">
+                <Button 
+                  onClick={handleNext} 
+                  className="w-full" 
+                  size="lg"
+                  disabled={!canProceed}
+                >
+                  Next
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Sticky Next Button - Mobile only */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border md:hidden z-40">
+          <Button 
+            onClick={handleNext} 
+            className="w-full h-14 text-base font-semibold shadow-lg" 
+            size="lg"
+            disabled={!canProceed}
+          >
+            {canProceed ? (
+              <>
+                Next Step
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </>
+            ) : (
+              "Select your award to continue"
             )}
-
-            {/* Next Button - Sticky on mobile */}
-            <div className="pt-4">
-              <Button 
-                onClick={handleNext} 
-                className="w-full" 
-                size="lg"
-                disabled={!selectedAward || !employmentType}
-              >
-                Next
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          </Button>
+        </div>
       </div>
     </TooltipProvider>
   );
