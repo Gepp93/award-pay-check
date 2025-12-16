@@ -295,14 +295,6 @@ const Index = () => {
                     >
                       Check My Pay Now
                     </Button>
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      onClick={() => navigate("/subscription")}
-                      className="text-lg px-8 py-6 h-14 border-2 font-semibold hover:bg-secondary/50"
-                    >
-                      View Pricing
-                    </Button>
                   </div>
                 </div>
 
