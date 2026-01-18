@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, X, Shield, FileText, Brain, Heart, Info } from "lucide-react";
+import { Check, Shield, FileText, Brain, Heart, Info } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,19 +23,15 @@ const Pricing = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleUpgrade = (plan: "monthly" | "yearly") => {
+  const handleUpgrade = () => {
     if (!user) {
       // Not logged in - redirect to auth with plan info
-      navigate(`/auth?redirect=checkout&plan=${plan}`);
+      navigate(`/auth?redirect=checkout&plan=3month`);
       return;
     }
 
     // Logged in - go directly to Stripe
-    const checkoutUrl = plan === "monthly" 
-      ? "https://buy.stripe.com/bJe14o0kk7Rfcqr8ZL6AM03"
-      : "https://buy.stripe.com/6oU14o6II2wV2PR0tf6AM02";
-    
-    window.location.href = checkoutUrl;
+    window.location.href = "https://buy.stripe.com/6oUeVe0kk9Zn4XZ5Nz6AM04";
   };
 
   return (
@@ -54,170 +50,109 @@ const Pricing = () => {
         </div>
       </section>
 
-      {/* Section 2 - Pricing Cards */}
+      {/* Section 2 - Pricing Card */}
       <section className="py-12 px-4">
-        <div className="container mx-auto max-w-5xl">
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Pro Monthly Plan */}
-            <Card className="flex flex-col border-primary shadow-lg relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
-                Most Popular
-              </div>
-              <CardHeader className="pt-8">
-                <CardTitle className="text-2xl">Pro Monthly</CardTitle>
-                <CardDescription>
-                  <span className="text-3xl font-bold text-foreground">$9.99</span>
-                  <span className="text-muted-foreground"> / month</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span className="font-semibold">Unlimited award-accurate calculations</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>All penalty rates</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>All allowances</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>RDO tracking</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Save shifts</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Save payslips</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Underpayment detection</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Side-by-side payslip comparison</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Export PDF reports</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Email summaries</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>AwardPay AI assistant</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Priority support</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full" onClick={() => handleUpgrade("monthly")}>
-                  Get AwardPay Pro
-                </Button>
-              </CardFooter>
-            </Card>
-
-            {/* Pro Yearly Plan */}
-            <Card className="flex flex-col relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground px-4 py-1 rounded-full text-sm font-semibold whitespace-nowrap">
-                Best Value — Save $40.88
-              </div>
-              <CardHeader className="pt-8">
-                <CardTitle className="text-2xl">Pro Yearly</CardTitle>
-                <CardDescription>
-                  <span className="text-3xl font-bold text-foreground">$79</span>
-                  <span className="text-muted-foreground"> / year</span>
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <p className="font-semibold mb-4">All Pro Monthly features plus:</p>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Priority email support</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>Award update alerts</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary mt-0.5" />
-                    <span>One-click shift history export</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full" onClick={() => handleUpgrade("yearly")}>
-                  Save With Yearly Plan
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
+        <div className="container mx-auto max-w-md">
+          {/* 3 Month Access Pass */}
+          <Card className="flex flex-col border-primary shadow-lg relative">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
+              Full Access
+            </div>
+            <CardHeader className="pt-8">
+              <CardTitle className="text-2xl">3 Month Access Pass</CardTitle>
+              <CardDescription>
+                <span className="text-3xl font-bold text-foreground">$30</span>
+                <span className="text-muted-foreground"> for 3 months</span>
+              </CardDescription>
+              <p className="text-sm text-muted-foreground mt-2">
+                Just $10/month — one-time payment
+              </p>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span className="font-semibold">Unlimited award-accurate calculations</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>All penalty rates</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>All allowances</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>RDO tracking</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>Save shifts</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>Save payslips</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>Underpayment detection</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>Side-by-side payslip comparison</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>Export PDF reports</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>Email summaries</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>AwardPay AI assistant</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-primary mt-0.5" />
+                  <span>Priority support</span>
+                </li>
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Button className="w-full" onClick={handleUpgrade}>
+                Get 3 Month Access — $30
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </section>
 
-      {/* Section 3 - Feature Comparison Table */}
+      {/* Section 3 - What's Included */}
       <section className="py-20 px-4 bg-muted/30">
         <div className="container mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Compare Plans</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-4 font-semibold">Feature</th>
-                  <th className="text-center p-4 font-semibold">Pro Monthly</th>
-                  <th className="text-center p-4 font-semibold">Pro Yearly</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { feature: "Award-accurate calculations", pro: "Unlimited", yearly: "Unlimited" },
-                  { feature: "Penalty rates", pro: "All", yearly: "All" },
-                  { feature: "Allowances", pro: "All", yearly: "All" },
-                  { feature: "RDO tracking", pro: true, yearly: true },
-                  { feature: "Save shifts", pro: true, yearly: true },
-                  { feature: "Save payslips", pro: true, yearly: true },
-                  { feature: "Payslip comparison", pro: true, yearly: true },
-                  { feature: "Underpayment alerts", pro: true, yearly: true },
-                  { feature: "PDF export", pro: true, yearly: true },
-                  { feature: "Email export", pro: true, yearly: true },
-                  { feature: "AI Award explainer", pro: true, yearly: true },
-                  { feature: "Support level", pro: "Priority", yearly: "Priority+" },
-                  { feature: "Cost per month", pro: "$9.99", yearly: "$6.58" },
-                  { feature: "Annual savings", pro: "-", yearly: "$40.88" },
-                ].map((row, i) => (
-                  <tr key={i} className="border-b">
-                    <td className="p-4">{row.feature}</td>
-                    <td className="text-center p-4">
-                      {typeof row.pro === "boolean" ? (
-                        row.pro ? <Check className="h-5 w-5 text-primary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                      ) : (
-                        row.pro
-                      )}
-                    </td>
-                    <td className="text-center p-4">
-                      {typeof row.yearly === "boolean" ? (
-                        row.yearly ? <Check className="h-5 w-5 text-primary mx-auto" /> : <X className="h-5 w-5 text-muted-foreground mx-auto" />
-                      ) : (
-                        row.yearly
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <h2 className="text-3xl font-bold text-center mb-12">What's Included</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              "Unlimited award-accurate calculations",
+              "All penalty rates",
+              "All allowances",
+              "RDO tracking",
+              "Save shifts",
+              "Save payslips",
+              "Payslip comparison",
+              "Underpayment alerts",
+              "PDF export",
+              "Email export",
+              "AI Award explainer",
+              "Priority support",
+            ].map((feature, i) => (
+              <div key={i} className="flex items-center gap-2 p-3 bg-background rounded-lg">
+                <Check className="h-5 w-5 text-primary" />
+                <span>{feature}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>

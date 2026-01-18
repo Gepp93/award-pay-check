@@ -51,7 +51,7 @@ export function useSubscription() {
         const subscriptionStatus = profileResult.data?.subscription_status || "free";
         const isAdmin = adminResult.data === true;
         
-        const hasActiveSubscription = ["active", "monthly", "yearly"].includes(subscriptionStatus);
+        const hasActiveSubscription = ["active", "monthly", "yearly", "3month"].includes(subscriptionStatus);
         const isPremium = isAdmin || hasActiveSubscription;
 
         if (isMounted) {
