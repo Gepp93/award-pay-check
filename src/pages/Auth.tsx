@@ -8,10 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Calculator } from "lucide-react";
 
-const STRIPE_URLS = {
-  monthly: "https://buy.stripe.com/bJe14o0kk7Rfcqr8ZL6AM03",
-  yearly: "https://buy.stripe.com/6oU14o6II2wV2PR0tf6AM02",
-};
+const STRIPE_URL = "https://buy.stripe.com/6oUeVe0kk9Zn4XZ5Nz6AM04";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -24,8 +21,7 @@ const Auth = () => {
 
   // Check for redirect params from URL and location state
   const redirectParam = searchParams.get("redirect");
-  const planParam = searchParams.get("plan") as "monthly" | "yearly" | null;
-  const isCheckoutRedirect = redirectParam === "checkout" && planParam;
+  const isCheckoutRedirect = redirectParam === "checkout";
   
   // Support return navigation from pay check wizard
   const returnTo = (location.state as any)?.returnTo;
@@ -42,9 +38,9 @@ const Auth = () => {
   }, [modeFromState]);
 
   const handlePostAuthRedirect = () => {
-    if (isCheckoutRedirect && planParam && STRIPE_URLS[planParam]) {
-      // Redirect to Stripe checkout
-      window.location.href = STRIPE_URLS[planParam];
+    if (isCheckoutRedirect) {
+      // Redirect to Stripe checkout for 3-month pass
+      window.location.href = STRIPE_URL;
     } else if (returnTo && returnState) {
       // Return to the page the user came from with their state preserved
       navigate(returnTo, { state: returnState });
@@ -128,7 +124,7 @@ const Auth = () => {
           </CardTitle>
           <CardDescription>
             {isCheckoutRedirect
-              ? `Sign ${isLogin ? "in" : "up"} to complete your ${planParam} subscription`
+              ? `Sign ${isLogin ? "in" : "up"} to complete your 3-month access pass`
               : returnTo
                 ? `Sign ${isLogin ? "in" : "up"} to see your pay check results`
                 : isLogin

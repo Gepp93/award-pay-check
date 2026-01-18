@@ -148,15 +148,11 @@ const Profile = () => {
               <label className="text-sm font-medium text-muted-foreground">Status</label>
               <div className="flex items-center gap-2">
                 <p className={`font-medium ${isSubscribed ? "text-success" : subscriptionStatus === "cancelled" ? "text-destructive" : "text-muted-foreground"}`}>
-                  {subscriptionStatus === "monthly" 
-                    ? "Pro Monthly ($9.99/mo)" 
-                    : subscriptionStatus === "yearly"
-                      ? "Pro Yearly ($79/yr)"
-                      : subscriptionStatus === "active"
-                        ? "Active"
-                        : subscriptionStatus === "cancelled" 
-                          ? "Cancelled" 
-                          : "Free Plan"}
+                  {subscriptionStatus === "3month" || subscriptionStatus === "active"
+                    ? "Pro Access (3 Month Pass)" 
+                    : subscriptionStatus === "cancelled" 
+                      ? "Cancelled" 
+                      : "Free Plan"}
                 </p>
                 {isAdmin && (
                   <Badge variant="outline" className="text-xs">

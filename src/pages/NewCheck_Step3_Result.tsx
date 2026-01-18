@@ -148,7 +148,7 @@ export default function NewCheck_Step3_Result() {
           </p>
         </div>
         <Button onClick={() => navigate("/subscription")} size="lg" className="w-full sm:w-auto">
-          Subscribe Now - From $9.99/month
+          Get 3 Month Access - $30
         </Button>
       </CardContent>
     </Card>
