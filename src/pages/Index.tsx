@@ -511,7 +511,7 @@ const Index = () => {
                     Create Free Account
                   </Button>
                   <p className="text-primary-foreground/80 text-sm mt-6">
-                    Free to sign up • Flexible pricing plans • Cancel anytime
+                    Free to sign up • $30 for 3 months access • No recurring charges
                   </p>
                 </CardContent>
               </Card>
