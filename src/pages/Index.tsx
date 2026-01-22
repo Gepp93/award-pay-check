@@ -289,6 +289,35 @@ const Index = () => {
                   <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl font-medium">
                     1 in 5 Australian workers are underpaid an average of <span className="text-foreground font-bold">$1,542 per year</span>. Check your award pay now and claim what you're legally owed.
                   </p>
+                  
+                  {/* Hero Stats Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                    <div className="bg-secondary/50 border border-border/50 rounded-xl p-4 text-center">
+                      <div className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-primary">
+                        $1.35B
+                      </div>
+                      <div className="text-xs md:text-sm text-muted-foreground font-medium mt-1">
+                        Stolen in Wage Theft Annually
+                      </div>
+                    </div>
+                    <div className="bg-secondary/50 border border-border/50 rounded-xl p-4 text-center">
+                      <div className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-primary">
+                        1 in 5
+                      </div>
+                      <div className="text-xs md:text-sm text-muted-foreground font-medium mt-1">
+                        Young Workers Underpaid
+                      </div>
+                    </div>
+                    <div className="bg-secondary/50 border border-border/50 rounded-xl p-4 text-center">
+                      <div className="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-primary">
+                        $1,542
+                      </div>
+                      <div className="text-xs md:text-sm text-muted-foreground font-medium mt-1">
+                        Average Underpayment Per Year
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
                     <Button
                       size="lg"
