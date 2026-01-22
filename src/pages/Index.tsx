@@ -277,15 +277,17 @@ const Index = () => {
               <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 {/* Left Column - Text Content */}
                 <div className="space-y-8">
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                    Are You Being Paid{" "}
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold leading-[1.1] tracking-tight">
+                    Are You Being{" "}
                     <span className="text-transparent bg-clip-text bg-gradient-primary">
-                      Correctly
+                      Underpaid
                     </span>
                     ?
+                    <br />
+                    <span className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl">Find Out in 60 Seconds</span>
                   </h1>
-                  <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl">
-                    AwardPay helps Australian workers instantly check if their payslip matches their Modern Award. No confusion. No guessing. Just award-accurate calculations.
+                  <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl font-medium">
+                    1 in 5 Australian workers are underpaid an average of <span className="text-foreground font-bold">$1,542 per year</span>. Check your award pay for free and get what you're legally owed.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
                     <Button
