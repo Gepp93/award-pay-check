@@ -287,7 +287,7 @@ const Index = () => {
                     <span className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl">Find Out in 60 Seconds</span>
                   </h1>
                   <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl font-medium">
-                    1 in 5 Australian workers are underpaid an average of <span className="text-foreground font-bold">$1,542 per year</span>. Check your award pay for free and get what you're legally owed.
+                    1 in 5 Australian workers are underpaid an average of <span className="text-foreground font-bold">$1,542 per year</span>. Check your award pay now and claim what you're legally owed.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
                     <Button
