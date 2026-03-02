@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import SEO from "@/components/SEO";
 import {
   Calculator,
   Calendar,
@@ -34,6 +35,7 @@ const HowItWorks = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary/10 via-white to-white">
+      <SEO title="How AwardPay Works - Award Pay Calculator Explained | AwardPay" description="See how AwardPay checks your pay against official Fair Work Commission data. Enter shifts, get an instant breakdown of rates, penalties and allowances." path="/how-it-works" />
       {/* Fixed Navigation Bar */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border/50">
         <div className="container mx-auto px-6">
