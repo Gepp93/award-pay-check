@@ -6,6 +6,7 @@ import { Check, Shield, FileText, Brain, Heart, Info } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { supabase } from "@/integrations/supabase/client";
+import SEO from "@/components/SEO";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Pricing - Affordable Award Pay Checking | AwardPay" description="Check your Australian award pay from $10/month. Verify overtime, penalty rates and allowances with AwardPay's accurate calculator." path="/pricing" />
       <PublicNavBar />
       
       {/* Section 1 - Hero Header */}

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calculator, Shield, TrendingUp, FileText, DollarSign, Clock, CheckCircle2, Menu, X } from "lucide-react";
+import SEO from "@/components/SEO";
 import {
   Carousel,
   CarouselContent,
@@ -167,6 +168,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEO title="Are You Being Underpaid? Award Pay Calculator Australia | AwardPay" description="Free Australian award pay calculator. Check if you're being underpaid - 1 in 5 workers lose $1,542/year. Verify penalty rates, overtime and allowances in 60 seconds." path="/" />
       {/* Fixed Navigation Bar */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border/50">
         <div className="container mx-auto px-6">

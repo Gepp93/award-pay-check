@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calculator, Mail, Clock, MessageSquare, Menu, X } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const Contact = () => {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary/10 via-white to-white">
+      <SEO title="Contact Us - AwardPay Support | AwardPay" description="Get in touch with the AwardPay team. Email support@awardpay.com.au for help with your award pay questions." path="/contact" />
       {/* Fixed Navigation Bar */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border/50">
         <div className="container mx-auto px-6">

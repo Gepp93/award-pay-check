@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Scale, MapPin, CheckCircle2, FileText, AlertTriangle, Users, Clock, DollarSign, Shield, RefreshCw, Calculator, TrendingUp, Hammer, ShoppingCart, Heart, Factory, Wrench, Utensils, UserCheck, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import SEO from "@/components/SEO";
 const WhyAwardPay = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-secondary/20">
+      <SEO title="Why AwardPay? Understanding Australian Award Pay | AwardPay" description="Australian Modern Awards are complex. AwardPay simplifies award pay rules so every worker knows exactly what they're owed." path="/why-awardpay" />
       <PublicNavBar />
       
       {/* Hero Section */}
