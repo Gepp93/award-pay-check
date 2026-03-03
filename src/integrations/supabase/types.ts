@@ -38,6 +38,39 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          calculation_data: Json | null
+          created_at: string | null
+          email: string
+          id: string
+          payment_status: string | null
+          product_purchased: string | null
+          shift_details: Json | null
+          stripe_session_id: string | null
+        }
+        Insert: {
+          calculation_data?: Json | null
+          created_at?: string | null
+          email: string
+          id?: string
+          payment_status?: string | null
+          product_purchased?: string | null
+          shift_details?: Json | null
+          stripe_session_id?: string | null
+        }
+        Update: {
+          calculation_data?: Json | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          payment_status?: string | null
+          product_purchased?: string | null
+          shift_details?: Json | null
+          stripe_session_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           award_code: string | null
