@@ -3,15 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, CheckCircle, Download, Loader2, ChevronDown, Coins, Lock, UserPlus } from "lucide-react";
-import { NavBar } from "@/components/NavBar";
+import { AlertCircle, CheckCircle, ChevronDown, Coins, Mail, FileText, Shield, Loader2 } from "lucide-react";
 import { PublicNavBar } from "@/components/PublicNavBar";
+import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { useSubscription } from "@/hooks/useSubscription";
+import { Input } from "@/components/ui/input";
 import type { User } from "@supabase/supabase-js";
 
 interface PotentialAllowance {
@@ -28,32 +28,50 @@ interface AwardAllowance {
   description: string;
 }
 
+// TODO: Replace these with your actual Stripe Checkout Links
+const STRIPE_REPORT_LINK = "https://buy.stripe.com/REPLACE_WITH_REPORT_LINK";
+const STRIPE_RECOVERY_LINK = "https://buy.stripe.com/REPLACE_WITH_RECOVERY_LINK";
+
 export default function NewCheck_Step3_Result() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { isPremium, loading: subLoading } = useSubscription();
   const { result, shiftDetails, advancedPayslip } = location.state || {};
-  const [downloading, setDownloading] = useState(false);
   const [allAllowancesOpen, setAllAllowancesOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
 
-  // Check authentication status
+  // Email capture state
+  const [emailCaptured, setEmailCaptured] = useState(false);
+  const [capturedEmail, setCapturedEmail] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [leadId, setLeadId] = useState<string | null>(null);
+
+  const fromDashboard = location.state?.fromDashboard;
+
+  // Check if user is logged in (optional, for nav display only)
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setAuthLoading(false);
-    };
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
   }, []);
+
+  // Save calculation for logged-in users
+  useEffect(() => {
+    if (fromDashboard || !result || !shiftDetails) return;
+    const saveCalculation = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        await supabase.from('calculations').insert({
+          user_id: user.id,
+          shift_data: shiftDetails,
+          breakdown: result,
+        });
+      } catch (error) {
+        console.error('Error saving calculation:', error);
+      }
+    };
+    saveCalculation();
+  }, [shiftDetails, result, fromDashboard]);
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -65,187 +83,80 @@ export default function NewCheck_Step3_Result() {
   const isUnderpaid = underpayment > 0;
   const potentialAllowances: PotentialAllowance[] = result.potentialAllowances || [];
   const allAwardAllowances: AwardAllowance[] = result.allAwardAllowances || [];
-  const isAuthenticated = !!user;
 
-  // Save calculation to database (only if not viewing from dashboard)
-  const fromDashboard = location.state?.fromDashboard;
-  
-  useEffect(() => {
-    if (fromDashboard) return;
-    
-    const saveCalculation = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        await supabase.from('calculations').insert({
-          user_id: user.id,
-          shift_data: shiftDetails,
-          breakdown: result,
-        });
-      } catch (error) {
-        console.error('Error saving calculation:', error);
-      }
-    };
-
-    saveCalculation();
-  }, [shiftDetails, result, fromDashboard]);
-  
-  const handleDownloadPDF = async () => {
-    setDownloading(true);
+  const handleEmailCapture = async () => {
+    if (!emailInput || !emailInput.includes("@")) {
+      toast({ title: "Please enter a valid email", variant: "destructive" });
+      return;
+    }
+    setSavingEmail(true);
     try {
-      window.print();
-      
-      toast({
-        title: "Print Dialog Opened",
-        description: "Use 'Save as PDF' in the print dialog to download your report",
-      });
+      const { data, error } = await supabase.from("leads").insert({
+        email: emailInput,
+        calculation_data: result as any,
+        shift_details: shiftDetails as any,
+      }).select("id").single();
+
+      if (error) throw error;
+      setLeadId(data.id);
+      setCapturedEmail(emailInput);
+      setEmailCaptured(true);
     } catch (error) {
-      console.error('Error opening print dialog:', error);
-      toast({
-        title: "Print Failed",
-        description: "There was an error opening the print dialog",
-        variant: "destructive"
-      });
+      console.error("Error saving lead:", error);
+      toast({ title: "Something went wrong", description: "Please try again", variant: "destructive" });
     } finally {
-      setDownloading(false);
+      setSavingEmail(false);
     }
   };
 
-  // Paywall wrapper component
-  const PaywallBlur = ({ children, showTeaser = false, teaserContent }: { 
-    children: React.ReactNode; 
-    showTeaser?: boolean;
-    teaserContent?: React.ReactNode;
-  }) => {
-    if (isPremium) return <>{children}</>;
-    
+  // Email capture gate
+  if (!emailCaptured) {
     return (
-      <div className="relative select-none">
-        <div className="blur-sm pointer-events-none opacity-70">
-          {children}
+      <>
+        <PublicNavBar />
+        <div className="min-h-screen flex items-center justify-center p-4 bg-background pt-24">
+          <Card className="w-full max-w-md">
+            <CardContent className="p-8 text-center space-y-6">
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Mail className="h-8 w-8 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold">Where should we send your results?</h2>
+                <p className="text-muted-foreground text-sm">
+                  Enter your email to see your full pay check analysis
+                </p>
+              </div>
+              <div className="space-y-3">
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleEmailCapture()}
+                  className="text-center"
+                />
+                <Button
+                  onClick={handleEmailCapture}
+                  disabled={savingEmail}
+                  size="lg"
+                  className="w-full"
+                >
+                  {savingEmail ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Show My Results
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">Free forever. No spam.</p>
+            </CardContent>
+          </Card>
         </div>
-        {showTeaser && teaserContent && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            {teaserContent}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Upgrade CTA Card (for authenticated but non-premium users)
-  const UpgradeCTA = () => (
-    <Card className="border-2 border-primary bg-primary/5">
-      <CardContent className="p-6 text-center space-y-4">
-        <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-          <Lock className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-xl font-bold">Unlock Your Full Results</h3>
-          <p className="text-muted-foreground mt-2">
-            See exactly how much you may be owed and which allowances apply to your situation.
-          </p>
-        </div>
-        <Button onClick={() => navigate("/subscription")} size="lg" className="w-full sm:w-auto">
-          Get 3 Month Access - $30
-        </Button>
-      </CardContent>
-    </Card>
-  );
-
-  // Auth Wall for unauthenticated users - with teaser info
-  const AuthWall = () => {
-    const hasAllowances = potentialAllowances.length > 0;
-    const allowanceCount = potentialAllowances.length;
-    
-    return (
-      <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <Card className="w-full max-w-md border-2 border-primary shadow-2xl">
-          <CardContent className="p-8 text-center space-y-6">
-            <div className="mx-auto w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center">
-              {isUnderpaid ? (
-                <AlertCircle className="h-8 w-8 text-primary-foreground" />
-              ) : (
-                <UserPlus className="h-8 w-8 text-primary-foreground" />
-              )}
-            </div>
-            
-            <div className="space-y-3">
-              {isUnderpaid ? (
-                <>
-                  <h2 className="text-2xl font-bold text-destructive">
-                    You May Be Getting Underpaid!
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Our analysis found a potential underpayment. Sign up to see exactly how much you could be owed.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-2xl font-bold">Your Results Are Ready!</h2>
-                  <p className="text-muted-foreground">
-                    Your pay looks roughly correct, but create a free account to see the full breakdown.
-                  </p>
-                </>
-              )}
-              
-              {hasAllowances && (
-                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mt-2">
-                  <div className="flex items-center justify-center gap-2 text-amber-700 dark:text-amber-300">
-                    <Coins className="h-5 w-5" />
-                    <span className="font-semibold">
-                      {allowanceCount} allowance{allowanceCount > 1 ? 's' : ''} you may be entitled to!
-                    </span>
-                  </div>
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-                    You could be missing out on extra pay each week
-                  </p>
-                </div>
-              )}
-            </div>
-            
-            <div className="space-y-3">
-              <Button 
-                onClick={() => navigate("/auth", { state: { returnTo: location.pathname, returnState: location.state } })} 
-                size="lg" 
-                className="w-full bg-gradient-primary text-primary-foreground"
-              >
-                See My Full Results
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => navigate("/auth", { state: { returnTo: location.pathname, returnState: location.state, mode: 'signin' } })} 
-                size="lg" 
-                className="w-full"
-              >
-                I Already Have an Account
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Free to sign up • Choose your plan after
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  };
-
-  // Show loading state while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      </>
     );
   }
 
   return (
     <>
-      {isAuthenticated ? <NavBar /> : <PublicNavBar />}
-      {!isAuthenticated && <AuthWall />}
-      {/* Add top padding to account for fixed PublicNavBar (h-20 = 80px) when not logged in */}
-      <div className={`min-h-screen flex items-start justify-center p-4 bg-background ${!isAuthenticated ? 'pt-24' : 'pt-4'}`}>
+      {user ? <NavBar /> : <PublicNavBar />}
+      <div className={`min-h-screen flex items-start justify-center p-4 bg-background ${!user ? 'pt-24' : 'pt-4'}`}>
         <Card className="w-full max-w-3xl">
         <CardHeader>
           <div className="no-print">
@@ -260,17 +171,8 @@ export default function NewCheck_Step3_Result() {
             {isUnderpaid ? (
               <div className="space-y-2">
                 <h2 className="text-3xl md:text-4xl font-bold text-destructive">
-                  {isPremium ? (
-                    <>You may have been underpaid by approximately ${underpayment.toFixed(2)}</>
-                  ) : (
-                    <>Based on our analysis, you may have been underpaid</>
-                  )}
+                  You may have been underpaid by approximately ${underpayment.toFixed(2)}
                 </h2>
-                {!isPremium && (
-                  <p className="text-2xl font-bold text-destructive/60 blur-sm select-none">
-                    $XXX.XX
-                  </p>
-                )}
                 <p className="text-muted-foreground">
                   {isUnsureMode ? "Based on likely classifications for your work area" : "For this pay period"}
                 </p>
@@ -287,9 +189,6 @@ export default function NewCheck_Step3_Result() {
             )}
           </div>
 
-          {/* Upgrade CTA for free users - shown prominently */}
-          {!isPremium && !subLoading && <UpgradeCTA />}
-
           {/* Potential Allowances Section */}
           {potentialAllowances.length > 0 && (
             <div className="rounded-lg border-2 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-4 space-y-4">
@@ -299,103 +198,85 @@ export default function NewCheck_Step3_Result() {
                   🎉 We found {potentialAllowances.length} potential allowance{potentialAllowances.length > 1 ? 's' : ''} you may be entitled to!
                 </h3>
               </div>
-              <PaywallBlur>
-                <div className="space-y-3">
-                  {potentialAllowances.map((allowance) => {
-                    // Calculate yearly estimate based on allowance type
-                    const getYearlyEstimate = () => {
-                      if (allowance.estimatedValue <= 0) return 0;
-                      const amountLower = allowance.amount.toLowerCase();
-                      if (amountLower.includes('per week')) {
-                        return allowance.estimatedValue * 52;
-                      } else if (amountLower.includes('per hour')) {
-                        // Assume 38hr week, 52 weeks
-                        return allowance.estimatedValue * 38 * 52;
-                      } else if (amountLower.includes('per day') || amountLower.includes('per meal')) {
-                        // Assume 5 days/week, 52 weeks = 260 days
-                        return allowance.estimatedValue * 260;
-                      }
-                      // Default: assume daily occurrence
-                      return allowance.estimatedValue * 260;
-                    };
-                    const yearlyEstimate = getYearlyEstimate();
-                    
-                    return (
-                      <div 
-                        key={allowance.id} 
-                        className="rounded-lg border border-amber-200 dark:border-amber-800 bg-white dark:bg-background p-3 space-y-2"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl">{allowance.icon}</span>
-                            <div>
-                              <div className="font-semibold">{allowance.name}</div>
-                              <div className="text-sm text-primary font-medium">{allowance.amount}</div>
-                            </div>
+              <div className="space-y-3">
+                {potentialAllowances.map((allowance) => {
+                  const getYearlyEstimate = () => {
+                    if (allowance.estimatedValue <= 0) return 0;
+                    const amountLower = allowance.amount.toLowerCase();
+                    if (amountLower.includes('per week')) return allowance.estimatedValue * 52;
+                    if (amountLower.includes('per hour')) return allowance.estimatedValue * 38 * 52;
+                    if (amountLower.includes('per day') || amountLower.includes('per meal')) return allowance.estimatedValue * 260;
+                    return allowance.estimatedValue * 260;
+                  };
+                  const yearlyEstimate = getYearlyEstimate();
+                  
+                  return (
+                    <div key={allowance.id} className="rounded-lg border border-amber-200 dark:border-amber-800 bg-white dark:bg-background p-3 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{allowance.icon}</span>
+                          <div>
+                            <div className="font-semibold">{allowance.name}</div>
+                            <div className="text-sm text-primary font-medium">{allowance.amount}</div>
                           </div>
-                          {allowance.estimatedValue > 0 && (
-                            <div className="text-right">
-                              <div className="text-xs text-muted-foreground">Est. today</div>
-                              <div className="font-bold text-green-600 dark:text-green-400">
-                                ${allowance.estimatedValue.toFixed(2)}
-                              </div>
-                            </div>
-                          )}
                         </div>
-                        {yearlyEstimate > 0 && (
-                          <div className="bg-green-50 dark:bg-green-950/30 rounded-md p-2 text-center">
-                            <span className="text-sm font-semibold text-green-700 dark:text-green-300">
-                              That's ${yearlyEstimate.toLocaleString('en-AU', { maximumFractionDigits: 0 })} extra per year
-                            </span>
+                        {allowance.estimatedValue > 0 && (
+                          <div className="text-right">
+                            <div className="text-xs text-muted-foreground">Est. today</div>
+                            <div className="font-bold text-green-600 dark:text-green-400">
+                              ${allowance.estimatedValue.toFixed(2)}
+                            </div>
                           </div>
                         )}
-                        <div className="text-sm text-muted-foreground bg-muted/50 rounded p-2">
-                          <span className="font-medium text-foreground">WHY: </span>
-                          {allowance.reason}
-                        </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </PaywallBlur>
+                      {yearlyEstimate > 0 && (
+                        <div className="bg-green-50 dark:bg-green-950/30 rounded-md p-2 text-center">
+                          <span className="text-sm font-semibold text-green-700 dark:text-green-300">
+                            That's ${yearlyEstimate.toLocaleString('en-AU', { maximumFractionDigits: 0 })} extra per year
+                          </span>
+                        </div>
+                      )}
+                      <div className="text-sm text-muted-foreground bg-muted/50 rounded p-2">
+                        <span className="font-medium text-foreground">WHY: </span>
+                        {allowance.reason}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
               <p className="text-xs text-amber-700 dark:text-amber-300">
-                {isPremium 
-                  ? "These are potential entitlements based on your shift conditions. Check your award for exact amounts and eligibility."
-                  : "Subscribe to see which specific allowances you're entitled to and their values."
-                }
+                These are potential entitlements based on your shift conditions. Check your award for exact amounts and eligibility.
               </p>
             </div>
           )}
 
-          {/* Payslip breakdown - blurred for free users */}
+          {/* Payslip breakdown */}
           {advancedPayslip && (
-            <PaywallBlur>
-              <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
-                <div className="font-bold text-base">What you were paid (from your payslip):</div>
-                {advancedPayslip.hoursAtBase > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span>Base hours ({advancedPayslip.hoursAtBase} hrs × ${advancedPayslip.payslipBaseRate}/hr)</span>
-                    <span className="font-semibold">${(advancedPayslip.hoursAtBase * advancedPayslip.payslipBaseRate).toFixed(2)}</span>
-                  </div>
-                )}
-                {advancedPayslip.hoursAt150 > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span>Time & half ({advancedPayslip.hoursAt150} hrs × ${(advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
-                    <span className="font-semibold">${(advancedPayslip.hoursAt150 * advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
-                  </div>
-                )}
-                {advancedPayslip.hoursAt200 > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span>Double time ({advancedPayslip.hoursAt200} hrs × ${(advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
-                    <span className="font-semibold">${(advancedPayslip.hoursAt200 * advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="border-t-2 border-primary/30 pt-2 flex justify-between font-bold text-lg">
-                  <span>Total you were paid</span>
-                  <span className="text-primary">${parseFloat(shiftDetails.actualPaid).toFixed(2)}</span>
+            <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
+              <div className="font-bold text-base">What you were paid (from your payslip):</div>
+              {advancedPayslip.hoursAtBase > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Base hours ({advancedPayslip.hoursAtBase} hrs × ${advancedPayslip.payslipBaseRate}/hr)</span>
+                  <span className="font-semibold">${(advancedPayslip.hoursAtBase * advancedPayslip.payslipBaseRate).toFixed(2)}</span>
                 </div>
+              )}
+              {advancedPayslip.hoursAt150 > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Time & half ({advancedPayslip.hoursAt150} hrs × ${(advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
+                  <span className="font-semibold">${(advancedPayslip.hoursAt150 * advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
+                </div>
+              )}
+              {advancedPayslip.hoursAt200 > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span>Double time ({advancedPayslip.hoursAt200} hrs × ${(advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
+                  <span className="font-semibold">${(advancedPayslip.hoursAt200 * advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
+                </div>
+              )}
+              <div className="border-t-2 border-primary/30 pt-2 flex justify-between font-bold text-lg">
+                <span>Total you were paid</span>
+                <span className="text-primary">${parseFloat(shiftDetails.actualPaid).toFixed(2)}</span>
               </div>
-            </PaywallBlur>
+            </div>
           )}
 
           {isUnsureMode ? (
@@ -404,59 +285,48 @@ export default function NewCheck_Step3_Result() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   <div className="font-semibold text-lg">
-                    {isPremium 
-                      ? `Based on your inputs, you may be missing between $${result.overallMinUnderpayment.toFixed(2)} and $${result.overallMaxUnderpayment.toFixed(2)}`
-                      : `We analyzed ${result.breakdown?.totalClassificationsAnalyzed || 0} classifications for your work area`
-                    }
+                    Based on your inputs, you may be missing between ${result.overallMinUnderpayment.toFixed(2)} and ${result.overallMaxUnderpayment.toFixed(2)}
                   </div>
-                  {isPremium && (
-                    <p className="text-sm mt-2">
-                      We analyzed {result.breakdown?.totalClassificationsAnalyzed || 0} classifications. Here are the most likely matches:
-                    </p>
-                  )}
+                  <p className="text-sm mt-2">
+                    We analyzed {result.breakdown?.totalClassificationsAnalyzed || 0} classifications. Here are the most likely matches:
+                  </p>
                 </AlertDescription>
               </Alert>
 
-              <PaywallBlur>
-                {result.commonEntitlements && result.commonEntitlements.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="font-semibold">Potential entitlements you may be missing:</p>
-                    <ul className="space-y-1 list-disc list-inside">
-                      {result.commonEntitlements.map((entitlement: string, idx: number) => (
-                        <li key={idx} className="text-sm text-muted-foreground">
-                          {entitlement}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+              {result.commonEntitlements && result.commonEntitlements.length > 0 && (
+                <div className="space-y-2">
+                  <p className="font-semibold">Potential entitlements you may be missing:</p>
+                  <ul className="space-y-1 list-disc list-inside">
+                    {result.commonEntitlements.map((entitlement: string, idx: number) => (
+                      <li key={idx} className="text-sm text-muted-foreground">{entitlement}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-                {result.likelyClassifications && result.likelyClassifications.length > 0 && (
-                  <div className="space-y-3">
-                    <p className="font-semibold">Most likely classifications:</p>
-                    <div className="space-y-2">
-                      {result.likelyClassifications.slice(0, 5).map((cls: any, idx: number) => (
-                        <div key={idx} className="border rounded-lg p-3 space-y-1">
-                          <div className="font-medium">{cls.classificationName}</div>
-                          {cls.workArea && (
-                            <div className="text-xs text-muted-foreground">{cls.workArea}</div>
-                          )}
-                          <div className="flex justify-between items-center pt-1">
-                            <span className="text-sm">Award pay total:</span>
-                            <span className="font-semibold">${cls.awardPayTotal.toFixed(2)}</span>
-                          </div>
-                          {cls.possibleUnderpayment > 0 && (
-                            <div className="flex justify-between items-center text-destructive">
-                              <span className="text-sm">Possible underpayment:</span>
-                              <span className="font-semibold">${cls.possibleUnderpayment.toFixed(2)}</span>
-                            </div>
-                          )}
+              {result.likelyClassifications && result.likelyClassifications.length > 0 && (
+                <div className="space-y-3">
+                  <p className="font-semibold">Most likely classifications:</p>
+                  <div className="space-y-2">
+                    {result.likelyClassifications.slice(0, 5).map((cls: any, idx: number) => (
+                      <div key={idx} className="border rounded-lg p-3 space-y-1">
+                        <div className="font-medium">{cls.classificationName}</div>
+                        {cls.workArea && <div className="text-xs text-muted-foreground">{cls.workArea}</div>}
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="text-sm">Award pay total:</span>
+                          <span className="font-semibold">${cls.awardPayTotal.toFixed(2)}</span>
                         </div>
-                      ))}
-                    </div>
+                        {cls.possibleUnderpayment > 0 && (
+                          <div className="flex justify-between items-center text-destructive">
+                            <span className="text-sm">Possible underpayment:</span>
+                            <span className="font-semibold">${cls.possibleUnderpayment.toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                )}
-              </PaywallBlur>
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -465,10 +335,7 @@ export default function NewCheck_Step3_Result() {
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
                     <div className="font-semibold text-lg">
-                      {isPremium 
-                        ? `You may be missing: $${underpayment.toFixed(2)}`
-                        : "Our analysis found potential underpayment"
-                      }
+                      You may be missing: ${underpayment.toFixed(2)}
                     </div>
                   </AlertDescription>
                 </Alert>
@@ -483,100 +350,94 @@ export default function NewCheck_Step3_Result() {
                 </Alert>
               )}
 
-              <PaywallBlur>
-                {advancedPayslip && (
-                  <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
-                    <div className="font-semibold text-sm">What you were paid (your payslip):</div>
-                    {advancedPayslip.hoursAtBase > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span>Base hours ({advancedPayslip.hoursAtBase} hrs × ${advancedPayslip.payslipBaseRate}/hr)</span>
-                        <span>${(advancedPayslip.hoursAtBase * advancedPayslip.payslipBaseRate).toFixed(2)}</span>
-                      </div>
-                    )}
-                    {advancedPayslip.hoursAt150 > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span>Time & half ({advancedPayslip.hoursAt150} hrs × ${(advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
-                        <span>${(advancedPayslip.hoursAt150 * advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
-                      </div>
-                    )}
-                    {advancedPayslip.hoursAt200 > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span>Double time ({advancedPayslip.hoursAt200} hrs × ${(advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
-                        <span>${(advancedPayslip.hoursAt200 * advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="border-t pt-2 flex justify-between font-bold text-base">
-                      <span>Total you were paid</span>
-                      <span>${parseFloat(shiftDetails.actualPaid).toFixed(2)}</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
-                  <div className="font-semibold text-sm">What the award says you should earn:</div>
-                  <div className="text-xs text-muted-foreground mb-2">
-                    Based on ${result.baseRate?.toFixed(2)}/hr award rate
-                  </div>
-                  
-                  <div className="flex justify-between text-sm">
-                    <span>Regular hours ({result.breakdown?.regularHours?.toFixed(2) || "0"} hrs × ${result.baseRate?.toFixed(2)}/hr)</span>
-                    <span>${result.breakdown?.basePay?.toFixed(2) || "0.00"}</span>
-                  </div>
-                  
-                  {result.breakdown?.overtimeAt150Hours > 0 && (
+              {advancedPayslip && (
+                <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                  <div className="font-semibold text-sm">What you were paid (your payslip):</div>
+                  {advancedPayslip.hoursAtBase > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Overtime at 1.5x ({result.breakdown.overtimeAt150Hours.toFixed(2)} hrs × ${(result.baseRate * 1.5)?.toFixed(2)}/hr)</span>
-                      <span>${(result.breakdown.overtimeAt150Hours * result.baseRate * 1.5).toFixed(2)}</span>
+                      <span>Base hours ({advancedPayslip.hoursAtBase} hrs × ${advancedPayslip.payslipBaseRate}/hr)</span>
+                      <span>${(advancedPayslip.hoursAtBase * advancedPayslip.payslipBaseRate).toFixed(2)}</span>
                     </div>
                   )}
-                  
-                  {result.breakdown?.overtimeAt200Hours > 0 && (
+                  {advancedPayslip.hoursAt150 > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Overtime at 2x ({result.breakdown.overtimeAt200Hours.toFixed(2)} hrs × ${(result.baseRate * 2)?.toFixed(2)}/hr)</span>
-                      <span>${(result.breakdown.overtimeAt200Hours * result.baseRate * 2).toFixed(2)}</span>
+                      <span>Time & half ({advancedPayslip.hoursAt150} hrs × ${(advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
+                      <span>${(advancedPayslip.hoursAt150 * advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
                     </div>
                   )}
-                  
-                  {result.breakdown?.allowances > 0 && (
+                  {advancedPayslip.hoursAt200 > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span>Meal allowance (worked over 10 hours)</span>
-                      <span>${result.breakdown.allowances.toFixed(2)}</span>
+                      <span>Double time ({advancedPayslip.hoursAt200} hrs × ${(advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
+                      <span>${(advancedPayslip.hoursAt200 * advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
                     </div>
                   )}
-                  
                   <div className="border-t pt-2 flex justify-between font-bold text-base">
-                    <span>Total award pay</span>
-                    <span>${result.awardPayTotal?.toFixed(2) || "0.00"}</span>
+                    <span>Total you were paid</span>
+                    <span>${parseFloat(shiftDetails.actualPaid).toFixed(2)}</span>
                   </div>
                 </div>
-              </PaywallBlur>
+              )}
+
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+                <div className="font-semibold text-sm">What the award says you should earn:</div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  Based on ${result.baseRate?.toFixed(2)}/hr award rate
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span>Regular hours ({result.breakdown?.regularHours?.toFixed(2) || "0"} hrs × ${result.baseRate?.toFixed(2)}/hr)</span>
+                  <span>${result.breakdown?.basePay?.toFixed(2) || "0.00"}</span>
+                </div>
+                
+                {result.breakdown?.overtimeAt150Hours > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Overtime at 1.5x ({result.breakdown.overtimeAt150Hours.toFixed(2)} hrs × ${(result.baseRate * 1.5)?.toFixed(2)}/hr)</span>
+                    <span>${(result.breakdown.overtimeAt150Hours * result.baseRate * 1.5).toFixed(2)}</span>
+                  </div>
+                )}
+                
+                {result.breakdown?.overtimeAt200Hours > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Overtime at 2x ({result.breakdown.overtimeAt200Hours.toFixed(2)} hrs × ${(result.baseRate * 2)?.toFixed(2)}/hr)</span>
+                    <span>${(result.breakdown.overtimeAt200Hours * result.baseRate * 2).toFixed(2)}</span>
+                  </div>
+                )}
+                
+                {result.breakdown?.allowances > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Meal allowance (worked over 10 hours)</span>
+                    <span>${result.breakdown.allowances.toFixed(2)}</span>
+                  </div>
+                )}
+                
+                <div className="border-t pt-2 flex justify-between font-bold text-base">
+                  <span>Total award pay</span>
+                  <span>${result.awardPayTotal?.toFixed(2) || "0.00"}</span>
+                </div>
+              </div>
             </>
           )}
 
-          {!isUnsureMode && result.reasons && result.reasons.length > 0 && isPremium && (
+          {!isUnsureMode && result.reasons && result.reasons.length > 0 && (
             <div className="space-y-2">
               <p className="font-semibold">Why this difference?</p>
               <ul className="space-y-1 list-disc list-inside">
                 {result.reasons.map((reason: string, idx: number) => (
-                  <li key={idx} className="text-sm text-muted-foreground">
-                    {reason}
-                  </li>
+                  <li key={idx} className="text-sm text-muted-foreground">{reason}</li>
                 ))}
               </ul>
             </div>
           )}
 
-          {!isUnsureMode && result.rateWarning && isPremium && (
+          {!isUnsureMode && result.rateWarning && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-sm">
-                {result.rateWarning}
-              </AlertDescription>
+              <AlertDescription className="text-sm">{result.rateWarning}</AlertDescription>
             </Alert>
           )}
 
-          {/* All Award Allowances - Collapsible for education */}
-          {allAwardAllowances.length > 0 && isPremium && (
+          {/* All Award Allowances */}
+          {allAwardAllowances.length > 0 && (
             <Collapsible open={allAllowancesOpen} onOpenChange={setAllAllowancesOpen}>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 w-full justify-start p-0 h-auto font-normal hover:bg-transparent">
@@ -601,7 +462,7 @@ export default function NewCheck_Step3_Result() {
               </CollapsibleContent>
             </Collapsible>
           )}
-          
+
           {/* Disclaimer */}
           <Alert className="border-muted-foreground/30 bg-muted/50">
             <AlertCircle className="h-4 w-4" />
@@ -612,20 +473,77 @@ export default function NewCheck_Step3_Result() {
             </AlertDescription>
           </Alert>
 
-          {/* Action Buttons - PDF only for premium */}
-          {isPremium && (
-            <div className="flex justify-center no-print">
-              <Button onClick={handleDownloadPDF} disabled={downloading} className="gap-2">
-                {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                Save as PDF
-              </Button>
+          {/* Conversion Section - only if underpaid */}
+          {isUnderpaid && (
+            <div className="space-y-6 border-t-2 border-primary/20 pt-6">
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl md:text-3xl font-bold text-destructive">
+                  You May Be Owed ${underpayment.toFixed(2)}
+                </h2>
+                <p className="text-muted-foreground">
+                  Get your official underpayment report to take to your employer or Fair Work Australia
+                </p>
+              </div>
+
+              {/* Card 1: PDF Report */}
+              <Card className="border-2 border-primary">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">Official PDF Report — $9</h3>
+                    </div>
+                  </div>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500 shrink-0" /> Detailed pay breakdown</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500 shrink-0" /> Official Fair Work rates used</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500 shrink-0" /> Ready to present to your employer</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500 shrink-0" /> Tax deductible</li>
+                  </ul>
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={() => window.open(STRIPE_REPORT_LINK, "_blank")}
+                  >
+                    Get My Report — $9
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Card 2: Recovery Service */}
+              <Card className="border-2 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/10">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0">
+                      <Shield className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold">Let Us Handle It For You — $49</h3>
+                    </div>
+                  </div>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500 shrink-0" /> We lodge the claim for you</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500 shrink-0" /> Fair Work complaint prepared</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500 shrink-0" /> No paperwork on your end</li>
+                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-green-500 shrink-0" /> Money back if no underpayment found</li>
+                  </ul>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-amber-500 text-amber-700 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-950"
+                    onClick={() => window.open(STRIPE_RECOVERY_LINK, "_blank")}
+                  >
+                    Start My Claim — $49
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           )}
 
+          {/* Action Buttons */}
           <div className="flex gap-3 no-print">
-            <Button variant="outline" onClick={() => navigate("/app-dashboard")} className="flex-1">
-              Dashboard
-            </Button>
             <Button variant="outline" onClick={() => navigate("/new-check-step-1")} className="flex-1">
               New Check
             </Button>
