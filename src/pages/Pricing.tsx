@@ -37,7 +37,42 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Pricing - Affordable Award Pay Checking | AwardPay" description="Check your Australian award pay from $10/month. Verify overtime, penalty rates and allowances with AwardPay's accurate calculator." path="/pricing" />
+      <SEO
+        title="Pricing - Affordable Award Pay Checking | AwardPay"
+        description="Check your Australian award pay from $10/month. Verify overtime, penalty rates and allowances with AwardPay's accurate calculator."
+        path="/pricing"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How does AwardPay calculate pay?",
+              "acceptedAnswer": { "@type": "Answer", "text": "AwardPay uses the Fair Work Commission Modern Awards Pay Database and applies built-in logic for overtime, penalties, allowances, and other award conditions. We interpret the award rules so you don't have to read complex PDFs." }
+            },
+            {
+              "@type": "Question",
+              "name": "Where does AwardPay get its data?",
+              "acceptedAnswer": { "@type": "Answer", "text": "All award rates, penalty multipliers, and allowances come from the official Fair Work Commission Modern Awards Pay Database. We update our data regularly to match current pay tables and award variations." }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I cancel anytime?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes, you can cancel your subscription at any time. You'll continue to have access to Pro features until the end of your billing period. No questions asked, no cancellation fees." }
+            },
+            {
+              "@type": "Question",
+              "name": "Is my data secure?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Absolutely. We use industry-standard encryption for all data storage and transmission. Your personal information and pay data are never shared with third parties." }
+            },
+            {
+              "@type": "Question",
+              "name": "Does AwardPay support my award?",
+              "acceptedAnswer": { "@type": "Answer", "text": "AwardPay supports all major Modern Awards across industries including construction, retail, hospitality, healthcare, manufacturing, trades, and more." }
+            }
+          ]
+        }}
+      />
       <PublicNavBar />
       
       {/* Section 1 - Hero Header */}
