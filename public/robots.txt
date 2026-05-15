@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://awardpay.com.au/sitemap.xml
+Sitemap: https://www.awardpay.com.au/sitemap.xml
