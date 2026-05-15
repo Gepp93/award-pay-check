@@ -93,6 +93,11 @@ const AppScreenshotCarousel = () => {
                   <img
                     src={screenshot.src}
                     alt={screenshot.alt}
+                    width={1280}
+                    height={800}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    decoding={index === 0 ? "sync" : "async"}
                     className="w-auto h-auto max-h-[70vh] mx-auto"
                     onError={() => handleImageError(index)}
                   />
