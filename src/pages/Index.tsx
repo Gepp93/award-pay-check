@@ -168,7 +168,21 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <SEO title="Are You Being Underpaid? Award Pay Calculator Australia | AwardPay" description="Free Australian award pay calculator. Check if you're being underpaid - 1 in 5 workers lose $1,542/year. Verify penalty rates, overtime and allowances in 60 seconds." path="/" />
+      <SEO
+        title="Am I Being Underpaid? Free Award Pay Check | AwardPay"
+        description="Check Australian award pay in 60 seconds. 1 in 5 workers lose $1,542/year on penalty rates, overtime and allowances."
+        path="/"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "AwardPay Calculator",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "Web",
+          "url": "https://www.awardpay.com.au/",
+          "description": "Free Australian award pay calculator that checks penalty rates, overtime and allowances against Fair Work Modern Awards.",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "AUD" }
+        }}
+      />
       {/* Fixed Navigation Bar */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border/50">
         <div className="container mx-auto px-6">
