@@ -1,0 +1,21 @@
+# AwardPay
+
+> Free Australian award pay calculator that helps workers check if they are being underpaid by comparing payslips to Fair Work Commission Modern Awards.
+
+AwardPay is a freemium tool. The core pay check is free; paid upsells include a $9 PDF report and a $49 Recovery Service.
+
+## Pages
+
+- [Home](/): Overview of AwardPay and entry to the pay check tool.
+- [Why AwardPay](/why-awardpay): Why workers use AwardPay to verify pay.
+- [How It Works](/how-it-works): Step-by-step explanation of the pay check.
+- [Pricing](/pricing): Plans, paid report, and Recovery Service pricing with FAQ.
+- [Contact](/contact): Support contact details (support@awardpay.com.au).
+- [Pay Check Step 1](/new-check-step-1): Start the 3-step underpayment check wizard.
+- [Award Finder](/award-finder): Find your Modern Award by industry and role.
+- [Award Overview](/award-overview): Browse rates, classifications, and allowances for an award.
+- [Weekly Pay Check](/weekly-pay-check): Enter a week of shifts to check pay.
+
+## Optional
+
+- [Sign in](/auth): Account access for paid users.
