@@ -128,6 +128,24 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          bucket: string
+          count: number
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          count?: number
+          window_start?: string
+        }
+        Update: {
+          bucket?: string
+          count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -157,6 +175,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_rate_limit: {
+        Args: { _bucket: string; _limit: number; _window_seconds: number }
+        Returns: {
+          allowed: boolean
+          count: number
+          retry_after: number
+        }[]
       }
     }
     Enums: {
