@@ -144,7 +144,7 @@ const Index = () => {
       <SEO
         title="Am I Being Underpaid? Free Award Pay Check | AwardPay"
         description="Check Australian award pay in 60 seconds. 1 in 5 workers lose $1,542/year on penalty rates, overtime and allowances."
-        canonical="https://www.awardpay.com.au/"
+        path="/"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "SoftwareApplication",
