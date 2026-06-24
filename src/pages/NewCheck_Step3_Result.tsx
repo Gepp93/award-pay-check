@@ -91,17 +91,22 @@ export default function NewCheck_Step3_Result() {
     }
     setSavingEmail(true);
     try {
-      const { data, error } = await supabase.from("leads").insert({
+      // Generate the id client-side so we never need to SELECT the row back —
+      // the `leads` table is write-only from the browser for privacy reasons.
+      const newLeadId =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+      const { error } = await supabase.from("leads").insert({
+        id: newLeadId,
         email: emailInput,
         calculation_data: result as any,
         shift_details: shiftDetails as any,
-      }).select("id").single();
+      });
 
       if (error) throw error;
-      // Row data already lives in component state (result, shiftDetails, emailInput);
-      // we only need the new id. No follow-up SELECT against `leads` is required —
-      // the table is no longer readable from the browser.
-      setLeadId(data.id);
+      setLeadId(newLeadId);
       setCapturedEmail(emailInput);
       setEmailCaptured(true);
     } catch (error) {
