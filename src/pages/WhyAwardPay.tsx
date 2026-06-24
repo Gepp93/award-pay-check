@@ -35,59 +35,71 @@ const WhyAwardPay = () => {
 
       {/* Hero */}
       <section className="ap-wrap ap-section" style={{ paddingBottom: 28 }}>
-        <h1 className="ap-h1" style={{ maxWidth: "14ch" }}>Why AwardPay exists</h1>
-        <p className="ap-lede" style={{ marginBottom: 0 }}>
-          Working out your correct pay under a Modern Award shouldn't take a law degree.
-          We make it simple — so you know exactly what you're owed.
-        </p>
+        <div className="mx-auto" style={{ maxWidth: 760 }}>
+          <h1 className="ap-h1 text-center">Why AwardPay exists</h1>
+          <p className="ap-lede text-center" style={{ marginBottom: 0, maxWidth: "none" }}>
+            Working out your correct pay under a Modern Award shouldn't take a law degree.
+            We make it simple — so you know exactly what you're owed.
+          </p>
+        </div>
       </section>
 
       {/* The problem */}
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24, maxWidth: 760 }}>
-        <h2 className="ap-h2" style={{ fontSize: "clamp(22px, 2.6vw, 28px)" }}>The problem</h2>
-        <ul className="list-disc pl-5 space-y-2" style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)" }}>
-          <li>Modern Awards are complex: hundreds of rates, penalties and allowances</li>
-          <li>Penalties change by the day and the time of day</li>
-          <li>Small errors in overtime or allowances quietly add up over months</li>
-          <li>Most workers never realise they've been short-changed</li>
-        </ul>
+      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
+        <div className="mx-auto" style={{ maxWidth: 760 }}>
+          <h2 className="ap-h2 text-center" style={{ fontSize: "clamp(22px, 2.6vw, 28px)" }}>The problem</h2>
+          <ul className="list-disc pl-6 text-left space-y-2 mt-4" style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)" }}>
+            <li>Modern Awards are complex: hundreds of rates, penalties and allowances</li>
+            <li>Penalties change by the day and the time of day</li>
+            <li>Small errors in overtime or allowances quietly add up over months</li>
+            <li>Most workers never realise they've been short-changed</li>
+          </ul>
+        </div>
       </section>
 
       {/* What AwardPay does */}
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24, maxWidth: 760 }}>
-        <h2 className="ap-h2" style={{ fontSize: "clamp(22px, 2.6vw, 28px)" }}>What AwardPay does</h2>
-        <ul className="list-disc pl-5 space-y-2" style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)" }}>
-          <li>Reads your payslip in about a minute</li>
-          <li>Checks it against official Fair Work Commission rates</li>
-          <li>Flags any missing penalties, overtime or allowances</li>
-          <li>Shows you exactly what you may be owed</li>
-        </ul>
+      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
+        <div className="mx-auto" style={{ maxWidth: 760 }}>
+          <h2 className="ap-h2 text-center" style={{ fontSize: "clamp(22px, 2.6vw, 28px)" }}>What AwardPay does</h2>
+          <ul className="list-disc pl-6 text-left space-y-2 mt-4" style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)" }}>
+            <li>Reads your payslip in about a minute</li>
+            <li>Checks it against official Fair Work Commission rates</li>
+            <li>Flags any missing penalties, overtime or allowances</li>
+            <li>Shows you exactly what you may be owed</li>
+          </ul>
+        </div>
       </section>
 
       {/* Where our data comes from */}
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24, maxWidth: 760 }}>
-        <h2 className="ap-h2" style={{ fontSize: "clamp(22px, 2.6vw, 28px)" }}>Where our data comes from</h2>
-        <p style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)", margin: 0 }}>
-          Built on the Fair Work Commission's official Modern Award data, updated as rates change.
-          AwardPay is an interpretation tool, not legal advice.
-        </p>
+      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
+        <div className="mx-auto" style={{ maxWidth: 760 }}>
+          <h2 className="ap-h2 text-center" style={{ fontSize: "clamp(22px, 2.6vw, 28px)" }}>Where our data comes from</h2>
+          <p className="text-center" style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)", margin: 0 }}>
+            Built on the Fair Work Commission's official Modern Award data, updated as rates change.
+            AwardPay is an interpretation tool, not legal advice.
+          </p>
+        </div>
       </section>
 
       {/* Who it's for */}
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 56, maxWidth: 760 }}>
-        <h2 className="ap-h2" style={{ fontSize: "clamp(22px, 2.6vw, 28px)" }}>Who it's for</h2>
-        <p style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)", margin: 0 }}>
-          Any role under a Modern Award — retail, hospitality, construction, health, trades,
-          cleaning, support work and more.
-        </p>
+      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 56 }}>
+        <div className="mx-auto" style={{ maxWidth: 760 }}>
+          <h2 className="ap-h2 text-center" style={{ fontSize: "clamp(22px, 2.6vw, 28px)" }}>Who it's for</h2>
+          <p className="text-center" style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)", margin: 0 }}>
+            Any role under a Modern Award — retail, hospitality, construction, health, trades,
+            cleaning, support work and more.
+          </p>
+        </div>
       </section>
 
       {/* Final CTA */}
-      <section className="ap-wrap" style={{ paddingTop: 40, paddingBottom: 80, maxWidth: 760 }}>
-        <h2 className="ap-h2" style={{ marginBottom: 18 }}>See what you're owed</h2>
-        <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={start}>
-          Check my payslip — free
-        </button>
+      <section className="ap-wrap" style={{ paddingTop: 40, paddingBottom: 80 }}>
+        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
+          <h2 className="ap-h2 text-center" style={{ marginBottom: 18 }}>See what you're owed</h2>
+          <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={start}>
+            Check my payslip — free
+          </button>
+        </div>
       </section>
 
       {/* Footer */}

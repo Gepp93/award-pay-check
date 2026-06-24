@@ -34,10 +34,23 @@ const Contact = () => {
 
       {/* Hero */}
       <section className="ap-wrap ap-section" style={{ paddingBottom: 28 }}>
-        <h1 className="ap-h1" style={{ maxWidth: "14ch" }}>Get in touch</h1>
-        <p className="ap-lede" style={{ marginBottom: 0 }}>
-          A question about your pay, our checks, or something not working? Email us — a real person reads every message.
-        </p>
+        <div className="mx-auto" style={{ maxWidth: 760 }}>
+          <h1
+            className="ap-h1 text-center"
+            style={{
+              color: "hsl(var(--foreground))",
+              background: "none",
+              WebkitTextFillColor: "currentColor",
+              backgroundClip: "border-box",
+              WebkitBackgroundClip: "border-box",
+            }}
+          >
+            Get in touch
+          </h1>
+          <p className="ap-lede text-center" style={{ marginBottom: 0, maxWidth: "none" }}>
+            A question about your pay, our checks, or something not working? Email us — a real person reads every message.
+          </p>
+        </div>
       </section>
 
       {/* Email */}
