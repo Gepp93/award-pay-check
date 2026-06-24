@@ -98,6 +98,9 @@ export default function NewCheck_Step3_Result() {
       }).select("id").single();
 
       if (error) throw error;
+      // Row data already lives in component state (result, shiftDetails, emailInput);
+      // we only need the new id. No follow-up SELECT against `leads` is required —
+      // the table is no longer readable from the browser.
       setLeadId(data.id);
       setCapturedEmail(emailInput);
       setEmailCaptured(true);
