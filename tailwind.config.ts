@@ -13,6 +13,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        serif: ['Fraunces', 'Georgia', 'Times New Roman', 'serif'],
+        display: ['Fraunces', 'Georgia', 'serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -52,17 +57,12 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
       },
-      backgroundImage: {
-        'gradient-primary': 'var(--gradient-primary)',
-        'gradient-hero': 'var(--gradient-hero)',
-        'gradient-card': 'var(--gradient-card)',
-        'gradient-shine': 'var(--gradient-shine)',
-        'gradient-mesh': 'var(--gradient-mesh)',
-      },
       boxShadow: {
-        'glow': 'var(--shadow-glow)',
+        'paper': 'var(--shadow-paper)',
         'card': 'var(--shadow-card)',
-        'elevated': 'var(--shadow-elevated)',
+        /* legacy aliases preserved as paper so old class names still render correctly */
+        'glow': 'var(--shadow-paper)',
+        'elevated': 'var(--shadow-paper)',
       },
       borderRadius: {
         lg: "var(--radius)",

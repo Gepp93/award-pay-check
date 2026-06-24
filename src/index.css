@@ -2,57 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* "Trusted Paper" design system. Editorial, document-like, calm authority.
+   All colors MUST be HSL. No gradients, no glow shadows.
 */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --background: 40 33% 98%;          /* warm paper */
+    --foreground: 220 22% 14%;         /* deep warm ink */
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 220 22% 14%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 220 22% 14%;
 
-    --primary: 191 85% 42%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 158 42% 27%;            /* deep eucalyptus green */
+    --primary-foreground: 40 33% 98%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 40 18% 94%;
+    --secondary-foreground: 220 22% 14%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 40 18% 94%;
+    --muted-foreground: 220 10% 42%;
 
-    --accent: 165 82% 51%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 38 92% 50%;              /* honey/amber — money moment only */
+    --accent-foreground: 220 22% 14%;
 
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
+    --success: 158 42% 30%;
+    --success-foreground: 40 33% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 4 64% 46%;          /* clay red — underpaid only */
+    --destructive-foreground: 40 33% 98%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 165 82% 51%;
+    --border: 38 16% 88%;              /* hairline */
+    --input: 38 16% 88%;
+    --ring: 158 42% 27%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(191 85% 42%), hsl(165 82% 51%));
-    --gradient-hero: radial-gradient(ellipse at top, hsl(191 85% 97%) 0%, hsl(0 0% 100%) 50%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(210 40% 98%) 100%);
-    --gradient-shine: linear-gradient(135deg, transparent 0%, hsl(165 82% 51% / 0.08) 50%, transparent 100%);
-    --gradient-mesh: radial-gradient(at 0% 0%, hsl(191 85% 42% / 0.08) 0px, transparent 50%),
-                      radial-gradient(at 100% 100%, hsl(165 82% 51% / 0.08) 0px, transparent 50%);
-    
-    --shadow-glow: 0 0 60px hsl(165 82% 51% / 0.15), 0 0 30px hsl(191 85% 42% / 0.12);
-    --shadow-card: 0 10px 40px -10px hsl(222 47% 11% / 0.1);
-    --shadow-elevated: 0 20px 60px -15px hsl(222 47% 11% / 0.15), 0 0 1px hsl(165 82% 51% / 0.2);
-    
+    /* Single soft, downward, low-opacity paper shadow. No glow. */
+    --shadow-paper: 0 1px 2px hsl(220 22% 14% / 0.04), 0 8px 24px -12px hsl(220 22% 14% / 0.08);
+    --shadow-card: var(--shadow-paper);
+
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 220 22% 10%;
+    --foreground: 40 33% 96%;
+
+    --card: 220 22% 13%;
+    --card-foreground: 40 33% 96%;
+
+    --popover: 220 22% 13%;
+    --popover-foreground: 40 33% 96%;
+
+    --primary: 158 38% 55%;
+    --primary-foreground: 220 22% 10%;
+
+    --secondary: 220 18% 18%;
+    --secondary-foreground: 40 33% 96%;
+
+    --muted: 220 18% 18%;
+    --muted-foreground: 40 10% 65%;
+
+    --accent: 38 92% 55%;
+    --accent-foreground: 220 22% 10%;
+
+    --success: 158 38% 55%;
+    --success-foreground: 220 22% 10%;
+
+    --destructive: 4 64% 55%;
+    --destructive-foreground: 40 33% 96%;
+
+    --border: 220 18% 22%;
+    --input: 220 18% 22%;
+    --ring: 158 38% 55%;
+
+    --shadow-paper: 0 1px 2px hsl(0 0% 0% / 0.4), 0 8px 24px -12px hsl(0 0% 0% / 0.6);
+    --shadow-card: var(--shadow-paper);
   }
 }
 
@@ -63,6 +94,42 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    font-feature-settings: 'ss01';
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-feature-settings: 'ss01';
+    letter-spacing: -0.015em;
+  }
+
+  .money {
+    font-family: 'Fraunces', Georgia, serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  /* Payslip motif — single subtle ruled or perforated edge */
+  .rule-line {
+    border-top: 1px solid hsl(var(--border));
+  }
+  .perforated-edge {
+    background-image: linear-gradient(to right, hsl(var(--border)) 50%, transparent 50%);
+    background-size: 8px 1px;
+    background-repeat: repeat-x;
+    background-position: bottom;
   }
 }
 
