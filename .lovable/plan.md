@@ -1,64 +1,58 @@
-# Plan: rebuild three content pages, lighter and shorter
+## Alignment-only tweak (Why AwardPay, How It Works, Contact)
 
-Rebuild `WhyAwardPay.tsx`, `HowItWorks.tsx`, and `Contact.tsx` from the supplied spec. No card grids, no icon tiles — headings, one-liners, real `<ul>` bullets, one gold CTA per page.
+No copy, nav, footer, routing, or token changes. Only alignment + one color fix.
 
-## Shared structure (all three pages)
+### Shared pattern (all three pages)
 
-Each page uses the same shell already used by `Index.tsx`:
+Wrap each section's content in a centered column:
 
-- Same `.ap-nav` top nav with brand, links (Why AwardPay / How it works / Pricing / Contact), Sign in ghost link, and a gold "Check my payslip" button.
-- Page content in a single `.ap-wrap` column with generous vertical spacing (`.ap-section`).
-- Same `.ap-footer` with "AwardPay" mark and `© 2026 AwardPay · Pay checks are estimates based on Fair Work Modern Award data.`
-- `<SEO>` tag with a sensible title/description and `path` set.
+```tsx
+<div className="mx-auto max-w-[760px]">
+  <h2 className="ap-h2 text-center">…</h2>
+  <p className="text-center …">…</p>           {/* intro/lede paragraphs */}
+  <ul className="list-disc pl-6 text-left mt-4 space-y-2">…</ul>
+  {/* or <ol className="list-decimal pl-6 text-left …"> */}
+</div>
+```
 
-A small local component on each page provides the final CTA block: H2 "See what you're owed" + gold button → `/new-check-step-1`.
+Rules:
+- Hero `h1` and hero intro sentence: add `text-center`, wrapped in `mx-auto max-w-[760px]`.
+- Every section `h2` ("The problem", "What AwardPay does", "Where our data comes from", "Who it's for", "Three steps", "What we check"): add `text-center`.
+- Every `<ul>` / `<ol>`: keep inside the same `mx-auto max-w-[760px]` wrapper, add `text-left` and `list-disc pl-6` (or `list-decimal pl-6`) so bullets sit on the left edge of the centered column.
+- Standalone descriptive `<p>` blocks under a heading (e.g. "Where our data comes from", "Who it's for", the muted disclaimer on How It Works): `text-center` is fine since they're single short paragraphs.
+- Final CTA block: already centered — leave as-is.
+- No changes to `.ap-nav`, `.ap-footer`, `.ap-btn`, or any `ap-*` class.
 
-## Page content
+### WhyAwardPay.tsx
 
-**WhyAwardPay.tsx**
-1. Hero: H1 "Why AwardPay exists" + one-line lede (verbatim).
-2. H2 "The problem" + 4-item `<ul>`.
-3. H2 "What AwardPay does" + 4-item `<ul>`.
-4. H2 "Where our data comes from" + single `<p>` (no bullets).
-5. H2 "Who it's for" + single `<p>`.
-6. Final CTA block.
+- Hero: center H1 + lede.
+- "The problem" — centered h2, left-aligned `<ul>` inside 760px column.
+- "What AwardPay does" — same.
+- "Where our data comes from" — centered h2, centered single `<p>`.
+- "Who it's for" — centered h2, centered single `<p>`.
+- Final CTA — unchanged.
 
-**HowItWorks.tsx**
-1. Hero: H1 "How AwardPay checks your pay" + one-line lede.
-2. H2 "Three steps" + ordered `<ol>` with the three lines.
-3. H2 "What we check" + 4-item `<ul>`.
-4. One muted `<p>` (no heading): "AwardPay is an interpretation tool based on official Fair Work data, not legal advice."
-5. Final CTA block.
+### HowItWorks.tsx
 
-**Contact.tsx**
-1. Hero: H1 "Get in touch" + one-line lede.
-2. Centred large green `<a href="mailto:support@awardpay.com.au">` followed by small muted "We usually reply within 24–48 hours."
-3. Footer copyright reads "© 2026 AwardPay" (no extra trailing clause on this page per spec).
-4. No final CTA section, no extra cards.
+- Hero: center H1 + lede.
+- "Three steps" — centered h2, left-aligned `<ol className="list-decimal pl-6 text-left">` inside 760px column.
+- "What we check" — centered h2, left-aligned `<ul>` inside 760px column.
+- Muted disclaimer `<p>` — centered.
+- Final CTA — unchanged.
 
-## Styling approach
+### Contact.tsx
 
-Use existing tokens — no new CSS classes, no Tailwind redesign:
+- Hero H1 "Get in touch":
+  - Remove any `bg-clip-text`, `text-transparent`, gradient span, or highlighted wrapper around "touch".
+  - Heading becomes a single `<h1 className="ap-h1 text-center">Get in touch</h1>` rendered in the normal dark foreground color (inherits from `.ap-h1`, no per-word styling).
+- Intro sentence: `text-center`, in 760px column.
+- Mailto link + 24–48 hours line: already centered — leave as-is.
+- Footer "© 2026 AwardPay" — unchanged.
 
-- Headings: `font-bold` with `text-3xl`/`text-2xl` and `tracking-tight`, dark `text-foreground`.
-- Body: `text-[17px] text-foreground/80 leading-relaxed`, `max-w-2xl` for readability.
-- Bullets: native `<ul class="list-disc pl-5 space-y-2">` and `<ol class="list-decimal pl-5 space-y-2">` — no boxes, no icons.
-- Section spacing: `.ap-section` (already 64px top/bottom) inside `.ap-wrap`.
-- Gold CTA: existing `.ap-btn .ap-btn-gold .ap-btn-lg` button calling `navigate("/new-check-step-1")`.
-- Contact email link: inline style/utility classes for centred, large, `text-primary`, bold.
+### Files touched
 
-## Constraints honoured
-
-- Single gold CTA per page (Why and HowItWorks), Contact has none per spec.
-- No testimonials, no invented stats, no "create free account" copy.
-- No changes to calculations, routes, Edge Functions, Supabase, or any data flow.
-- Reuses the design tokens and `.ap-*` classes already in `src/index.css`.
-- Existing imports that become unused (Card, Button, lucide icons) are simply removed from the rewritten files.
-
-## Files touched
-
-- `src/pages/WhyAwardPay.tsx` — full rewrite.
-- `src/pages/HowItWorks.tsx` — full rewrite.
-- `src/pages/Contact.tsx` — full rewrite.
+- `src/pages/WhyAwardPay.tsx`
+- `src/pages/HowItWorks.tsx`
+- `src/pages/Contact.tsx`
 
 Nothing else changes.
