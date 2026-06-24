@@ -94,6 +94,8 @@
 .ap-links a { color: hsl(var(--foreground)); text-decoration: none; font-size: 15px; font-weight: 500; opacity: .8; }
 .ap-links a:hover { opacity: 1; }
 .ap-nav-cta { display: flex; align-items: center; gap: 16px; }
+.ap-burger { display: none; background: transparent; border: 0; padding: 8px; cursor: pointer; color: hsl(var(--foreground)); }
+.ap-mobile-menu { display: none; }
 
 .ap-btn { font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 11px; padding: 12px 20px; transition: background .15s, transform .12s; }
 .ap-btn:active { transform: translateY(1px); }
@@ -203,6 +205,11 @@
 
 @media (max-width: 920px) {
   .ap-links { display: none; }
+  .ap-nav-cta { display: none; }
+  .ap-burger { display: inline-flex; align-items: center; justify-content: center; }
+  .ap-mobile-menu { display: flex; flex-direction: column; gap: 4px; padding: 12px 20px 18px; border-top: 1px solid hsl(var(--border)); background: hsl(48 38% 98% / .98); }
+  .ap-mobile-menu a { padding: 12px 8px; color: hsl(var(--foreground)); font-weight: 500; font-size: 16px; text-decoration: none; cursor: pointer; border-bottom: 1px solid hsl(var(--border) / .5); }
+  .ap-mobile-menu .ap-btn { margin-top: 12px; }
   .ap-hero { grid-template-columns: 1fr; gap: 18px; padding-top: 34px; padding-bottom: 26px; }
   .ap-stage { height: 430px; }
   .ap-ledger { right: auto; left: 50%; transform: translateX(-50%); top: 30px; width: 320px; animation: none; }

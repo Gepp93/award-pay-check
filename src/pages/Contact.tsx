@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import SEO from "@/components/SEO";
+import { ApNav } from "@/components/ApNav";
 
 const Contact = () => {
   const navigate = useNavigate();
@@ -12,25 +13,7 @@ const Contact = () => {
         path="/contact"
       />
 
-      {/* Nav */}
-      <header className="ap-nav">
-        <div className="ap-nav-row">
-          <div className="ap-brand" onClick={() => navigate("/")}>
-            <span className="ap-mark" />
-            AwardPay
-          </div>
-          <nav className="ap-links">
-            <a onClick={() => navigate("/why-awardpay")} style={{ cursor: "pointer" }}>Why AwardPay</a>
-            <a onClick={() => navigate("/how-it-works")} style={{ cursor: "pointer" }}>How it works</a>
-            <a onClick={() => navigate("/pricing")} style={{ cursor: "pointer" }}>Pricing</a>
-            <a onClick={() => navigate("/contact")} style={{ cursor: "pointer" }}>Contact</a>
-          </nav>
-          <div className="ap-nav-cta">
-            <a className="ap-ghost" onClick={() => navigate("/auth")} style={{ cursor: "pointer" }}>Sign in</a>
-            <button className="ap-btn ap-btn-gold" onClick={() => navigate("/new-check-step-1")}>Check my payslip</button>
-          </div>
-        </div>
-      </header>
+      <ApNav />
 
       {/* Hero */}
       <section className="ap-wrap ap-section" style={{ paddingBottom: 28 }}>

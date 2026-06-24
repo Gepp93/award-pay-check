@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import SEO from "@/components/SEO";
+import { ApNav } from "@/components/ApNav";
 
 /* Animated "owed" figure — counts up on load, respects reduced motion */
 const OwedFigure = ({ target = 1542, suffix = "/yr" }: { target?: number; suffix?: string }) => {
@@ -159,28 +160,7 @@ const Index = () => {
       />
 
       {/* Nav */}
-      <nav className="ap-nav">
-        <div className="ap-nav-row">
-          <div className="ap-brand" onClick={() => navigate("/")}>
-            <span className="ap-mark" />
-            AwardPay
-          </div>
-          <div className="ap-links">
-            <a href="/why-awardpay">Why AwardPay</a>
-            <a href="/how-it-works">How it works</a>
-            <a href="/pricing">Pricing</a>
-            <a href="/contact">Contact</a>
-          </div>
-          <div className="ap-nav-cta">
-            <a href="/auth" className="ap-ghost">
-              Sign in
-            </a>
-            <button className="ap-btn ap-btn-gold" onClick={startCheck}>
-              Check my payslip
-            </button>
-          </div>
-        </div>
-      </nav>
+      <ApNav />
 
       {/* Hero */}
       <header className="ap-wrap ap-hero">
