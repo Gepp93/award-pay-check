@@ -54,6 +54,17 @@
     --ring: 156 57% 28%;
 
     --radius: 0.9rem;
+
+    /* legacy compatibility tokens — pages not yet rebuilt still reference these.
+       Re-pointed at the new green/soft system so nothing renders invisible. */
+    --gradient-primary: linear-gradient(135deg, hsl(156 57% 28%), hsl(156 50% 37%));
+    --gradient-hero: radial-gradient(ellipse at top, hsl(150 30% 96%) 0%, hsl(48 38% 99%) 60%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(48 30% 98%));
+    --gradient-shine: linear-gradient(135deg, transparent, hsl(156 57% 28% / .06), transparent);
+    --gradient-mesh: radial-gradient(at 0% 0%, hsl(156 57% 28% / .06) 0px, transparent 50%), radial-gradient(at 100% 100%, hsl(43 90% 54% / .06) 0px, transparent 50%);
+    --shadow-glow: 0 10px 40px -12px hsl(156 30% 18% / .18);
+    --shadow-card: 0 10px 40px -10px hsl(150 10% 10% / .10);
+    --shadow-elevated: 0 20px 60px -15px hsl(150 10% 10% / .15);
   }
 }
 
@@ -167,6 +178,7 @@
 .ap-step h3 { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
 .ap-step p { font-size: 14.5px; color: hsl(var(--muted-foreground)); margin: 0; line-height: 1.55; }
 
+.ap-check-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 32px; }
 .ap-stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid hsl(var(--border)); margin-top: 8px; }
 .ap-stat { padding: 28px 30px; border-left: 1px solid hsl(var(--border)); }
 .ap-stat:first-child { border-left: none; padding-left: 0; }
@@ -197,6 +209,7 @@
   .ap-scan, .ap-chip-pen { display: none; }
   .ap-chip-found { right: 6px; top: 0; } .ap-chip-owed { bottom: 6px; left: 0; }
   .ap-steps, .ap-stats { grid-template-columns: 1fr; }
+  .ap-check-grid { grid-template-columns: 1fr; }
   .ap-stat { border-left: none; border-top: 1px solid hsl(var(--border)); padding-left: 0; }
   .ap-stat:first-child { border-top: none; }
   .ap-band { grid-template-columns: 1fr; }
