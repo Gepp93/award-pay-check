@@ -94,6 +94,8 @@
 .ap-links a { color: hsl(var(--foreground)); text-decoration: none; font-size: 15px; font-weight: 500; opacity: .8; }
 .ap-links a:hover { opacity: 1; }
 .ap-nav-cta { display: flex; align-items: center; gap: 16px; }
+.ap-burger { display: none; background: transparent; border: 0; padding: 8px; cursor: pointer; color: hsl(var(--foreground)); }
+.ap-mobile-menu { display: none; }
 
 .ap-btn { font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 11px; padding: 12px 20px; transition: background .15s, transform .12s; }
 .ap-btn:active { transform: translateY(1px); }
