@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { guardPublicFunction } from "../_shared/guard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,9 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const blocked = await guardPublicFunction(req, { fn: 'test-fwc-api', limit: 20, windowSeconds: 300 });
+  if (blocked) return blocked;
 
   try {
     const fwcApiKey = Deno.env.get('FWC_API_KEY');

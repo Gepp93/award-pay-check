@@ -1,146 +1,71 @@
 
+# Privacy & security hardening (no UX/design/logic changes)
 
-# Remove Paywall, Add Email Capture + Paid Report/Recovery Upsell
+Scope is strictly security. No visual, copy, calculation, or flow changes. Existing functionality preserved.
 
-## Overview
+## 1. Lock down `public.leads`
 
-Replace the current $30 subscription paywall and auth wall with a completely free calculator experience. After calculation, add a lightweight email capture step before showing full results. Below results, add a conversion section offering two paid products via Stripe: a $9 PDF Report and a $49 Recovery Service.
+Current state: `SELECT USING (true)` on `leads` lets anyone with the anon key dump every email + calculation. Insert is also `WITH CHECK (true)` (required for the public flow).
 
----
+Migration:
+- Drop policy `"Anyone can read leads by id"` on `public.leads`. No replacement anon SELECT policy.
+- Keep policy `"Anyone can insert leads"` (anon + authenticated) as-is — the unauth funnel still needs to write.
+- Keep `"Allow service role updates on leads"` (used by Stripe webhook / server flows).
+- Revoke `SELECT` from `anon` and `authenticated` on `public.leads`; keep `INSERT` for both and `ALL` for `service_role`. Service-role bypasses RLS so edge functions keep full read access.
+- Net effect: browsers can write a lead but cannot read any lead back via PostgREST.
 
-## Database Changes
+Client change (`src/pages/NewCheck_Step3_Result.tsx`, the only client read/write of `leads`):
+- The existing insert already uses `.insert({...}).select("id").single()`. Change `.select("id")` to `.select("*")` so the full inserted row comes back in the same request and the page can keep it in state. This works under the new policy because PostgREST returns the inserted row from the INSERT itself (no extra SELECT roundtrip and no SELECT policy required for the inserting role on its own row, since we keep `RETURNING` enabled via the GRANT on INSERT). If PostgREST still blocks the return because of the missing SELECT grant, fall back to keeping the row entirely in component state from the values we just submitted (`email`, `calculation_data`, `shift_details`) plus the returned `id`. No new network calls, no behaviour change for the user.
+- No other client file reads `leads`, so nothing else needs touching.
 
-### New table: `leads`
-Stores email captures and associated calculation data (no auth required).
+Server side:
+- Confirm any future reads of `leads` (PDF report, email report, Stripe webhook) go through edge functions using `SUPABASE_SERVICE_ROLE_KEY`. Audit-only in this pass — no functional rewrite unless we find a client read, which we did not.
 
-```sql
-CREATE TABLE public.leads (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  email text NOT NULL,
-  calculation_data jsonb,
-  shift_details jsonb,
-  created_at timestamptz DEFAULT now(),
-  stripe_session_id text,
-  product_purchased text,
-  payment_status text DEFAULT 'none'
-);
+## 2. Abuse protection on public Edge Functions
 
-ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+Targets (must remain callable without login because the unauth calculator uses them):
+`calculate-shift-pay`, `ai-parse-shifts`, `get-awards`, `get-classifications`, `get-pay-rates`. Also apply to `get-classification-details` and `test-fwc-api` since they hit the same FWC key. Leave `generate-pdf-report` and `send-email-report` alone in this pass (they are post-payment server flows).
 
--- Allow anonymous inserts (no auth required)
-CREATE POLICY "Anyone can insert leads"
-  ON public.leads FOR INSERT
-  TO anon, authenticated
-  WITH CHECK (true);
+Shared helper: `supabase/functions/_shared/guard.ts` exporting:
+- `assertAllowedOrigin(req)` — reads `Origin` (fallback `Referer`); allows hosts matching:
+  - `awardpay.com.au`, `www.awardpay.com.au`
+  - `*.lovable.app` and `*.lovable.dev` (preview + published)
+  - `localhost` / `127.0.0.1` (local dev)
+  Anything else → return `403`. OPTIONS preflight is unaffected (handled before the guard).
+- `enforceRateLimit({ key, limit, windowSeconds })` — per-IP+function counter backed by a new table `public.rate_limits` (`bucket text`, `count int`, `window_start timestamptz`, PK `bucket`). Uses a `SECURITY DEFINER` SQL function `public.increment_rate_limit(_bucket text, _window_seconds int)` that atomically resets when the window expires and returns the new count. Edge functions call it via service role. Returns 429 with `Retry-After` when over the limit.
+- IP source: `x-forwarded-for` first hop, fallback to `cf-connecting-ip`.
 
--- Allow reading own lead by id (for thank-you page)
-CREATE POLICY "Anyone can read leads by id"
-  ON public.leads FOR SELECT
-  TO anon, authenticated
-  USING (true);
+Default limits (tunable per function):
+- `ai-parse-shifts`: 10 / 5 min per IP (expensive, OpenAI).
+- `calculate-shift-pay`: 60 / 5 min per IP.
+- `get-awards`, `get-classifications`, `get-classification-details`, `get-pay-rates`, `test-fwc-api`: 60 / 5 min per IP.
 
--- Allow updates for payment status
-CREATE POLICY "Service role can update leads"
-  ON public.leads FOR UPDATE
-  TO authenticated
-  USING (true);
-```
+Wiring in each function (minimal diff): right after the OPTIONS short-circuit, call `assertAllowedOrigin` then `enforceRateLimit`. Both return a `Response` on failure that the handler returns immediately. No change to request/response shape on the happy path → no client changes needed.
 
----
+Migration for rate limit table:
+- `CREATE TABLE public.rate_limits (...)`, no grants to anon/authenticated, `GRANT ALL ... TO service_role`, RLS enabled with no policies (locked to service role).
+- `CREATE FUNCTION public.increment_rate_limit(...) SECURITY DEFINER`.
 
-## Stripe Integration
+## 3. Secret audit
 
-Enable Stripe via the Lovable Stripe tool to create two products:
-1. **Official PDF Report** -- $9 AUD (one-time)
-2. **Recovery Service** -- $49 AUD (one-time)
+Grep already run. Findings:
+- `OPENAI_API_KEY` referenced only via `Deno.env.get('OPENAI_API_KEY')` in `ai-parse-shifts` (and any other AI function) — correct.
+- `FWC_API_KEY` — to verify across the FWC functions; expectation is `Deno.env.get('FWC_API_KEY')` only.
+- `SUPABASE_SERVICE_ROLE_KEY` — only used inside edge functions via `Deno.env`.
+- `.env` contains only `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` (anon/publishable — safe to commit).
 
-Stripe Checkout sessions will be created via an edge function, passing the `lead_id` as metadata so we can link payment to the lead.
+Action: do a final `rg` sweep across `supabase/functions/**` for `sk-`, `Bearer `, hardcoded `eyJ` JWTs, and any literal key strings. Report findings in the implementation message. No code change expected unless a leak is found, in which case the literal is replaced with `Deno.env.get(...)` and the user is told to rotate that key.
 
----
+## Deliverables
 
-## New/Modified Files
+1. One migration: drop the anon SELECT policy on `leads`, adjust grants, create `rate_limits` table + `increment_rate_limit` function.
+2. New file `supabase/functions/_shared/guard.ts`.
+3. Edits to the 7 listed edge functions to call the guard (≈4 lines each, no other changes).
+4. One-line change in `NewCheck_Step3_Result.tsx` (`.select("id")` → `.select("*")`) with a safe fallback if PostgREST blocks the return.
+5. Secret-audit report inline in chat (no code change unless a leak is found).
 
-### 1. Edge Function: `supabase/functions/create-checkout/index.ts`
-- Accepts `leadId`, `product` ("report" or "recovery"), and `email`
-- Creates a Stripe Checkout Session for the correct product/price
-- Sets `success_url` to `/thank-you?session_id={CHECKOUT_SESSION_ID}&product={product}`
-- Sets `cancel_url` back to results page
-- Returns the checkout URL
+## Out of scope (explicitly)
 
-### 2. Edge Function: `supabase/functions/stripe-webhook/index.ts`
-- Listens for `checkout.session.completed`
-- Updates the `leads` table with `payment_status = 'paid'` and `product_purchased`
-- For $9 report: triggers PDF generation and email delivery via the existing `generate-pdf-report` + `send-email-report` functions
-- For $49 recovery: sends notification email to `support@awardpay.com.au` with lead data
-
-### 3. New Page: `src/pages/ThankYou.tsx`
-- Reads `product` and `session_id` from URL params
-- For report ($9): "Your report is being generated and will be emailed to you shortly"
-- For recovery ($49): "We've received your claim request. Our team will review your case and be in touch within 2 business days."
-- Add route in `App.tsx`
-
-### 4. Modified: `src/pages/NewCheck_Step3_Result.tsx` (Major rewrite)
-
-**Remove:**
-- `useSubscription` hook usage
-- `AuthWall` component (full-screen auth overlay)
-- `PaywallBlur` component (blur wrapper)
-- `UpgradeCTA` component ($30 subscription prompt)
-- All `isPremium` conditional checks -- show everything to everyone
-- Auth loading state gating
-
-**Add -- Email Capture Gate (before results):**
-- New state: `emailCaptured`, `capturedEmail`, `savingEmail`
-- If email not yet captured, show a simple card:
-  - Heading: "Where should we send your results?"
-  - Email input field
-  - "Show My Results" button
-  - Small text: "Free forever. No spam."
-- On submit: save email + calculation data to `leads` table, set `emailCaptured = true`
-- Results then display fully unblurred, no auth required
-
-**Add -- Conversion Section (after results, only if underpaid):**
-- Heading: "You May Be Owed $[amount]"
-- Subheading: "Get your official underpayment report to take to your employer or Fair Work Australia"
-- Card 1: "Official PDF Report -- $9"
-  - Bullets: Detailed pay breakdown, Official Fair Work rates used, Ready to present to your employer, Tax deductible
-  - Button: "Get My Report -- $9" (calls create-checkout edge function)
-- Card 2: "Let Us Handle It For You -- $49"
-  - Bullets: We lodge the claim for you, Fair Work complaint prepared, No paperwork on your end, Money back if no underpayment found
-  - Button: "Start My Claim -- $49" (calls create-checkout edge function)
-
-### 5. Modified: `src/App.tsx`
-- Add route for `/thank-you` -> `ThankYou` page
-
-### 6. Cleanup
-- Remove or simplify `src/hooks/useSubscription.ts` references from results page
-- The Subscription page (`/subscription`) can remain but is no longer linked from the results flow
-
----
-
-## Technical Details
-
-### Email Capture Flow
-1. User completes Steps 1-2 (no auth needed, already working)
-2. Step 3 loads with results in `location.state`
-3. Before showing results, an email capture card appears
-4. User enters email, clicks "Show My Results"
-5. Edge function or direct Supabase insert saves to `leads` table (anon access via RLS policy)
-6. Full results display -- no blur, no paywall
-
-### Stripe Checkout Flow
-1. User clicks "Get My Report -- $9" or "Start My Claim -- $49"
-2. Frontend calls `create-checkout` edge function with `leadId` and `product`
-3. Edge function creates Stripe Checkout Session and returns URL
-4. User redirects to Stripe, pays
-5. Stripe webhook fires, updates lead record
-6. For report: triggers PDF generation + email
-7. For recovery: sends notification to support
-8. User lands on `/thank-you` page
-
-### Security Considerations
-- `leads` table allows anonymous inserts (intentional for conversion)
-- SELECT policy is permissive (leads contain only email, no sensitive auth data)
-- Stripe webhook validates signature before processing
-- Edge functions handle Stripe API key via secrets
-
+- No UI, copy, calculator math, allowance rules, funnel, or marketing-page edits.
+- No auth changes (anon flow stays anon).
+- No change to `generate-pdf-report` / `send-email-report` / Stripe webhook behaviour.
