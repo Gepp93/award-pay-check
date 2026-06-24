@@ -1,34 +1,64 @@
-# Plan: theme un-break + Contact/HowItWorks rebuild
+# Plan: rebuild three content pages, lighter and shorter
 
-## Part A — Apply verbatim (safe, no JSX risk)
+Rebuild `WhyAwardPay.tsx`, `HowItWorks.tsx`, and `Contact.tsx` from the supplied spec. No card grids, no icon tiles — headings, one-liners, real `<ul>` bullets, one gold CTA per page.
 
-**File 1: `src/index.css`** — replace entire contents with the provided CSS.
-Key change: re-adds the legacy compatibility tokens (`--gradient-primary`, `--gradient-hero`, `--gradient-card`, `--gradient-shine`, `--gradient-mesh`, `--shadow-glow`, `--shadow-card`, `--shadow-elevated`) pointed at the new green/gold palette. This instantly un-breaks every page still referencing `bg-gradient-primary`, `shadow-glow`, etc. (Auth, Subscription, Pricing, WhyAwardPay, the "Get In Touch" highlight, "Get Started" buttons, icon circles).
+## Shared structure (all three pages)
 
-**File 2: `tailwind.config.ts`** — replace entire contents with the provided config.
-Key change: re-adds `backgroundImage` entries (`gradient-primary`, `gradient-hero`, `gradient-card`, `gradient-shine`, `gradient-mesh`) and `boxShadow` (`glow`, `card`, `elevated`) so the Tailwind classes resolve to the new tokens. Also formalises the `gold`, `clay`, `success`, `primary.soft`, `primary.press`, `gold.soft`, `gold.ink`, `gold.press` colour scales.
+Each page uses the same shell already used by `Index.tsx`:
 
-These two files alone fix the invisible-text/buttons issue across the entire app, with zero risk to calculations, routing, edge functions, or data flow.
+- Same `.ap-nav` top nav with brand, links (Why AwardPay / How it works / Pricing / Contact), Sign in ghost link, and a gold "Check my payslip" button.
+- Page content in a single `.ap-wrap` column with generous vertical spacing (`.ap-section`).
+- Same `.ap-footer` with "AwardPay" mark and `© 2026 AwardPay · Pay checks are estimates based on Fair Work Modern Award data.`
+- `<SEO>` tag with a sensible title/description and `path` set.
 
-## Part B — Blocker on Contact and HowItWorks rebuilds
+A small local component on each page provides the final CTA block: H2 "See what you're owed" + gold button → `/new-check-step-1`.
 
-Files 3 and 4 (`src/pages/Contact.tsx` and `src/pages/HowItWorks.tsx`) in your message **have all JSX tags stripped out** during transmission — only attribute strings and visible copy remain (e.g. `Contact`, `How it works` with no surrounding `<a>`/`<div>`/`<section>` markup, no `className` props, no fragment/root element). Pasting them verbatim would not compile — TSX cannot parse bare text between `return (` and `);`. This is the same JSX-stripping issue we hit on the landing-page rebuild.
+## Page content
 
-I cannot apply files 3 and 4 verbatim as requested without breaking the build.
+**WhyAwardPay.tsx**
+1. Hero: H1 "Why AwardPay exists" + one-line lede (verbatim).
+2. H2 "The problem" + 4-item `<ul>`.
+3. H2 "What AwardPay does" + 4-item `<ul>`.
+4. H2 "Where our data comes from" + single `<p>` (no bullets).
+5. H2 "Who it's for" + single `<p>`.
+6. Final CTA block.
 
-## Recommended path
+**HowItWorks.tsx**
+1. Hero: H1 "How AwardPay checks your pay" + one-line lede.
+2. H2 "Three steps" + ordered `<ol>` with the three lines.
+3. H2 "What we check" + 4-item `<ul>`.
+4. One muted `<p>` (no heading): "AwardPay is an interpretation tool based on official Fair Work data, not legal advice."
+5. Final CTA block.
 
-1. **Apply Part A now** (Files 1 & 2 verbatim) — un-breaks the invisible-button issue everywhere immediately. Zero ambiguity, zero reconstruction.
-2. **Choose one option for Part B:**
-   - **B1 (recommended):** Re-paste `src/pages/Contact.tsx` and `src/pages/HowItWorks.tsx` inside fenced ` ```tsx ` blocks (or as file attachments). I then apply them verbatim, exactly as specified.
-   - **B2:** I reconstruct both files from the visible copy, CSS classes (`ap-nav`, `ap-hero`, `ap-section`, `ap-steps`, `ap-band`, `ap-final`, `ap-footer`, `ap-check-grid`) and the structure visible in your stripped paste. Copy, routes, classes and tokens will match; specific element nesting is my reconstruction, not your verbatim code.
-   - **B3:** Skip Contact/HowItWorks for now. Leave the existing pages in place — they will still render correctly once Part A lands because the legacy gradient tokens are restored.
+**Contact.tsx**
+1. Hero: H1 "Get in touch" + one-line lede.
+2. Centred large green `<a href="mailto:support@awardpay.com.au">` followed by small muted "We usually reply within 24–48 hours."
+3. Footer copyright reads "© 2026 AwardPay" (no extra trailing clause on this page per spec).
+4. No final CTA section, no extra cards.
 
-## Verification after Part A
+## Styling approach
 
-- Reload `/contact`: the word "Touch" in "Get In Touch" is visible (green highlight restored via `--gradient-primary` or whichever token the existing page uses).
-- Reload `/auth`, `/subscription`, `/pricing`, `/why-awardpay`, `/how-it-works`: all primary buttons render with a visible green background; icon circles render with their soft tinted backgrounds.
-- Landing page (`/`) is unaffected — it uses the new `ap-*` classes which already match the new palette.
-- No calculation, routing, edge function, or Supabase changes.
+Use existing tokens — no new CSS classes, no Tailwind redesign:
 
-## Tell me which Part B option you want and I'll proceed.
+- Headings: `font-bold` with `text-3xl`/`text-2xl` and `tracking-tight`, dark `text-foreground`.
+- Body: `text-[17px] text-foreground/80 leading-relaxed`, `max-w-2xl` for readability.
+- Bullets: native `<ul class="list-disc pl-5 space-y-2">` and `<ol class="list-decimal pl-5 space-y-2">` — no boxes, no icons.
+- Section spacing: `.ap-section` (already 64px top/bottom) inside `.ap-wrap`.
+- Gold CTA: existing `.ap-btn .ap-btn-gold .ap-btn-lg` button calling `navigate("/new-check-step-1")`.
+- Contact email link: inline style/utility classes for centred, large, `text-primary`, bold.
+
+## Constraints honoured
+
+- Single gold CTA per page (Why and HowItWorks), Contact has none per spec.
+- No testimonials, no invented stats, no "create free account" copy.
+- No changes to calculations, routes, Edge Functions, Supabase, or any data flow.
+- Reuses the design tokens and `.ap-*` classes already in `src/index.css`.
+- Existing imports that become unused (Card, Button, lucide icons) are simply removed from the rewritten files.
+
+## Files touched
+
+- `src/pages/WhyAwardPay.tsx` — full rewrite.
+- `src/pages/HowItWorks.tsx` — full rewrite.
+- `src/pages/Contact.tsx` — full rewrite.
+
+Nothing else changes.
