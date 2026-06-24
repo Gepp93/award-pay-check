@@ -1,373 +1,224 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, Shield, FileText, Brain, Heart, Info } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { PublicNavBar } from "@/components/PublicNavBar";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Check } from "lucide-react";
 import SEO from "@/components/SEO";
+import { ApNav } from "@/components/ApNav";
+
+function useReveal() {
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const els = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    if (reduced) { els.forEach(e => e.classList.add("is-visible")); return; }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    els.forEach(e => io.observe(e));
+    return () => io.disconnect();
+  }, []);
+}
+
+type Tier = {
+  name: string;
+  price: string;
+  priceSuffix?: string;
+  who: string;
+  features: string[];
+  cta: string;
+  highlighted?: boolean;
+};
+
+const tiers: Tier[] = [
+  {
+    name: "Free",
+    price: "$0",
+    who: "See if you're underpaid",
+    features: [
+      "Snap one payslip",
+      "We check it against official Fair Work rates",
+      "See your headline result: roughly how much you may be owed, and how many issues we found",
+      "No account needed",
+    ],
+    cta: "Check my payslip — free",
+  },
+  {
+    name: "Full report",
+    price: "$10",
+    priceSuffix: "one-time",
+    who: "Find out exactly what's missing and how to claim it",
+    features: [
+      "Everything in Free",
+      "Every missing penalty, loading and allowance — itemised, with amounts",
+      "Your total owed for that pay period",
+      "Step-by-step instructions to recover it",
+      "Downloadable PDF report",
+    ],
+    cta: "Check my payslip",
+    highlighted: true,
+  },
+  {
+    name: "Back-pay pack",
+    price: "$30",
+    priceSuffix: "one-time",
+    who: "Build your full claim across multiple payslips",
+    features: [
+      "Everything in Full report",
+      "Up to 5 payslips checked",
+      "Combined into one total back-pay figure",
+      "A single claim summary with recovery steps for the whole period",
+    ],
+    cta: "Check my payslip",
+  },
+];
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleUpgrade = () => {
-    if (!user) {
-      // Not logged in - redirect to auth with plan info
-      navigate(`/auth?redirect=checkout&plan=3month`);
-      return;
-    }
-
-    // Logged in - go directly to Stripe
-    window.location.href = "https://buy.stripe.com/6oUeVe0kk9Zn4XZ5Nz6AM04";
-  };
+  const start = () => navigate("/new-check-step-1");
+  useReveal();
 
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <SEO
-        title="Pricing - Affordable Award Pay Checking | AwardPay"
-        description="Check your Australian award pay from $10/month. Verify overtime, penalty rates and allowances with AwardPay's accurate calculator."
+        title="Pricing — Free pay check, pay only if you're owed | AwardPay"
+        description="Checking your pay is always free. Pay only once you've seen what you're owed. $10 Full report, $30 Back-pay pack. Prices in AUD."
         path="/pricing"
-        jsonLd={{
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "How does AwardPay calculate pay?",
-              "acceptedAnswer": { "@type": "Answer", "text": "AwardPay uses the Fair Work Commission Modern Awards Pay Database and applies built-in logic for overtime, penalties, allowances, and other award conditions. We interpret the award rules so you don't have to read complex PDFs." }
-            },
-            {
-              "@type": "Question",
-              "name": "Where does AwardPay get its data?",
-              "acceptedAnswer": { "@type": "Answer", "text": "All award rates, penalty multipliers, and allowances come from the official Fair Work Commission Modern Awards Pay Database. We update our data regularly to match current pay tables and award variations." }
-            },
-            {
-              "@type": "Question",
-              "name": "Can I cancel anytime?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Yes, you can cancel your subscription at any time. You'll continue to have access to Pro features until the end of your billing period. No questions asked, no cancellation fees." }
-            },
-            {
-              "@type": "Question",
-              "name": "Is my data secure?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Absolutely. We use industry-standard encryption for all data storage and transmission. Your personal information and pay data are never shared with third parties." }
-            },
-            {
-              "@type": "Question",
-              "name": "Does AwardPay support my award?",
-              "acceptedAnswer": { "@type": "Answer", "text": "AwardPay supports all major Modern Awards across industries including construction, retail, hospitality, healthcare, manufacturing, trades, and more." }
-            }
-          ]
-        }}
       />
-      <PublicNavBar />
-      
-      {/* Section 1 - Hero Header */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-6xl text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Choose a Plan That Protects Your Pay
+
+      <ApNav />
+
+      <section className="ap-wrap ap-section" style={{ paddingBottom: 28 }}>
+        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
+          <div className="ap-eyebrow" data-reveal>Pricing</div>
+          <h1 className="ap-h1 text-center" data-reveal>
+            Simple pricing. Pay only when it's <span className="ap-hl">worth&nbsp;it</span>.
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            AwardPay helps Australians check if their payslips match their Modern Award. Free to sign up, choose your plan.
+          <p className="ap-lede text-center" data-reveal style={{ marginBottom: 0, maxWidth: "none" }}>
+            Checking your pay is always free. You only pay once you've seen what you're owed.
           </p>
         </div>
       </section>
 
-      {/* Section 2 - Pricing Card */}
-      <section className="py-12 px-4">
-        <div className="container mx-auto max-w-md">
-          {/* 3 Month Access Pass */}
-          <Card className="flex flex-col border-primary shadow-lg relative">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
-              Full Access
-            </div>
-            <CardHeader className="pt-8">
-              <CardTitle className="text-2xl">3 Month Access Pass</CardTitle>
-              <CardDescription>
-                <span className="text-3xl font-bold text-foreground">$30</span>
-                <span className="text-muted-foreground"> for 3 months</span>
-              </CardDescription>
-              <p className="text-sm text-muted-foreground mt-2">
-                Just $10/month — one-time payment
-              </p>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <ul className="space-y-3">
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span className="font-semibold">Unlimited award-accurate calculations</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>All penalty rates</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>All allowances</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>RDO tracking</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>Save shifts</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>Save payslips</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>Underpayment detection</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>Side-by-side payslip comparison</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>Export PDF reports</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>Email summaries</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>AwardPay AI assistant</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-primary mt-0.5" />
-                  <span>Priority support</span>
-                </li>
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full" onClick={handleUpgrade}>
-                Get 3 Month Access — $30
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      </section>
+      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
+        <div
+          className="ap-pricing-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 22,
+            alignItems: "stretch",
+          }}
+        >
+          {tiers.map((t, i) => {
+            const highlighted = t.highlighted;
+            return (
+              <div
+                key={t.name}
+                data-reveal
+                style={{
+                  position: "relative",
+                  background: "hsl(var(--card))",
+                  border: highlighted
+                    ? "2px solid hsl(var(--gold))"
+                    : "1px solid hsl(var(--border))",
+                  borderRadius: "var(--radius)",
+                  padding: "28px 24px",
+                  display: "flex",
+                  flexDirection: "column",
+                  transform: highlighted ? "translateY(-8px)" : "none",
+                  boxShadow: highlighted
+                    ? "0 24px 60px -24px hsl(43 90% 30% / .35)"
+                    : "0 10px 30px -18px hsl(150 10% 10% / .15)",
+                  transitionDelay: `${i * 80}ms`,
+                }}
+              >
+                {highlighted && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: -14,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      background: "hsl(var(--gold))",
+                      color: "hsl(var(--gold-foreground))",
+                      fontWeight: 700,
+                      fontSize: 12,
+                      letterSpacing: ".08em",
+                      textTransform: "uppercase",
+                      padding: "6px 12px",
+                      borderRadius: 999,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Most popular
+                  </div>
+                )}
 
-      {/* Section 3 - What's Included */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="container mx-auto max-w-4xl">
-          <h2 className="text-3xl font-bold text-center mb-12">What's Included</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {[
-              "Unlimited award-accurate calculations",
-              "All penalty rates",
-              "All allowances",
-              "RDO tracking",
-              "Save shifts",
-              "Save payslips",
-              "Payslip comparison",
-              "Underpayment alerts",
-              "PDF export",
-              "Email export",
-              "AI Award explainer",
-              "Priority support",
-            ].map((feature, i) => (
-              <div key={i} className="flex items-center gap-2 p-3 bg-background rounded-lg">
-                <Check className="h-5 w-5 text-primary" />
-                <span>{feature}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Section 4 - Why Upgrade */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Upgrade</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card>
-              <CardHeader>
-                <Shield className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>One underpayment can cost you hundreds</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Even a single missed allowance or penalty rate covers months of AwardPay Pro.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <FileText className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Instant evidence for your employer</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  PDF reports and saved payslips make discussions simple and respectful.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Brain className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>AwardPay understands the rules for you</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Overtime triggers, night penalties, public holidays — AwardPay interprets everything.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <Heart className="h-10 w-10 text-primary mb-2" />
-                <CardTitle>Peace of mind every pay cycle</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Know you're being paid correctly, every shift, every week.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 5 - Tax Deduction Message */}
-      <section className="py-12 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <Card className="border-primary/50 bg-primary/5">
-            <CardHeader>
-              <div className="flex items-start gap-3">
-                <Info className="h-6 w-6 text-primary mt-1" />
-                <div>
-                  <CardTitle className="text-2xl mb-2">Can I claim AwardPay on tax?</CardTitle>
-                  <CardDescription className="text-base">
-                    Many Australian workers may be able to claim their AwardPay subscription as a work-related expense, 
-                    because the service helps manage and verify employment income. This may reduce your tax payable.
-                  </CardDescription>
-                  <p className="text-sm text-muted-foreground mt-4">
-                    Check with your accountant or the ATO to confirm your eligibility.
-                  </p>
+                <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: ".1em", textTransform: "uppercase", color: "hsl(var(--primary))" }}>
+                  {t.name}
                 </div>
+
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 10 }}>
+                  <span style={{ fontWeight: 800, fontSize: 44, letterSpacing: "-.02em", lineHeight: 1 }}>
+                    {t.price}
+                  </span>
+                  {t.priceSuffix && (
+                    <span style={{ fontSize: 14, color: "hsl(var(--muted-foreground))" }}>
+                      {t.priceSuffix}
+                    </span>
+                  )}
+                </div>
+
+                <p style={{ marginTop: 8, marginBottom: 18, fontSize: 14.5, color: "hsl(var(--muted-foreground))", lineHeight: 1.5 }}>
+                  {t.who}
+                </p>
+
+                <ul className="list-none pl-0 text-left" style={{ margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10, flex: 1, fontSize: 15, lineHeight: 1.5, color: "hsl(150 6% 22%)" }}>
+                  {t.features.map((f, j) => (
+                    <li key={j} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                      <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  className={`ap-btn ${highlighted ? "ap-btn-gold" : "ap-btn-outline"}`}
+                  onClick={start}
+                  style={{ marginTop: 22, width: "100%" }}
+                >
+                  {t.cta}
+                </button>
               </div>
-            </CardHeader>
-          </Card>
+            );
+          })}
         </div>
       </section>
 
-      {/* Section 6 - Real Results */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Real Results</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-lg italic mb-4">
-                  "AwardPay found $2,600 in missed Sunday penalties over six months."
-                </p>
-                <p className="text-sm text-muted-foreground">— Construction Worker, NSW</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-lg italic mb-4">
-                  "My employer wasn't applying meal allowances — AwardPay caught it instantly."
-                </p>
-                <p className="text-sm text-muted-foreground">— Retail Manager, VIC</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-lg italic mb-4">
-                  "This app gave me the confidence to understand my award properly."
-                </p>
-                <p className="text-sm text-muted-foreground">— Healthcare Worker, QLD</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+      <section className="ap-wrap" style={{ paddingTop: 18, paddingBottom: 64 }}>
+        <p
+          className="text-center"
+          data-reveal
+          style={{ fontSize: 13.5, color: "hsl(var(--muted-foreground))", maxWidth: 720, margin: "0 auto", lineHeight: 1.6 }}
+        >
+          Every check starts free — you only pay once you've seen what you're owed. Prices in AUD.
+          Your payslip is read, then discarded. AwardPay is an interpretation tool, not legal advice.
+        </p>
       </section>
 
-      {/* Section 7 - FAQ */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto max-w-3xl">
-          <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>How does AwardPay calculate pay?</AccordionTrigger>
-              <AccordionContent>
-                AwardPay uses the Fair Work Commission Modern Awards Pay Database and applies built-in logic 
-                for overtime, penalties, allowances, and other award conditions. We interpret the award rules 
-                so you don't have to read complex PDFs.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-2">
-              <AccordionTrigger>Where does AwardPay get its data?</AccordionTrigger>
-              <AccordionContent>
-                All award rates, penalty multipliers, and allowances come from the official Fair Work Commission 
-                Modern Awards Pay Database. We update our data regularly to match current pay tables and award variations.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-3">
-              <AccordionTrigger>Can I cancel anytime?</AccordionTrigger>
-              <AccordionContent>
-                Yes, you can cancel your subscription at any time. You'll continue to have access to Pro features 
-                until the end of your billing period. No questions asked, no cancellation fees.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-4">
-              <AccordionTrigger>Is my data secure?</AccordionTrigger>
-              <AccordionContent>
-                Absolutely. We use industry-standard encryption for all data storage and transmission. Your personal 
-                information and pay data are never shared with third parties. We take your privacy seriously.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-5">
-              <AccordionTrigger>Does AwardPay support my award?</AccordionTrigger>
-              <AccordionContent>
-                AwardPay supports all major Modern Awards across industries including construction, retail, hospitality, 
-                healthcare, manufacturing, trades, and more. If your employment is covered by a Modern Award, AwardPay can 
-                help you check your pay.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+      <footer className="ap-footer">
+        <div className="ap-footer-in">
+          <div className="ap-brand"><span className="ap-mark" />AwardPay</div>
+          <div className="fine">© 2026 AwardPay · Pay checks are estimates based on Fair Work Modern Award data.</div>
         </div>
-      </section>
+      </footer>
 
-      {/* Section 8 - Final CTA */}
-      <section className="py-20 px-4 bg-primary text-primary-foreground">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to check your next payslip?</h2>
-          <Button size="lg" variant="secondary" asChild>
-            <Link to="/auth">Create Free Account</Link>
-          </Button>
-          <p className="mt-4 text-sm opacity-90">Free to sign up • Choose your plan</p>
-        </div>
-      </section>
+      <style>{`
+        @media (max-width: 920px) {
+          .ap-pricing-grid { grid-template-columns: 1fr !important; }
+          .ap-pricing-grid > div { transform: none !important; }
+        }
+      `}</style>
     </div>
   );
 };
