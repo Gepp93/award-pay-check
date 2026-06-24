@@ -1,71 +1,77 @@
+# Trusted Paper — Visual Redesign Plan
 
-# Privacy & security hardening (no UX/design/logic changes)
+A pure reskin. No calculation, edge function, routing, or data-flow changes. Every page keeps current behaviour; only tokens, fonts, layout, and component appearance change.
 
-Scope is strictly security. No visual, copy, calculation, or flow changes. Existing functionality preserved.
+## Design direction
 
-## 1. Lock down `public.leads`
+"Trusted Paper" — editorial, document-like, calm authority. Australian-grounded without kitsch. Warm paper background, deep eucalyptus green as the brand/structure colour, honey/amber reserved exclusively for the money moment, clay red only for underpaid alerts.
 
-Current state: `SELECT USING (true)` on `leads` lets anyone with the anon key dump every email + calculation. Insert is also `WITH CHECK (true)` (required for the public flow).
+## Phase 1 — Foundation (apply first, then check in)
 
-Migration:
-- Drop policy `"Anyone can read leads by id"` on `public.leads`. No replacement anon SELECT policy.
-- Keep policy `"Anyone can insert leads"` (anon + authenticated) as-is — the unauth funnel still needs to write.
-- Keep `"Allow service role updates on leads"` (used by Stripe webhook / server flows).
-- Revoke `SELECT` from `anon` and `authenticated` on `public.leads`; keep `INSERT` for both and `ALL` for `service_role`. Service-role bypasses RLS so edge functions keep full read access.
-- Net effect: browsers can write a lead but cannot read any lead back via PostgREST.
+1. **`src/index.css`**
+   - Replace `:root` light tokens with the exact HSL values supplied (background warm paper, eucalyptus primary, honey accent, clay destructive, hairline border, radius 0.75rem).
+   - Update `.dark` to a tuned counterpart that preserves the same character (warm dark ink background, lighter eucalyptus primary, same accent).
+   - **Delete** `--gradient-primary`, `--gradient-hero`, `--gradient-card`, `--gradient-shine`, `--gradient-mesh`, `--shadow-glow`, `--shadow-elegant` and any `.bg-gradient-*`, `.text-gradient`, `.shadow-glow` utilities.
+   - Add one shadow token: `--shadow-paper: 0 1px 2px hsl(220 22% 14% / 0.04), 0 8px 24px -12px hsl(220 22% 14% / 0.08);`
+   - Add Fraunces + Inter Google Fonts `@import` at the top.
+   - Set `body { font-family: 'Inter', ...; background: hsl(var(--background)); color: hsl(var(--foreground)); }` and `h1,h2,h3,h4 { font-family: 'Fraunces', serif; font-feature-settings: 'ss01'; }`.
+   - Add `.font-display` (Fraunces) and a `.money` utility (Fraunces, tabular-nums, tight tracking) for dollar figures.
+   - Add a subtle `.rule-line` and `.perforated-edge` utility (dashed/dotted hairline using `--border`) — the one ownable payslip motif.
 
-Client change (`src/pages/NewCheck_Step3_Result.tsx`, the only client read/write of `leads`):
-- The existing insert already uses `.insert({...}).select("id").single()`. Change `.select("id")` to `.select("*")` so the full inserted row comes back in the same request and the page can keep it in state. This works under the new policy because PostgREST returns the inserted row from the INSERT itself (no extra SELECT roundtrip and no SELECT policy required for the inserting role on its own row, since we keep `RETURNING` enabled via the GRANT on INSERT). If PostgREST still blocks the return because of the missing SELECT grant, fall back to keeping the row entirely in component state from the values we just submitted (`email`, `calculation_data`, `shift_details`) plus the returned `id`. No new network calls, no behaviour change for the user.
-- No other client file reads `leads`, so nothing else needs touching.
+2. **`tailwind.config.ts`**
+   - `fontFamily.sans = ['Inter', ...]`, `fontFamily.display = ['Fraunces', 'serif']`, `fontFamily.serif = ['Fraunces', 'serif']`.
+   - Add `boxShadow.paper` mapping to `var(--shadow-paper)`. Remove any custom glow/elegant shadow extensions.
+   - Keep semantic colour mappings (primary/accent/destructive/etc. resolve from tokens — no hex changes needed in the config beyond what's already token-driven).
+   - Remove any `backgroundImage` gradient extensions.
 
-Server side:
-- Confirm any future reads of `leads` (PDF report, email report, Stripe webhook) go through edge functions using `SUPABASE_SERVICE_ROLE_KEY`. Audit-only in this pass — no functional rewrite unless we find a client read, which we did not.
+3. **`index.html`** — add Fraunces + Inter `<link>` preconnect/stylesheet as a perf fallback alongside the CSS import.
 
-## 2. Abuse protection on public Edge Functions
+4. **Global component primitives (token-only edits, no API changes):**
+   - `src/components/ui/button.tsx` — default = solid `bg-primary text-primary-foreground` (no gradient). Outline + ghost stay quiet. Remove any `shadow-glow`/gradient variants by remapping them to `bg-primary` / `shadow-paper`. Reduce default radius to `rounded-md` (matches new `--radius`).
+   - `src/components/ui/card.tsx` — `bg-card border border-border shadow-paper rounded-lg`. No glow.
+   - `src/components/ui/input.tsx` — hairline border, focus ring uses `--ring` (eucalyptus).
 
-Targets (must remain callable without login because the unauth calculator uses them):
-`calculate-shift-pay`, `ai-parse-shifts`, `get-awards`, `get-classifications`, `get-pay-rates`. Also apply to `get-classification-details` and `test-fwc-api` since they hit the same FWC key. Leave `generate-pdf-report` and `send-email-report` alone in this pass (they are post-payment server flows).
+**Checkpoint with user** after Phase 1 — the whole app will already look dramatically different because everything reads from these tokens.
 
-Shared helper: `supabase/functions/_shared/guard.ts` exporting:
-- `assertAllowedOrigin(req)` — reads `Origin` (fallback `Referer`); allows hosts matching:
-  - `awardpay.com.au`, `www.awardpay.com.au`
-  - `*.lovable.app` and `*.lovable.dev` (preview + published)
-  - `localhost` / `127.0.0.1` (local dev)
-  Anything else → return `403`. OPTIONS preflight is unaffected (handled before the guard).
-- `enforceRateLimit({ key, limit, windowSeconds })` — per-IP+function counter backed by a new table `public.rate_limits` (`bucket text`, `count int`, `window_start timestamptz`, PK `bucket`). Uses a `SECURITY DEFINER` SQL function `public.increment_rate_limit(_bucket text, _window_seconds int)` that atomically resets when the window expires and returns the new count. Edge functions call it via service role. Returns 429 with `Retry-After` when over the limit.
-- IP source: `x-forwarded-for` first hop, fallback to `cf-connecting-ip`.
+## Phase 2 — Two key screens (then check in again)
 
-Default limits (tunable per function):
-- `ai-parse-shifts`: 10 / 5 min per IP (expensive, OpenAI).
-- `calculate-shift-pay`: 60 / 5 min per IP.
-- `get-awards`, `get-classifications`, `get-classification-details`, `get-pay-rates`, `test-fwc-api`: 60 / 5 min per IP.
+5. **`src/pages/Index.tsx` (landing)**
+   - Kill the full-bleed gradient hero. Replace with an editorial left-aligned hero: small eyebrow label, large Fraunces h1, supporting Inter paragraph, single solid green CTA + quiet secondary, generous whitespace, max-width content column (~ `max-w-3xl` for text, `max-w-6xl` page).
+   - Remove gradient-circle icons in feature/section blocks — switch to plain lucide line icons at `text-primary` with no background, or drop them.
+   - Trust/stats strip rendered as a thin ruled row (hairline top + bottom border, Fraunces numbers).
+   - Keep all copy, sections, routes, CTAs and tracking unchanged.
 
-Wiring in each function (minimal diff): right after the OPTIONS short-circuit, call `assertAllowedOrigin` then `enforceRateLimit`. Both return a `Response` on failure that the handler returns immediately. No change to request/response shape on the happy path → no client changes needed.
+6. **`src/pages/NewCheck_Step3_Result.tsx` (the money moment)**
+   - The "$X you may be owed" figure: Fraunces, very large, `text-accent` (honey), tabular-nums, with a hand-drawn-style honey underline (simple `border-b-2 border-accent` or thin SVG marker). This is the *only* place amber appears.
+   - Result card: white, hairline border, `shadow-paper`, perforated-edge motif along the bottom (dashed `--border` line) so it reads like a payslip stub.
+   - Status chip: green check + "Looks correct" OR clay-red dot + "Underpaid". No red anywhere else.
+   - Subtle count-up animation on the dollar figure on mount (lightweight `requestAnimationFrame` or a tiny hook — no new dependency). Soft fade/slide for sections.
+   - All values, state, lead capture and downstream flows untouched.
 
-Migration for rate limit table:
-- `CREATE TABLE public.rate_limits (...)`, no grants to anon/authenticated, `GRANT ALL ... TO service_role`, RLS enabled with no policies (locked to service role).
-- `CREATE FUNCTION public.increment_rate_limit(...) SECURITY DEFINER`.
+**Checkpoint with user** — confirm direction on landing + result before propagating.
 
-## 3. Secret audit
+## Phase 3 — Roll out across remaining pages
 
-Grep already run. Findings:
-- `OPENAI_API_KEY` referenced only via `Deno.env.get('OPENAI_API_KEY')` in `ai-parse-shifts` (and any other AI function) — correct.
-- `FWC_API_KEY` — to verify across the FWC functions; expectation is `Deno.env.get('FWC_API_KEY')` only.
-- `SUPABASE_SERVICE_ROLE_KEY` — only used inside edge functions via `Deno.env`.
-- `.env` contains only `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID` (anon/publishable — safe to commit).
+Apply the same patterns (editorial left-aligned hero, paper cards, solid green buttons, no gradient/glow, Fraunces for headings + money) to:
 
-Action: do a final `rg` sweep across `supabase/functions/**` for `sk-`, `Bearer `, hardcoded `eyJ` JWTs, and any literal key strings. Report findings in the implementation message. No code change expected unless a leak is found, in which case the literal is replaced with `Deno.env.get(...)` and the user is told to rotate that key.
+- `Pricing.tsx`, `HowItWorks.tsx`, `WhyAwardPay.tsx`
+- `NewCheck_Step1_WhoAreYou.tsx`, `NewCheck_Step2_ShiftDetails.tsx`
+- `AppDashboard.tsx`, `Dashboard.tsx`, `Profile.tsx`, `Subscription.tsx`, `ThankYou.tsx`, `Auth.tsx`, `Contact.tsx`
+- `AwardOverview.tsx`, `AwardFinder.tsx`, `WeeklyPayCheck.tsx`, `Calculator.tsx`, `Onboarding.tsx`
+- Shared: `PublicNavBar.tsx`, `NavBar.tsx`, wizard `ProgressIndicator.tsx`, weekly-pay + calculator + award-overview cards.
 
-## Deliverables
+Each page: remove gradient backgrounds, gradient text, glow shadows, gradient-circle icons. Re-anchor layouts left, raise heading sizes in Fraunces, tighten to a content column. Preserve every prop, handler, route, and piece of business logic.
 
-1. One migration: drop the anon SELECT policy on `leads`, adjust grants, create `rate_limits` table + `increment_rate_limit` function.
-2. New file `supabase/functions/_shared/guard.ts`.
-3. Edits to the 7 listed edge functions to call the guard (≈4 lines each, no other changes).
-4. One-line change in `NewCheck_Step3_Result.tsx` (`.select("id")` → `.select("*")`) with a safe fallback if PostgREST blocks the return.
-5. Secret-audit report inline in chat (no code change unless a leak is found).
+## Out of scope
 
-## Out of scope (explicitly)
+- No changes to `src/lib/payCalculator.ts`, `src/types/payCheck.ts`, any `supabase/functions/**`, any migration, RLS, or data fetching.
+- No copy rewrites beyond what naturally falls out of layout (e.g. eyebrow labels). If a section is dropped visually, it stays in the DOM.
+- No new dependencies. Count-up uses a tiny inline hook.
 
-- No UI, copy, calculator math, allowance rules, funnel, or marketing-page edits.
-- No auth changes (anon flow stays anon).
-- No change to `generate-pdf-report` / `send-email-report` / Stripe webhook behaviour.
+## Technical notes
+
+- Token-first: because shadcn components consume CSS variables, most of the reskin lands in Phase 1. Page edits are mostly removing `bg-gradient-*`/`text-gradient`/`shadow-glow` class strings and re-shaping hero layouts.
+- Accessibility: verify eucalyptus on paper ≥ AA for body; honey accent only used at large display sizes where AA-large applies; clay red passes on white.
+- Dark mode: tuned but secondary priority — the brand pages are light. Will sanity-check after Phase 1.
+
+Awaiting approval before touching files.
