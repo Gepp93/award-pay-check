@@ -205,6 +205,11 @@
 
 @media (max-width: 920px) {
   .ap-links { display: none; }
+  .ap-nav-cta { display: none; }
+  .ap-burger { display: inline-flex; align-items: center; justify-content: center; }
+  .ap-mobile-menu { display: flex; flex-direction: column; gap: 4px; padding: 12px 20px 18px; border-top: 1px solid hsl(var(--border)); background: hsl(48 38% 98% / .98); }
+  .ap-mobile-menu a { padding: 12px 8px; color: hsl(var(--foreground)); font-weight: 500; font-size: 16px; text-decoration: none; cursor: pointer; border-bottom: 1px solid hsl(var(--border) / .5); }
+  .ap-mobile-menu .ap-btn { margin-top: 12px; }
   .ap-hero { grid-template-columns: 1fr; gap: 18px; padding-top: 34px; padding-bottom: 26px; }
   .ap-stage { height: 430px; }
   .ap-ledger { right: auto; left: 50%; transform: translateX(-50%); top: 30px; width: 320px; animation: none; }
