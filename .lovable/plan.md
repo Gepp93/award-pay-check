@@ -1,36 +1,34 @@
-# Landing rebuild — plan
+# Plan: theme un-break + Contact/HowItWorks rebuild
 
-## Scope
-Replace exactly 4 files with the verbatim contents you supplied:
-1. `src/index.css`
-2. `tailwind.config.ts`
-3. `index.html`
-4. `src/pages/Index.tsx`
+## Part A — Apply verbatim (safe, no JSX risk)
 
-No other file touched. No calc/Edge Function/routing/Supabase changes. All CTAs continue to route to `/new-check-step-1`. Payslip card stays hardcoded demo content. Stats keep the "replace with cited sources" note. No testimonials added.
+**File 1: `src/index.css`** — replace entire contents with the provided CSS.
+Key change: re-adds the legacy compatibility tokens (`--gradient-primary`, `--gradient-hero`, `--gradient-card`, `--gradient-shine`, `--gradient-mesh`, `--shadow-glow`, `--shadow-card`, `--shadow-elevated`) pointed at the new green/gold palette. This instantly un-breaks every page still referencing `bg-gradient-primary`, `shadow-glow`, etc. (Auth, Subscription, Pricing, WhyAwardPay, the "Get In Touch" highlight, "Get Started" buttons, icon circles).
 
-## ⚠ Blocker on File 4 (src/pages/Index.tsx)
-The `Index.tsx` block in your message has had all JSX tags stripped by the chat renderer. What arrived is e.g.:
+**File 2: `tailwind.config.ts`** — replace entire contents with the provided config.
+Key change: re-adds `backgroundImage` entries (`gradient-primary`, `gradient-hero`, `gradient-card`, `gradient-shine`, `gradient-mesh`) and `boxShadow` (`glow`, `card`, `elevated`) so the Tailwind classes resolve to the new tokens. Also formalises the `gold`, `clay`, `success`, `primary.soft`, `primary.press`, `gold.soft`, `gold.ink`, `gold.press` colour scales.
 
-```
-Pay check
-WK ENDING 14 JUN
-...
-✓Underpayment found
-```
+These two files alone fix the invisible-text/buttons issue across the entire app, with zero risk to calculations, routing, edge functions, or data flow.
 
-with no `<div>`, `<section>`, `<span>`, `className=...`, etc. It also contains a broken JSON-LD fragment (`@context": "https://schema.org",` with no opening brace or wrapping element) and an `OwedFigure` return that is just bare text — both will fail to parse as TSX.
+## Part B — Blocker on Contact and HowItWorks rebuilds
 
-I cannot apply this verbatim — it won't compile, which would break the whole app, not just the landing page. Your rule "If any class or import errors, fix only the error — do not redesign" doesn't cover a file that is ~90% missing markup; reconstructing it is a design act, not an error fix.
+Files 3 and 4 (`src/pages/Contact.tsx` and `src/pages/HowItWorks.tsx`) in your message **have all JSX tags stripped out** during transmission — only attribute strings and visible copy remain (e.g. `Contact`, `How it works` with no surrounding `<a>`/`<div>`/`<section>` markup, no `className` props, no fragment/root element). Pasting them verbatim would not compile — TSX cannot parse bare text between `return (` and `);`. This is the same JSX-stripping issue we hit on the landing-page rebuild.
 
-Files 1–3 (CSS, Tailwind config, index.html) arrived intact and I can apply those exactly as given.
+I cannot apply files 3 and 4 verbatim as requested without breaking the build.
 
-## How I'd like to proceed — pick one
+## Recommended path
 
-**A. You re-paste `src/pages/Index.tsx` only**, ideally inside a fenced ```` ```tsx ```` block or as a file attachment, so the JSX survives. I then apply all 4 files verbatim. ← recommended.
+1. **Apply Part A now** (Files 1 & 2 verbatim) — un-breaks the invisible-button issue everywhere immediately. Zero ambiguity, zero reconstruction.
+2. **Choose one option for Part B:**
+   - **B1 (recommended):** Re-paste `src/pages/Contact.tsx` and `src/pages/HowItWorks.tsx` inside fenced ` ```tsx ` blocks (or as file attachments). I then apply them verbatim, exactly as specified.
+   - **B2:** I reconstruct both files from the visible copy, CSS classes (`ap-nav`, `ap-hero`, `ap-section`, `ap-steps`, `ap-band`, `ap-final`, `ap-footer`, `ap-check-grid`) and the structure visible in your stripped paste. Copy, routes, classes and tokens will match; specific element nesting is my reconstruction, not your verbatim code.
+   - **B3:** Skip Contact/HowItWorks for now. Leave the existing pages in place — they will still render correctly once Part A lands because the legacy gradient tokens are restored.
 
-**B. I apply files 1–3 verbatim now**, and reconstruct `Index.tsx` from the CSS class names (`.ap-nav`, `.ap-hero`, `.ap-stage`, `.ap-scan`, `.ap-ledger`, `.ap-chip-*`, `.ap-steps`, `.ap-stats`, `.ap-band`, `.ap-final`, `.ap-footer`) plus the visible copy in your message. The structure will match the CSS exactly, but specific element nesting is my reconstruction, not your verbatim code.
+## Verification after Part A
 
-**C. I apply files 1–3 verbatim and leave the current `Index.tsx` in place** until you re-send file 4. Landing will look broken (old classes, new tokens) in the meantime.
+- Reload `/contact`: the word "Touch" in "Get In Touch" is visible (green highlight restored via `--gradient-primary` or whichever token the existing page uses).
+- Reload `/auth`, `/subscription`, `/pricing`, `/why-awardpay`, `/how-it-works`: all primary buttons render with a visible green background; icon circles render with their soft tinted backgrounds.
+- Landing page (`/`) is unaffected — it uses the new `ap-*` classes which already match the new palette.
+- No calculation, routing, edge function, or Supabase changes.
 
-Which one?
+## Tell me which Part B option you want and I'll proceed.
