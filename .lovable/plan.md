@@ -1,58 +1,98 @@
-## Alignment-only tweak (Why AwardPay, How It Works, Contact)
+## Goal
 
-No copy, nav, footer, routing, or token changes. Only alignment + one color fix.
+Bring Why AwardPay and How It Works to life with motion + small hero touches, while keeping the current clean structure (centered headings, left-aligned bullets, no card grids, no boxed tiles). Green/gold tokens, nav, footer, routing untouched. No backend/calc/data changes.
 
-### Shared pattern (all three pages)
+## Files touched
 
-Wrap each section's content in a centered column:
+- `src/pages/WhyAwardPay.tsx` — edit
+- `src/pages/HowItWorks.tsx` — edit
+- `src/index.css` — add a small block of reveal CSS + (if not already present) the gold underline swash + green pill eyebrow styles, reused from the home hero
+- (no new components, no new packages — `lucide-react` is already used)
 
-```tsx
-<div className="mx-auto max-w-[760px]">
-  <h2 className="ap-h2 text-center">…</h2>
-  <p className="text-center …">…</p>           {/* intro/lede paragraphs */}
-  <ul className="list-disc pl-6 text-left mt-4 space-y-2">…</ul>
-  {/* or <ol className="list-decimal pl-6 text-left …"> */}
-</div>
+## 1. Reveal-on-scroll (shared utility, inline in each page)
+
+A tiny `useReveal()` hook added at the top of each page file (or duplicated — it's ~15 lines):
+
+- Selects all elements with `data-reveal` inside the page root.
+- Creates a single `IntersectionObserver` (threshold 0.15) that adds `is-visible` on first intersection, then `unobserve`s the element. Never re-hides.
+- Respects `prefers-reduced-motion`: if reduced, immediately adds `is-visible` to all targets and skips the observer.
+
+CSS in `src/index.css`:
+
+```css
+[data-reveal]{opacity:0;transform:translateY(16px);transition:opacity .6s ease-out,transform .6s ease-out;}
+[data-reveal].is-visible{opacity:1;transform:none;}
+@media (prefers-reduced-motion: reduce){[data-reveal]{opacity:1;transform:none;transition:none;}}
 ```
 
-Rules:
-- Hero `h1` and hero intro sentence: add `text-center`, wrapped in `mx-auto max-w-[760px]`.
-- Every section `h2` ("The problem", "What AwardPay does", "Where our data comes from", "Who it's for", "Three steps", "What we check"): add `text-center`.
-- Every `<ul>` / `<ol>`: keep inside the same `mx-auto max-w-[760px]` wrapper, add `text-left` and `list-disc pl-6` (or `list-decimal pl-6`) so bullets sit on the left edge of the centered column.
-- Standalone descriptive `<p>` blocks under a heading (e.g. "Where our data comes from", "Who it's for", the muted disclaimer on How It Works): `text-center` is fine since they're single short paragraphs.
-- Final CTA block: already centered — leave as-is.
-- No changes to `.ap-nav`, `.ap-footer`, `.ap-btn`, or any `ap-*` class.
+Stagger is done per-element with inline `style={{ transitionDelay: `${i*80}ms` }}` on list items.
 
-### WhyAwardPay.tsx
+Targets on both pages: hero H1, hero lede `<p>`, every `<h2>`, every `<li>`, the focal visual, and the final CTA.
 
-- Hero: center H1 + lede.
-- "The problem" — centered h2, left-aligned `<ul>` inside 760px column.
-- "What AwardPay does" — same.
-- "Where our data comes from" — centered h2, centered single `<p>`.
-- "Who it's for" — centered h2, centered single `<p>`.
-- Final CTA — unchanged.
+## 2. Hero polish (both pages)
 
-### HowItWorks.tsx
+Above each H1, a small green pill eyebrow (same token as home hero):
 
-- Hero: center H1 + lede.
-- "Three steps" — centered h2, left-aligned `<ol className="list-decimal pl-6 text-left">` inside 760px column.
-- "What we check" — centered h2, left-aligned `<ul>` inside 760px column.
-- Muted disclaimer `<p>` — centered.
-- Final CTA — unchanged.
+```html
+<span class="ap-eyebrow">Why AwardPay</span>   <!-- or "How it works" -->
+```
 
-### Contact.tsx
+`.ap-eyebrow` in `index.css`: small inline-block, green bg at low opacity, green text, rounded-full, px-3 py-1, text-xs, uppercase tracking. Centered via the existing centered hero column.
 
-- Hero H1 "Get in touch":
-  - Remove any `bg-clip-text`, `text-transparent`, gradient span, or highlighted wrapper around "touch".
-  - Heading becomes a single `<h1 className="ap-h1 text-center">Get in touch</h1>` rendered in the normal dark foreground color (inherits from `.ap-h1`, no per-word styling).
-- Intro sentence: `text-center`, in 760px column.
-- Mailto link + 24–48 hours line: already centered — leave as-is.
-- Footer "© 2026 AwardPay" — unchanged.
+Gold underline swash under the LAST word of each H1 — reuse the same approach as home's "underpaid":
 
-### Files touched
+- Why page: `Why AwardPay <span class="ap-swash">exists</span>`
+- How It Works page: `Three steps to check your <span class="ap-swash">pay</span>`
 
-- `src/pages/WhyAwardPay.tsx`
-- `src/pages/HowItWorks.tsx`
-- `src/pages/Contact.tsx`
+`.ap-swash` = relative inline span with an absolutely-positioned pseudo-element underline (soft gold, ~6px tall, slightly skewed, sits behind the text via z-index, no layout shift). If the home page already exports an existing class for this, reuse that exact class name instead of adding a new one — I'll grep `src/index.css` and `src/pages/Index.tsx` first and match whatever already powers the "underpaid" swash on the home hero.
 
-Nothing else changes.
+## 3. Icon bullets (texture, not boxes)
+
+Replace plain `list-disc` bullets:
+
+- `<ul>` becomes `list-none pl-0 text-left space-y-2 mt-4`.
+- Each `<li>` becomes `flex items-start gap-2` with a `<Check className="h-4 w-4 mt-1 shrink-0" style={{color: 'hsl(var(--primary))'}} />` then the text.
+
+How It Works numbered list:
+
+- `<ol>` becomes `list-none pl-0 text-left space-y-3 mt-4`.
+- Each `<li>` becomes `flex items-start gap-3` with a leading `<span>` styled as a 24px green circle (`inline-flex items-center justify-center h-6 w-6 rounded-full text-xs font-semibold`, green bg + white text via existing tokens) holding the step number, then the step text.
+
+No icon-in-circle rows for content — circles only on the numbered step list (which the user explicitly asked for) and inside the focal visual.
+
+## 4. One focal visual per page (no card, no border)
+
+### How It Works — 3-step indicator (above the "Three steps" list)
+
+A centered horizontal row, plain on the page background:
+
+```text
+( 📷 ) ───── ( ✓ ) ───── ( $ )
+```
+
+- Three small green-bordered circles (~40px), each containing a lucide icon: `Camera`, `Scale`, `DollarSign`.
+- Connected by a thin 1px horizontal line in the same green at ~30% opacity.
+- Each circle has `data-reveal` with a 0/150/300 ms delay so they cascade left→right.
+- Implemented as a flex row, no `<Card>`, no border around the whole thing.
+
+### Why AwardPay — count-up stat (between "The problem" and "What AwardPay does")
+
+Centered, no box:
+
+- Large bold gold number `$1,542` rendered in Plus Jakarta Sans (`font-family: 'Plus Jakarta Sans', sans-serif` inline, color = gold token).
+- Counts from 0 to 1542 over ~1.2s using `requestAnimationFrame` once it enters the viewport (same IntersectionObserver pattern — fires once). Reduced-motion → render final value immediately.
+- Caption beneath in muted text: `lost by the average underpaid worker each year`.
+- Code comment above it: `// TODO: replace with cited source before publishing`.
+
+## 5. What does NOT change
+
+- No card grids, no boxed feature tiles, no icon-in-circle rows for content sections.
+- Centered headings + left-aligned bullets layout stays exactly as-is.
+- `.ap-nav`, `.ap-footer`, `.ap-btn`, `.ap-btn-gold`, `.ap-h1`, `.ap-h2`, `.ap-lede`, `.ap-section`, `.ap-wrap` classes untouched.
+- Routing (`/new-check-step-1`), SEO component, copy, and section order all unchanged.
+- Contact page is not touched.
+- No changes to `payCalculator`, Edge Functions, Supabase, types, or any data.
+
+## Verification
+
+After applying I'll open both pages in the preview via Playwright at 1280×1800, scroll through, and screenshot to confirm: pill eyebrow visible, gold swash under last word, bullets show green checks, numbered list shows green circles, focal visual renders without a card, and elements fade/translate in on scroll (cascade visible on the lists).
