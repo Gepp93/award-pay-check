@@ -198,12 +198,12 @@ export default function CheckUpload() {
               background: "hsl(var(--card))",
               padding: "44px 24px",
               textAlign: "center",
-              cursor: status === "reading" ? "default" : "pointer",
+              cursor: status === "reading" || status === "preparing" ? "default" : "pointer",
               transition: "border-color .2s ease, background .2s ease",
-              opacity: status === "reading" ? 0.85 : 1,
+              opacity: status === "reading" || status === "preparing" ? 0.85 : 1,
             }}
             onMouseEnter={(e) => {
-              if (status !== "reading")
+              if (status !== "reading" && status !== "preparing")
                 e.currentTarget.style.borderColor = "hsl(var(--primary))";
             }}
             onMouseLeave={(e) => {
