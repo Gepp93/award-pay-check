@@ -13,6 +13,7 @@ const ALLOWED_HOST_SUFFIXES = [
   "awardpay.com.au",
   ".lovable.app",
   ".lovable.dev",
+  ".lovableproject.com",
   "localhost",
   "127.0.0.1",
 ];
@@ -30,6 +31,12 @@ export function assertAllowedOrigin(req: Request): Response | null {
   const host =
     hostFromHeader(req.headers.get("origin")) ??
     hostFromHeader(req.headers.get("referer"));
+
+  console.log("guard origin check:", {
+    host,
+    origin: req.headers.get("origin"),
+    referer: req.headers.get("referer"),
+  });
 
   // No origin/referer at all → likely server-to-server or curl. Block to be safe.
   if (!host) {
