@@ -138,7 +138,7 @@ const PayslipStage = () => (
 
 const Index = () => {
   const navigate = useNavigate();
-  const startCheck = () => navigate("/new-check-step-1");
+  const startCheck = () => navigate("/check");
 
   return (
     <div>

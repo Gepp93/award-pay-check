@@ -46,7 +46,7 @@ export const NavBar = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => handleNavigation("/new-check-step-1")}
+                onClick={() => handleNavigation("/check")}
                 className="flex items-center gap-2"
               >
                 <ClipboardCheck className="h-4 w-4" />
@@ -100,7 +100,7 @@ export const NavBar = () => {
               </Button>
               <Button
                 variant="ghost"
-                onClick={() => handleNavigation("/new-check-step-1")}
+                onClick={() => handleNavigation("/check")}
                 className="flex items-center gap-2 justify-start w-full"
               >
                 <ClipboardCheck className="h-4 w-4" />

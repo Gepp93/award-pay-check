@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -34,6 +34,8 @@ const industryCards: IndustryCard[] = [
 
 export default function NewCheck_Step1_WhoAreYou() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const parsedPayslip = (location.state as any)?.parsedPayslip || null;
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -56,6 +58,21 @@ export default function NewCheck_Step1_WhoAreYou() {
   const [state, setState] = useState("NSW");
 
   const states = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT"];
+
+  // Pre-fill from AI-parsed payslip (Step 0).
+  useEffect(() => {
+    if (!parsedPayslip) return;
+    const et = parsedPayslip.employment_type;
+    if (et === "Full-time" || et === "Part-time" || et === "Casual") {
+      setEmploymentType(et);
+    }
+    const hint =
+      parsedPayslip.classification_or_role ||
+      parsedPayslip.employer_name ||
+      "";
+    if (hint) setAwardSearch(hint);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
@@ -247,6 +264,7 @@ export default function NewCheck_Step1_WhoAreYou() {
         workArea: selectedWorkArea,
         industry: selectedIndustry,
         state,
+        parsedPayslip,
       },
     });
   };
@@ -276,6 +294,11 @@ export default function NewCheck_Step1_WhoAreYou() {
             </CardHeader>
             
             <CardContent className="space-y-6 px-4 md:px-6">
+              {parsedPayslip && (
+                <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary">
+                  Pulled from your payslip — please confirm.
+                </div>
+              )}
               {/* Step 1: Industry Selection - Visual Cards with larger touch targets */}
               <div className="space-y-3">
                 <Label className="text-base font-medium">What industry do you work in?</Label>

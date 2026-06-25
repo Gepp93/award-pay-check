@@ -25,6 +25,7 @@ import NewCheck_Step3_Result from "./pages/NewCheck_Step3_Result";
 import AppDashboard from "./pages/AppDashboard";
 import Profile from "./pages/Profile";
 import ThankYou from "./pages/ThankYou";
+import CheckUpload from "./pages/CheckUpload";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/why-awardpay" element={<WhyAwardPay />} />
+          <Route path="/check" element={<CheckUpload />} />
           <Route path="/new-check-step-1" element={<NewCheck_Step1_WhoAreYou />} />
           <Route path="/new-check-step-2" element={<NewCheck_Step2_ShiftDetails />} />
           <Route path="/new-check-step-3" element={<NewCheck_Step3_Result />} />
