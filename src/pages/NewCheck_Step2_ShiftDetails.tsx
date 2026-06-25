@@ -38,7 +38,8 @@ export default function NewCheck_Step2_ShiftDetails() {
     workArea,
     jobDescription,
     industry,
-    state 
+    state,
+    parsedPayslip,
   } = location.state || {};
 
   useEffect(() => {
@@ -120,6 +121,45 @@ export default function NewCheck_Step2_ShiftDetails() {
   const [hoursAt200, setHoursAt200] = useState("");
   const [paidAllowances, setPaidAllowances] = useState<'no' | 'yes'>('no');
   const [allowanceDetails, setAllowanceDetails] = useState("");
+  const [prefilledFields, setPrefilledFields] = useState<Record<string, boolean>>({});
+
+  // Pre-fill from AI-parsed payslip if present.
+  useEffect(() => {
+    if (!parsedPayslip) return;
+    const filled: Record<string, boolean> = {};
+    if (typeof parsedPayslip.base_hourly_rate === "number") {
+      setPayslipBaseRate(String(parsedPayslip.base_hourly_rate));
+      filled.payslipBaseRate = true;
+    }
+    if (typeof parsedPayslip.ordinary_hours === "number") {
+      setHoursAtBase(String(parsedPayslip.ordinary_hours));
+      filled.hoursAtBase = true;
+    }
+    // Heuristic: scan line items for overtime/penalty hours.
+    const items: any[] = Array.isArray(parsedPayslip.line_items) ? parsedPayslip.line_items : [];
+    let h150 = 0;
+    let h200 = 0;
+    for (const li of items) {
+      const desc = String(li?.description || "").toLowerCase();
+      const hrs = Number(li?.hours) || 0;
+      if (!hrs) continue;
+      if (/(double|\b2x\b|x2|200%)/.test(desc)) {
+        h200 += hrs;
+      } else if (/(overtime|time.?and.?a.?half|1\.?5x|x1\.?5|150%|penalty)/.test(desc)) {
+        h150 += hrs;
+      }
+    }
+    if (h150 > 0) {
+      setHoursAt150(String(h150));
+      filled.hoursAt150 = true;
+    }
+    if (h200 > 0) {
+      setHoursAt200(String(h200));
+      filled.hoursAt200 = true;
+    }
+    setPrefilledFields(filled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!awardCode || !employmentType) {
     navigate("/new-check-step-1");
@@ -200,6 +240,14 @@ export default function NewCheck_Step2_ShiftDetails() {
       const hrs200 = parseFloat(hoursAt200) || 0;
       
       const actualPaid = (baseRate * hrsBase) + (baseRate * 1.5 * hrs150) + (baseRate * 2 * hrs200);
+      // Prefer the total_paid / gross_pay reported on the payslip if available.
+      const reportedPaid =
+        typeof parsedPayslip?.total_paid === "number"
+          ? parsedPayslip.total_paid
+          : typeof parsedPayslip?.gross_pay === "number"
+          ? parsedPayslip.gross_pay
+          : null;
+      const actualPaidFinal = reportedPaid != null ? reportedPaid : actualPaid;
 
       // Build payslip data
       const advancedPayslip = {
@@ -225,7 +273,7 @@ export default function NewCheck_Step2_ShiftDetails() {
           workedPublicHoliday,
           droveOwnCar,
           workedOver10Hours,
-          actualPaid: actualPaid,
+        actualPaid: actualPaidFinal,
           advancedPayslip,
           // NEW: Allowance conditions - expanded for all industries
           allowanceConditions: {
@@ -267,7 +315,7 @@ export default function NewCheck_Step2_ShiftDetails() {
             startTime,
             finishTime,
             breakMinutes,
-            actualPaid: actualPaid.toFixed(2),
+            actualPaid: actualPaidFinal.toFixed(2),
           },
           advancedPayslip: {
             payslipBaseRate: baseRate,
@@ -277,6 +325,7 @@ export default function NewCheck_Step2_ShiftDetails() {
             paidAllowances,
             allowanceDetails: paidAllowances === 'yes' ? allowanceDetails : null,
           },
+          parsedPayslip,
         },
       });
     } catch (error) {
