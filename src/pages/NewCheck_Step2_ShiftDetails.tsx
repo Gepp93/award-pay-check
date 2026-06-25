@@ -685,9 +685,14 @@ export default function NewCheck_Step2_ShiftDetails() {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 pt-4">
+              {parsedPayslip && (
+                <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
+                  From your payslip — edit any field if it's wrong.
+                </div>
+              )}
               <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-4">
                 <div className="space-y-2">
-                  <Label>Base hourly rate</Label>
+                  <Label>Base hourly rate{prefilledFields.payslipBaseRate && <span className="ml-2 text-xs font-normal text-primary">(from payslip)</span>}</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2">$</span>
                     <Input
@@ -702,7 +707,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Hours at base rate</Label>
+                  <Label>Hours at base rate{prefilledFields.hoursAtBase && <span className="ml-2 text-xs font-normal text-primary">(from payslip)</span>}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -713,7 +718,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Hours at 1.5× (time and a half)</Label>
+                  <Label>Hours at 1.5× (time and a half){prefilledFields.hoursAt150 && <span className="ml-2 text-xs font-normal text-primary">(from payslip)</span>}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -724,7 +729,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Hours at 2× (double time)</Label>
+                  <Label>Hours at 2× (double time){prefilledFields.hoursAt200 && <span className="ml-2 text-xs font-normal text-primary">(from payslip)</span>}</Label>
                   <Input
                     type="number"
                     step="0.01"
