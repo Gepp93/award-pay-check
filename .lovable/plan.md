@@ -1,37 +1,30 @@
-Rebuild `src/pages/Pricing.tsx` to state the new freemium model, keeping the existing design system, shared nav, footer, and scroll-reveal animation used on Why AwardPay / How It Works.
+# Plan: Add `ai-parse-payslip` edge function
 
-LAYOUT
-- Wrap the page in the same container style as the rebuilt pages (max-width 1200, centered, Plus Jakarta Sans, background from `index.css`).
-- Use `<ApNav />` for the nav (replacing the current `<PublicNavBar />`) and the same `ap-footer` block at the bottom.
-- Hero: centered green `ap-eyebrow` pill, centered H1 with gold swash on the last word, one centered lede line, all animated via `data-reveal`.
-- Three pricing tiers side-by-side on desktop (3-column grid), single column on mobile.
-- No card grids, feature boxes, icon-in-circle rows, FAQ, testimonial cards, or CTA band anywhere else on the page.
-- One small centered muted reassurance line under the tiers.
+## Scope
+Create exactly one new edge function. No other files touched (except `supabase/config.toml` if needed for `verify_jwt = false`).
 
-HERO COPY
-- H1: "Simple pricing. Pay only when it's worth it." with gold swash on "worth it".
-- Lede: "Checking your pay is always free. You only pay once you've seen what you're owed."
+## Pre-flight checks
+- `OPENAI_API_KEY` — already present in project secrets ✅
+- `supabase/functions/_shared/guard.ts` — already exists ✅
 
-TIER CARDS
-- Three `Card` components from the shadcn UI kit, styled with the design tokens.
-- Tier 1: Free — "See if you're underpaid" — list: Snap one payslip, check against official Fair Work rates, headline result (rough amount + issue count), no account needed. Button: "Check my payslip — free".
-- Tier 2: Full report — $10 one-time — highlighted as "Most popular" with gold accent border or tag, slightly raised shadow. List: everything in Free, itemised missing penalties/loadings/allowances with amounts, total owed for that period, step-by-step recovery instructions, downloadable PDF. Button: "Check my payslip".
-- Tier 3: Back-pay pack — $30 one-time — "Build your full claim across multiple payslips". List: everything in Full report, up to 5 payslips checked, combined total back-pay figure, single claim summary with recovery steps for the whole period. Button: "Check my payslip".
-- Every button routes to `/new-check-step-1` via `useNavigate`. No on-page checkout or payment flow.
+If either were missing I would stop and tell you; both are present, so we proceed.
 
-REASSURANCE LINE
-- Centered muted text under the tiers: "Every check starts free — you only pay once you've seen what you're owed. Prices in AUD. Your payslip is read, then discarded. AwardPay is an interpretation tool, not legal advice."
+## Steps
+1. Create `supabase/functions/ai-parse-payslip/index.ts` with the exact code you pasted — verbatim, no edits.
+2. Check `supabase/config.toml`. If `ai-parse-payslip` isn't listed with `verify_jwt = false`, add:
+   ```toml
+   [functions.ai-parse-payslip]
+   verify_jwt = false
+   ```
+   (matching the pattern used for the other public functions like `ai-parse-shifts`.)
+3. Deploy `ai-parse-payslip` and confirm it deploys without errors.
 
-TECHNICAL
-- Reuse the local `useReveal()` hook (IntersectionObserver + reduced-motion) from WhyAwardPay/HowItWorks.
-- Apply `data-reveal` to hero elements and tier cards, with staggered transition delays on list items.
-- Remove the old subscription state/effect, Stripe checkout handler, FAQ accordion, and extra sections.
-- Keep a single SEO block with updated title/description for the new pricing.
-- Use `Check` icon from lucide-react for tier feature lists.
+## Out of scope (will not touch)
+- Any other edge function
+- `_shared/guard.ts`
+- Frontend, routing, calculation engine, Supabase schema
+- Any other config
 
-FILES TOUCHED
-- `src/pages/Pricing.tsx` (rewrite)
-- `src/index.css` (no changes unless the existing scroll-reveal tokens need a tiny pricing-specific helper, but current selectors are sufficient)
-
-WHAT STAYS UNCHANGED
-- Routing, Edge Functions, calculation logic, Supabase data, other pages, nav component, footer component, design tokens.
+## Notes
+- Function uses OpenAI directly (your pasted code calls `api.openai.com` with `OPENAI_API_KEY`), not the Lovable AI Gateway. Kept as-is per "verbatim" instruction.
+- Rate limit: 8 calls / 5 min per IP, origin allow-list via `guardPublicFunction`.
