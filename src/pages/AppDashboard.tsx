@@ -81,7 +81,7 @@ const AppDashboard = () => {
             <CardContent className="text-center">
               <Button
                 size="lg"
-                onClick={() => navigate("/new-check-step-1")}
+                onClick={() => navigate("/check")}
                 className="bg-gradient-primary text-primary-foreground hover:opacity-90 text-lg px-8 py-6 h-14 font-semibold"
               >
                 Start Pay Check
