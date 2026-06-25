@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.ai-parse-shifts]
 verify_jwt = false
+
+[functions.ai-parse-payslip]
+verify_jwt = false
