@@ -1,107 +1,96 @@
-# Plan: AI payslip upload front door + restyled flow + gated result
+# Plan: Accept PDF / HEIC / images on /check by converting to JPEG in the browser
 
-## Scope guardrails
-- No changes to `calculate-shift-pay`, `get-awards`, `get-classifications`, or any other edge function.
-- No changes to Supabase schema, routing infra, or auth flow.
-- Only routing change: add `/check`. All existing CTAs repointed to `/check`.
-- Engine request shape stays byte-identical to today's Step 2.
+Goal: `/check` should accept payslips as PDF, HEIC/HEIF, JPG, PNG, or WEBP, and always send `ai-parse-payslip` a JPEG data URL (longest edge ≤ 1600px). The edge function and the rest of the flow are not touched.
 
----
+## 1. Dependencies
 
-## 1. New upload screen — `/check`
+Install in the frontend only:
 
-**File:** `src/pages/CheckUpload.tsx` (new)
-**Route:** add `<Route path="/check" element={<CheckUpload />} />` in `src/App.tsx`.
+- `pdfjs-dist` — render PDF page 1 to a canvas.
+- `heic2any` — convert HEIC/HEIF blobs to JPEG in the browser.
 
-Design: full `.ap-` system — `ApNav`, hero with `ap-eyebrow` + `ap-h1` + gold swash, scroll-reveal, hairline card for the drop zone, gold CTA, site footer, `SEO`.
+No other packages, no edge function changes, no routing changes.
 
-Behaviour:
-- Hero: "Check your payslip" + "Snap a photo or upload your payslip — we'll read it and check it against official Fair Work rates."
-- Large drop zone (label-wrapped `<input type="file" accept="image/*" capture="environment" />`) supporting click + drag-drop.
-- On file select: `FileReader.readAsDataURL` → base64 data URL → `supabase.functions.invoke("ai-parse-payslip", { body: { image } })`.
-- Loading state: calm centered spinner + "Reading your payslip…".
-- Success (and `unreadable !== true`): `navigate("/new-check-step-1", { state: { parsedPayslip } })`.
-- Failure or `unreadable === true`: inline error card "We couldn't read that clearly — try a sharper photo, or enter your details manually." with **Try again** + **Enter manually** buttons.
-- Secondary link below zone: "No payslip handy? Enter your details manually" → `/new-check-step-1` (no state).
-- Reassurance line: "Your payslip is read, then discarded. Free. No account needed."
+## 2. Changes to `src/pages/CheckUpload.tsx`
 
-## 2. Repoint all "Check my payslip" / primary CTAs to `/check`
+### File input + helper text
 
-Sweep these files and switch the target from `/new-check-step-1` (or onboarding/calculator) to `/check` **only where the button text is the primary "Check my payslip / Check My Pay Now" CTA** — do not touch internal step-to-step navigation:
-- `src/components/ApNav.tsx` (nav CTA)
-- `src/components/NavBar.tsx` (if it has a primary CTA)
-- `src/pages/Index.tsx` (hero + any repeat CTAs + screenshot carousel CTA)
-- `src/pages/Pricing.tsx` (all 3 tier buttons → `/check`)
-- `src/pages/HowItWorks.tsx` (bottom CTA)
-- `src/pages/WhyAwardPay.tsx` (bottom CTA)
-- `src/pages/Contact.tsx` (if any)
-- `src/pages/Auth.tsx`, `AppDashboard.tsx` — leave unless they carry the primary marketing CTA
+- `accept=".pdf,.heic,.heif,image/*"` on both the hidden `<input type="file">` and the drag-and-drop handler's validation.
+- Helper text under the drop zone becomes: **"PDF, JPG, PNG or HEIC."**
+- Drag-and-drop accepts the same set.
 
-Step 1 / Step 2 / Step 3 internal navigation is untouched.
+### New conversion pipeline (added as local helpers in the same file)
 
-## 3. Pre-fill Step 1 from `location.state.parsedPayslip`
+A single async `fileToJpegDataUrl(file: File): Promise<string>` that branches on type and always returns a JPEG data URL:
 
-**File:** `src/pages/NewCheck_Step1_WhoAreYou.tsx` (edit, additive)
-- Read `parsedPayslip` from `useLocation().state` on mount.
-- If present:
-  - Pre-select `employmentType` from `payslip.employment_type` (map "Full-time"/"Part-time"/"Casual" to existing internal values).
-  - Pre-fill the award search input with `payslip.classification_or_role || payslip.employer_name`.
-  - Render a small green note above the form: "Pulled from your payslip — please confirm."
-- User still confirms award + classification (engine needs exact codes/ids). No change to how `get-awards` / `get-classifications` are called.
-- Forward `parsedPayslip` along when navigating to Step 2 via `state`.
+1. **PDF** (`file.type === "application/pdf"` or `.pdf` extension)
+   - Dynamic import of `pdfjs-dist`:
+     ```ts
+     const pdfjsLib = await import("pdfjs-dist");
+     const workerSrc = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+     pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+     ```
+     The `?url` import is the Vite-correct way to ship the worker; this is the usual breakage point.
+   - `getDocument({ data: await file.arrayBuffer() })`, get page 1.
+   - `page.getViewport({ scale: 2 })`, render to an offscreen `<canvas>`.
+   - `canvas.toDataURL("image/jpeg", 0.85)`.
 
-## 4. Pre-fill Step 2 (advanced payslip path)
+2. **HEIC / HEIF** (`type` includes `heic`/`heif` or extension `.heic`/`.heif`)
+   - Dynamic import of `heic2any`.
+   - `const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.85 })`.
+   - Read that blob as a data URL via `FileReader.readAsDataURL`.
 
-**File:** `src/pages/NewCheck_Step2_ShiftDetails.tsx` (edit, additive)
-- Read `parsedPayslip` from incoming `state`.
-- If present, switch the UI into the **advanced payslip** path and pre-fill:
-  - `payslipBaseRate` ← `base_hourly_rate`
-  - `hoursAtBase` ← `ordinary_hours`
-  - `actualPaid` ← `total_paid` ?? `gross_pay`
-  - `hoursAt150` / `hoursAt200` — scan `line_items[].description` for /overtime|1\.5|x1\.5/ and /double|2\.0|x2/ keywords and sum `hours` where obvious; otherwise leave 0.
-- Each pre-filled input keeps its existing edit behaviour. Render small muted note next to pre-filled fields: "From your payslip — edit if wrong."
-- Submit handler unchanged. `calculate-shift-pay` body unchanged.
-- Forward `parsedPayslip` to Step 3 state along with engine response.
+3. **Other images** (JPG / PNG / WEBP / generic `image/*`)
+   - Read directly with `FileReader.readAsDataURL`.
 
-## 5. Gated Step 3 result
+Then pass the result through a **downscale step**:
 
-**File:** `src/pages/NewCheck_Step3_Result.tsx` (edit)
+`downscaleJpeg(dataUrl: string, maxEdge = 1600, quality = 0.85): Promise<string>`
 
-**Free band (always visible):**
-- Big headline card styled like the home page payslip mock: green surface, gold owed figure with **count-up animation** (reuse simple `requestAnimationFrame` count-up; no new deps).
-- Primary line: "You may be owed about $X" using the engine's underpayment/owed total.
-- Sub line: "We found N issue(s) with your pay" from count of underpaid line items in the engine response.
-- If owed total ≤ 0 / no issues: replace with a calm "Looks like you were paid correctly" state (green tick, same card chrome).
+- Load into an `Image`, draw to a canvas sized so the longest edge ≤ 1600px (keep aspect ratio; if already smaller, leave dimensions alone but still re-export as JPEG so PNG/WEBP become JPEG).
+- Return `canvas.toDataURL("image/jpeg", 0.85)`.
 
-**Locked band (rendered, blurred):**
-- Render the existing itemised breakdown inside a container with `filter: blur(6px); pointer-events: none; user-select: none;`.
-- Overlay card (centered, hairline + gold border): "Unlock your full report — see exactly what's missing and how to claim it."
-  - Primary gold button: "Unlock full report — $10" → `navigate("/auth")`
-  - Secondary outline button: "Check up to 5 payslips — $30" → `navigate("/auth")`
-- No Stripe call yet. No charge logic added.
+`fileToJpegDataUrl` returns the post-downscale value.
 
-**Footer link on Step 3:** "Check another payslip" → `/check`.
+### Upload handler changes
 
-If no owed amount, hide the locked overlay (nothing to unlock) and just show the "paid correctly" card + "Check another payslip" link.
+Current flow (read file → base64 → invoke `ai-parse-payslip` → navigate) becomes:
 
----
+1. Set a new `preparing` UI state with message **"Preparing your file…"** (shown in place of / next to the existing uploading state).
+2. `const imageDataUrl = await fileToJpegDataUrl(file)` — wrapped in try/catch.
+3. On failure, surface error: **"We couldn't read that file — try a JPG or PNG, or enter your details manually."** with the existing "Enter manually" link.
+4. On success, swap state to the existing "uploading/analyzing" state and call:
+   ```ts
+   supabase.functions.invoke("ai-parse-payslip", { body: { image: imageDataUrl } })
+   ```
+   exactly as today. Same `parsedPayslip` handling, same `navigate("/new-check-step-1", { state: { parsedPayslip } })`.
+5. The existing "unreadable" branch from the edge function is unchanged.
 
-## Technical notes
-- Reuse `useReveal` IntersectionObserver pattern from `WhyAwardPay` / `HowItWorks` / `Pricing` on the new `/check` page (copy the small hook inline; no new shared file required).
-- Count-up: small inline hook in Step 3, animates 0 → owed total over ~800ms.
-- All new copy and components use existing tokens (`hsl(var(--green))`, `hsl(var(--gold))`, `.ap-h1`, `.ap-hl`, `.ap-eyebrow`, hairline card class).
-- No new npm deps.
-- `parsedPayslip` is optional in every step — manual flow works exactly as today when state is absent.
+### UI states (existing visuals reused)
 
-## Files touched
-- `src/App.tsx` — add `/check` route
-- `src/pages/CheckUpload.tsx` — new
-- `src/pages/NewCheck_Step1_WhoAreYou.tsx` — additive pre-fill
-- `src/pages/NewCheck_Step2_ShiftDetails.tsx` — additive pre-fill + advanced path defaulting
-- `src/pages/NewCheck_Step3_Result.tsx` — free headline + locked overlay
-- `src/pages/Index.tsx`, `src/pages/Pricing.tsx`, `src/pages/HowItWorks.tsx`, `src/pages/WhyAwardPay.tsx`, `src/pages/Contact.tsx`, `src/components/ApNav.tsx`, `src/components/NavBar.tsx` — CTA target swap to `/check`
+- `idle` → drop zone (with updated helper text).
+- `preparing` → "Preparing your file…" (new copy, same spinner card).
+- `analyzing` → existing "Reading your payslip…" card.
+- `error` → existing error card, new copy when conversion fails.
 
-## Out of scope (deferred)
-- Stripe checkout for $10 / $30 unlocks (next step)
-- Saving parsed payslips to a table
-- Auth/sign-up changes
+No layout or design-system changes — same `ap-` classes, same hero, same footer.
+
+## 3. Out of scope (explicitly not touched)
+
+- `supabase/functions/ai-parse-payslip/index.ts` — unchanged. It keeps receiving `{ image: <jpeg data url> }`.
+- Calculation engine, Step 1/2/3, routing, Supabase schema, auth.
+- Multi-page PDFs — only page 1 is rendered, as specified.
+
+## 4. Technical notes
+
+- All conversion runs client-side; nothing extra sent over the wire.
+- `pdfjs-dist` and `heic2any` are dynamically imported so the `/check` route only pays the bundle cost on first upload, not on initial page load.
+- The `?url` worker import works with Vite 5 + `pdfjs-dist` v4 (ESM worker at `pdfjs-dist/build/pdf.worker.min.mjs`). If the installed `pdfjs-dist` is older and ships only `pdf.worker.min.js`, the import path swaps to that filename — same `?url` pattern. Verified after install.
+- Downscale-to-1600px-longest-edge keeps phone photos under ~300–500 KB JPEG, which is well within the edge function's payload limits and keeps OpenAI vision fast.
+
+## 5. Files touched
+
+- `src/pages/CheckUpload.tsx` — accept list, helper text, conversion pipeline, new "preparing" state, new error copy.
+- `package.json` / lockfile — adds `pdfjs-dist` and `heic2any`.
+
+Nothing else.
