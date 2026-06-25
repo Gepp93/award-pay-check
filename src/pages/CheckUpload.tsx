@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ApNav } from "@/components/ApNav";
-import { SEO } from "@/components/SEO";
+import SEO from "@/components/SEO";
 import { Loader2, Camera, AlertCircle } from "lucide-react";
 
 // Tiny scroll-reveal hook (same pattern used on Why / How / Pricing).
