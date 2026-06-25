@@ -212,20 +212,38 @@ export default function NewCheck_Step2_ShiftDetails() {
   };
 
   const handleCheckPay = async () => {
-    if (!date || !startTime || !finishTime) {
+    // Derive effective shift values — prefer single fields, fall back to first usable shifts[] entry.
+    const firstShift = shifts.find((s) => s.date && s.start && s.finish) || shifts[0];
+    const effDate = date ? format(date, "yyyy-MM-dd") : (firstShift?.date || "");
+    const effStart = startTime || firstShift?.start || "";
+    const effFinish = finishTime || firstShift?.finish || "";
+    const effBreak =
+      breakMinutes && breakMinutes !== ""
+        ? parseInt(breakMinutes)
+        : (firstShift?.break_minutes ?? 0);
+
+    if (!awardCode || !classificationId) {
       toast({
-        title: "Missing Information",
-        description: "Please complete date and shift times",
+        title: "Award not selected",
+        description: "Go back to Step 1 and choose your award and classification.",
         variant: "destructive",
       });
       return;
     }
 
-    // Check if payslip data is provided
+    if (!effDate || !effStart || !effFinish) {
+      toast({
+        title: "Add a shift",
+        description: "Enter at least one shift with a date, start and finish time.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!payslipBaseRate || !hoursAtBase) {
       toast({
-        title: "Missing Payslip Information",
-        description: "Please provide your base hourly rate and hours worked",
+        title: "Payslip figures needed",
+        description: "Enter your base hourly rate and ordinary hours under 'Your payslip breakdown'.",
         variant: "destructive",
       });
       return;
@@ -265,10 +283,10 @@ export default function NewCheck_Step2_ShiftDetails() {
           classificationId,
           employmentType,
           workArea,
-          date: format(date, "yyyy-MM-dd"),
-          startTime,
-          finishTime,
-          breakMinutes: parseInt(breakMinutes) || 0,
+          date: effDate,
+          startTime: effStart,
+          finishTime: effFinish,
+          breakMinutes: effBreak,
           workedWeekend,
           workedPublicHoliday,
           droveOwnCar,
@@ -311,10 +329,10 @@ export default function NewCheck_Step2_ShiftDetails() {
             awardCode,
             classificationId,
             employmentType,
-            date: format(date, "yyyy-MM-dd"),
-            startTime,
-            finishTime,
-            breakMinutes,
+            date: effDate,
+            startTime: effStart,
+            finishTime: effFinish,
+            breakMinutes: effBreak,
             actualPaid: actualPaidFinal.toFixed(2),
           },
           advancedPayslip: {
