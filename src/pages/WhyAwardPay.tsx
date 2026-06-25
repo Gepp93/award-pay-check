@@ -58,7 +58,7 @@ const h2Style = { fontSize: "clamp(22px, 2.6vw, 28px)" } as const;
 
 const WhyAwardPay = () => {
   const navigate = useNavigate();
-  const start = () => navigate("/new-check-step-1");
+  const start = () => navigate("/check");
   useReveal();
 
   const problems = [

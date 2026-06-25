@@ -74,7 +74,7 @@ const tiers: Tier[] = [
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const start = () => navigate("/new-check-step-1");
+  const start = () => navigate("/check");
   useReveal();
 
   return (

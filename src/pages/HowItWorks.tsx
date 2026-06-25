@@ -38,7 +38,7 @@ const circle: React.CSSProperties = {
 
 const HowItWorks = () => {
   const navigate = useNavigate();
-  const start = () => navigate("/new-check-step-1");
+  const start = () => navigate("/check");
   useReveal();
 
   const steps = [
