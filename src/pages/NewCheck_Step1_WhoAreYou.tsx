@@ -294,6 +294,11 @@ export default function NewCheck_Step1_WhoAreYou() {
             </CardHeader>
             
             <CardContent className="space-y-6 px-4 md:px-6">
+              {parsedPayslip && (
+                <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary">
+                  Pulled from your payslip — please confirm.
+                </div>
+              )}
               {/* Step 1: Industry Selection - Visual Cards with larger touch targets */}
               <div className="space-y-3">
                 <Label className="text-base font-medium">What industry do you work in?</Label>
