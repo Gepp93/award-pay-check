@@ -214,7 +214,6 @@ export default function CheckUpload() {
               ref={inputRef}
               type="file"
               accept=".pdf,.heic,.heif,image/*"
-              capture="environment"
               onChange={onChange}
               style={{ display: "none" }}
               disabled={status === "reading" || status === "preparing"}
