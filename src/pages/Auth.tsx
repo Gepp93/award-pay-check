@@ -41,9 +41,9 @@ const Auth = () => {
     if (isCheckoutRedirect) {
       // Redirect to Stripe checkout for 3-month pass
       window.location.href = STRIPE_URL;
-    } else if (returnTo && returnState) {
-      // Return to the page the user came from with their state preserved
-      navigate(returnTo, { state: returnState });
+    } else if (returnTo) {
+      // Return to the page the user came from (state preserved if provided)
+      navigate(returnTo, returnState ? { state: returnState } : undefined);
     } else {
       // Default redirect
       navigate("/new-check-step-1");
