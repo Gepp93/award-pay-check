@@ -3,21 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { NavBar } from "@/components/NavBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User, CreditCard, AlertTriangle, Loader2, Shield } from "lucide-react";
-import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { User, Loader2, Shield } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 
 const Profile = () => {
@@ -26,7 +13,6 @@ const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     const checkUserAndLoadProfile = async () => {
@@ -50,27 +36,6 @@ const Profile = () => {
     checkUserAndLoadProfile();
   }, [navigate]);
 
-  const handleCancelSubscription = async () => {
-    setCancelling(true);
-    try {
-      // Update subscription status in profiles table
-      const { error } = await supabase
-        .from("profiles")
-        .update({ subscription_status: "cancelled" })
-        .eq("id", user.id);
-
-      if (error) throw error;
-
-      setProfile((prev: any) => ({ ...prev, subscription_status: "cancelled" }));
-      toast.success("Subscription cancelled successfully");
-    } catch (error) {
-      console.error("Error cancelling subscription:", error);
-      toast.error("Failed to cancel subscription");
-    } finally {
-      setCancelling(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -81,9 +46,6 @@ const Profile = () => {
       </div>
     );
   }
-
-  const subscriptionStatus = profile?.subscription_status || "free";
-  const isSubscribed = subscriptionStatus === "active" || subscriptionStatus === "monthly" || subscriptionStatus === "yearly";
 
   return (
     <div className="min-h-screen bg-background">
@@ -129,84 +91,6 @@ const Profile = () => {
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Classification</label>
                 <p className="text-foreground">{profile.classification_name}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Subscription Management */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Subscription
-            </CardTitle>
-            <CardDescription>Manage your subscription</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Status</label>
-              <div className="flex items-center gap-2">
-                <p className={`font-medium ${isSubscribed ? "text-success" : subscriptionStatus === "cancelled" ? "text-destructive" : "text-muted-foreground"}`}>
-                  {subscriptionStatus === "3month" || subscriptionStatus === "active"
-                    ? "Pro Access (3 Month Pass)" 
-                    : subscriptionStatus === "cancelled" 
-                      ? "Cancelled" 
-                      : "Free Plan"}
-                </p>
-                {isAdmin && (
-                  <Badge variant="outline" className="text-xs">
-                    Admin Access
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            {isSubscribed ? (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" disabled={cancelling}>
-                    {cancelling ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Cancelling...
-                      </>
-                    ) : (
-                      <>
-                        <AlertTriangle className="h-4 w-4 mr-2" />
-                        Cancel Subscription
-                      </>
-                    )}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleCancelSubscription} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                      Yes, Cancel
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            ) : subscriptionStatus === "cancelled" ? (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Your subscription has been cancelled.</p>
-                <Button onClick={() => navigate("/subscription")}>
-                  Resubscribe
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Upgrade to get unlimited pay checks and more features.</p>
-                <Button onClick={() => navigate("/subscription")}>
-                  View Plans
-                </Button>
               </div>
             )}
           </CardContent>

@@ -11,7 +11,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 import { useUserCredits } from "@/hooks/useUserCredits";
-import { FULL_REPORT_LINK, BACKPAY_LINK, buildCheckoutUrl } from "@/lib/paymentLinks";
 
 interface PotentialAllowance {
   id: string;
@@ -57,6 +56,7 @@ export default function NewCheck_Step3_Result() {
   const [unlocking, setUnlocking] = useState(false);
   const autoResumedRef = useRef(false);
   const { credits, refetch: refetchCredits } = useUserCredits();
+  const sessionReportIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
@@ -93,9 +93,9 @@ export default function NewCheck_Step3_Result() {
   const showRange = isUnsureMode && minUnsure > 0 && minUnsure !== maxUnsure;
   const owedAnimated = useCountUp(isUnderpaid ? underpayment : 0);
 
-  // Create a report row for the signed-in user, then navigate to /report/:id.
-  // Unauthed users get bounced to /auth with returnTo + pendingProduct so we can
-  // auto-resume the flow once they're signed in (see effect below).
+  // Account-first: ensure a report row exists for the signed-in user, then
+  // navigate them to /report/:id (which is the Stripe launch point). If not
+  // signed in, bounce to /auth carrying the pending product so we auto-resume.
   const handleUnlock = async (product: "full_report" | "backpay_pack") => {
     if (!result || !shiftDetails) return;
     if (!user) {
@@ -111,39 +111,34 @@ export default function NewCheck_Step3_Result() {
     if (unlocking) return;
     setUnlocking(true);
     try {
-      const { data, error } = await (supabase as any)
-        .from("reports")
-        .insert({
-          user_id: user.id,
-          result,
-          inputs: { shiftDetails, advancedPayslip },
-          owed_amount: isUnderpaid ? underpayment : 0,
-          product,
-          payment_status: "free",
-        })
-        .select("id")
-        .single();
-      if (error || !data) throw error || new Error("No row returned");
-      const reportId = data.id as string;
-
-      // Credit redemption path — only for the single-report ($10) tier.
-      if (product === "full_report" && credits > 0) {
-        const { data: redeem, error: rErr } = await supabase.functions.invoke(
-          "redeem-credit",
-          { body: { reportId } },
-        );
-        if (!rErr && (redeem as any)?.ok) {
-          await refetchCredits();
-          toast.success("Unlocked with 1 credit");
-          navigate(`/report/${reportId}`);
-          return;
-        }
-        console.error("redeem-credit failed, falling back to Stripe:", rErr, redeem);
+      // Reuse a row created earlier in this session for the same result.
+      let reportId = sessionReportIdRef.current;
+      if (!reportId) {
+        const { data, error } = await (supabase as any)
+          .from("reports")
+          .insert({
+            user_id: user.id,
+            result,
+            inputs: { shiftDetails, advancedPayslip },
+            owed_amount: isUnderpaid ? underpayment : 0,
+            product,
+            payment_status: "free",
+          })
+          .select("id")
+          .single();
+        if (error || !data) throw error || new Error("No row returned");
+        reportId = data.id as string;
+        sessionReportIdRef.current = reportId;
+      } else {
+        // Update product preference on the existing row.
+        await (supabase as any)
+          .from("reports")
+          .update({ product })
+          .eq("id", reportId);
       }
 
-      // Otherwise go to Stripe for purchase.
-      const link = product === "full_report" ? FULL_REPORT_LINK : BACKPAY_LINK;
-      window.location.href = buildCheckoutUrl(link, reportId);
+      localStorage.setItem("pendingReportId", reportId);
+      navigate(`/report/${reportId}`, { state: { pendingProduct: product } });
     } catch (e: any) {
       console.error("Error creating report:", e);
       toast.error("Couldn't start your report — please try again.");
