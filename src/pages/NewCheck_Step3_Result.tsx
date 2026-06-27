@@ -10,6 +10,8 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
+import { useUserCredits } from "@/hooks/useUserCredits";
+import { FULL_REPORT_LINK, BACKPAY_LINK, buildCheckoutUrl } from "@/lib/paymentLinks";
 
 interface PotentialAllowance {
   id: string;
@@ -54,6 +56,7 @@ export default function NewCheck_Step3_Result() {
     | undefined;
   const [unlocking, setUnlocking] = useState(false);
   const autoResumedRef = useRef(false);
+  const { credits, refetch: refetchCredits } = useUserCredits();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
@@ -121,7 +124,26 @@ export default function NewCheck_Step3_Result() {
         .select("id")
         .single();
       if (error || !data) throw error || new Error("No row returned");
-      navigate(`/report/${data.id}`);
+      const reportId = data.id as string;
+
+      // Credit redemption path — only for the single-report ($10) tier.
+      if (product === "full_report" && credits > 0) {
+        const { data: redeem, error: rErr } = await supabase.functions.invoke(
+          "redeem-credit",
+          { body: { reportId } },
+        );
+        if (!rErr && (redeem as any)?.ok) {
+          await refetchCredits();
+          toast.success("Unlocked with 1 credit");
+          navigate(`/report/${reportId}`);
+          return;
+        }
+        console.error("redeem-credit failed, falling back to Stripe:", rErr, redeem);
+      }
+
+      // Otherwise go to Stripe for purchase.
+      const link = product === "full_report" ? FULL_REPORT_LINK : BACKPAY_LINK;
+      window.location.href = buildCheckoutUrl(link, reportId);
     } catch (e: any) {
       console.error("Error creating report:", e);
       toast.error("Couldn't start your report — please try again.");
@@ -237,6 +259,12 @@ export default function NewCheck_Step3_Result() {
             {isUnderpaid && (
               <>
                 <LockedTeaser result={result} />
+                {user && credits > 0 && (
+                  <div className="text-sm text-center text-muted-foreground">
+                    You have <strong className="text-foreground">{credits}</strong> report
+                    credit{credits === 1 ? "" : "s"} left from your Back-Pay Pack.
+                  </div>
+                )}
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
@@ -244,7 +272,11 @@ export default function NewCheck_Step3_Result() {
                     onClick={() => handleUnlock("full_report")}
                     disabled={unlocking}
                   >
-                    {unlocking ? "Preparing…" : "Unlock full report — $10"}
+                    {unlocking
+                      ? "Preparing…"
+                      : credits > 0
+                      ? `Unlock with 1 credit (${credits} left)`
+                      : "Unlock full report — $10"}
                   </button>
                   <button
                     type="button"
@@ -261,7 +293,7 @@ export default function NewCheck_Step3_Result() {
                       color: "hsl(var(--foreground))",
                     }}
                   >
-                    Check up to 5 payslips — $30
+                    Back-Pay Pack — 5 reports for $30 (save $20)
                   </button>
                 </div>
               </>
