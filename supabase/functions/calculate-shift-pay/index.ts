@@ -1470,77 +1470,50 @@ serve(async (req) => {
 
     console.log('Base rate found:', baseRate);
 
-    // Calculate hours worked
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const [finishHour, finishMinute] = finishTime.split(':').map(Number);
-    const startMinutes = startHour * 60 + startMinute;
-    const finishMinutes = finishHour * 60 + finishMinute;
-    const totalMinutes = finishMinutes - startMinutes - breakMinutes;
-    const totalHours = totalMinutes / 60;
-
-    // Calculate base pay and overtime
-    const standardDayHours = employmentType === 'Casual' ? 8 : 7.6;
-    const regularHours = Math.min(totalHours, standardDayHours);
-    const overtimeHours = Math.max(0, totalHours - standardDayHours);
-    
-    let basePay = regularHours * baseRate;
-    let overtimePay = 0;
-    let overtimeAt150Hours = 0;
-    let overtimeAt200Hours = 0;
-    let weekendPay = 0;
-    let publicHolidayPay = 0;
-    let allowances = 0;
+    const comp = computePeriodComparison({
+      baseRate,
+      employmentType,
+      startTime,
+      finishTime,
+      breakMinutes,
+      workedWeekend,
+      workedPublicHoliday,
+      droveOwnCar,
+      workedOver10Hours,
+      advancedPayslip,
+      actualPaid,
+    });
+    const {
+      totalHoursPaid,
+      effectiveHourlyPaid,
+      requiredAvgRate,
+      regularHours,
+      basePay,
+      overtimePay,
+      overtimeAt150Hours,
+      overtimeAt200Hours,
+      weekendPay,
+      publicHolidayPay,
+      allowances,
+      expectedPay,
+      underpayment,
+    } = comp;
+    const awardPayTotal = expectedPay;
+    const totalHours = totalHoursPaid;
     const reasons: string[] = [];
-
-    // Apply casual loading if applicable
     if (employmentType === 'Casual') {
-      const casualLoading = basePay * 0.25;
-      basePay += casualLoading;
-      reasons.push(`Casual loading (25%): +$${casualLoading.toFixed(2)}`);
+      reasons.push('Casual loading (25%) applied to base hours');
     }
-
-    // Calculate overtime: first 2 hours at 1.5x, rest at 2x
-    if (overtimeHours > 0) {
-      overtimeAt150Hours = Math.min(overtimeHours, 2);
-      overtimeAt200Hours = Math.max(0, overtimeHours - 2);
-      
-      const ot150Pay = overtimeAt150Hours * baseRate * 0.5;
-      const ot200Pay = overtimeAt200Hours * baseRate;
-      overtimePay = ot150Pay + ot200Pay;
-      
-      if (overtimeAt150Hours > 0) {
-        reasons.push(`Overtime at 1.5x (${overtimeAt150Hours.toFixed(2)} hrs): +$${ot150Pay.toFixed(2)}`);
-      }
-      if (overtimeAt200Hours > 0) {
-        reasons.push(`Overtime at 2x (${overtimeAt200Hours.toFixed(2)} hrs): +$${ot200Pay.toFixed(2)}`);
-      }
+    if (overtimeAt150Hours > 0) {
+      reasons.push(`Overtime at 1.5x (${overtimeAt150Hours.toFixed(2)} hrs)`);
     }
-
-    // Weekend penalty (50% extra)
-    if (workedWeekend) {
-      weekendPay = totalHours * baseRate * 0.5;
-      reasons.push(`Weekend penalty (50%): +$${weekendPay.toFixed(2)}`);
+    if (overtimeAt200Hours > 0) {
+      reasons.push(`Overtime at 2x (${overtimeAt200Hours.toFixed(2)} hrs)`);
     }
-
-    // Public holiday (double time and a half)
-    if (workedPublicHoliday) {
-      publicHolidayPay = totalHours * baseRate * 1.5;
-      reasons.push(`Public holiday penalty (2.5x): +$${publicHolidayPay.toFixed(2)}`);
-    }
-
-    // Allowances
-    if (droveOwnCar) {
-      allowances += 20;
-      reasons.push('Motor vehicle allowance: +$20.00');
-    }
-
-    if (workedOver10Hours) {
-      allowances += 15;
-      reasons.push('Meal allowance (over 10 hours): +$15.00');
-    }
-
-    const awardPayTotal = basePay + overtimePay + weekendPay + publicHolidayPay + allowances;
-    const underpayment = Math.max(0, awardPayTotal - actualPaid);
+    if (workedWeekend) reasons.push(`Weekend penalty (50%): +$${weekendPay.toFixed(2)}`);
+    if (workedPublicHoliday) reasons.push(`Public holiday penalty (2.5x): +$${publicHolidayPay.toFixed(2)}`);
+    if (droveOwnCar) reasons.push('Motor vehicle allowance: +$20.00');
+    if (workedOver10Hours) reasons.push('Meal allowance (over 10 hours): +$15.00');
 
     if (underpayment > 0) {
       reasons.unshift(`You were paid $${actualPaid.toFixed(2)} but should have received $${awardPayTotal.toFixed(2)}`);
@@ -1616,6 +1589,9 @@ serve(async (req) => {
       potentialAllowances: mergedAllowances,
       allAwardAllowances: awardAllowances,
       breakdown: {
+        totalHoursPaid,
+        effectiveHourlyPaid,
+        requiredAvgRate,
         regularHours,
         basePay,
         overtimeAt150Hours,
