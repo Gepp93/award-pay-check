@@ -7,10 +7,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
-const stripeSecret = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+// Payment Links flow: we never call the Stripe API. The Stripe SDK is only
+// used for its webhook signature verifier, so a placeholder key is fine —
+// no network calls are made with it.
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
-
-const stripe = new Stripe(stripeSecret, { apiVersion: "2024-06-20" });
+const stripe = new Stripe("sk_placeholder", { apiVersion: "2024-06-20" });
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
