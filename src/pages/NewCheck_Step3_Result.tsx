@@ -1,16 +1,14 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, CheckCircle, ChevronDown, Coins, Lock } from "lucide-react";
-import { FullReport } from "@/components/report/FullReport";
+import { CheckCircle } from "lucide-react";
+import { LockedTeaser } from "@/components/report/LockedTeaser";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
 interface PotentialAllowance {
@@ -20,11 +18,6 @@ interface PotentialAllowance {
   estimatedValue: number;
   reason: string;
   icon: string;
-}
-
-interface AwardAllowance {
-  name: string;
-  description: string;
 }
 
 // Count-up hook for animating the headline owed figure.
@@ -55,6 +48,12 @@ export default function NewCheck_Step3_Result() {
   const { result, shiftDetails, advancedPayslip } = location.state || {};
   const [user, setUser] = useState<User | null>(null);
   const fromDashboard = location.state?.fromDashboard;
+  const pendingProduct = (location.state as any)?.pendingProduct as
+    | "full_report"
+    | "backpay_pack"
+    | undefined;
+  const [unlocking, setUnlocking] = useState(false);
+  const autoResumedRef = useRef(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
@@ -91,6 +90,53 @@ export default function NewCheck_Step3_Result() {
   const showRange = isUnsureMode && minUnsure > 0 && minUnsure !== maxUnsure;
   const owedAnimated = useCountUp(isUnderpaid ? underpayment : 0);
 
+  // Create a report row for the signed-in user, then navigate to /report/:id.
+  // Unauthed users get bounced to /auth with returnTo + pendingProduct so we can
+  // auto-resume the flow once they're signed in (see effect below).
+  const handleUnlock = async (product: "full_report" | "backpay_pack") => {
+    if (!result || !shiftDetails) return;
+    if (!user) {
+      navigate("/auth", {
+        state: {
+          returnTo: "/new-check-step-3",
+          returnState: { ...(location.state || {}), pendingProduct: product },
+          mode: "signup",
+        },
+      });
+      return;
+    }
+    if (unlocking) return;
+    setUnlocking(true);
+    try {
+      const { data, error } = await (supabase as any)
+        .from("reports")
+        .insert({
+          user_id: user.id,
+          result,
+          inputs: { shiftDetails, advancedPayslip },
+          owed_amount: isUnderpaid ? underpayment : 0,
+          product,
+          payment_status: "free",
+        })
+        .select("id")
+        .single();
+      if (error || !data) throw error || new Error("No row returned");
+      navigate(`/report/${data.id}`);
+    } catch (e: any) {
+      console.error("Error creating report:", e);
+      toast.error("Couldn't start your report — please try again.");
+      setUnlocking(false);
+    }
+  };
+
+  // Auto-resume: user just came back from /auth with a pending product.
+  useEffect(() => {
+    if (autoResumedRef.current) return;
+    if (!user || !pendingProduct || !result || !shiftDetails) return;
+    autoResumedRef.current = true;
+    handleUnlock(pendingProduct);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, pendingProduct, result, shiftDetails]);
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -187,38 +233,38 @@ export default function NewCheck_Step3_Result() {
             )}
 
 
-            {/* TEMP: report shown unlocked for review — re-gate behind payment in Stripe step */}
-            <FullReport
-              result={result}
-              shiftDetails={shiftDetails}
-              advancedPayslip={advancedPayslip}
-            />
-
-            {/* TEMP: unlock CTAs kept visible while report is unlocked — re-enable paywall in Stripe step */}
+            {/* Free teaser — full detail lives at /report/:id behind the (upcoming) paywall. */}
             {isUnderpaid && (
-              <div className="flex flex-col sm:flex-row gap-2">
-                <button
-                  className="ap-btn ap-btn-gold flex-1"
-                  onClick={() => navigate("/auth")}
-                >
-                  Unlock full report — $10
-                </button>
-                <button
-                  onClick={() => navigate("/auth")}
-                  className="flex-1"
-                  style={{
-                    padding: "10px 14px",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: 8,
-                    background: "transparent",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    color: "hsl(var(--foreground))",
-                  }}
-                >
-                  Check up to 5 payslips — $30
-                </button>
-              </div>
+              <>
+                <LockedTeaser result={result} />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    className="ap-btn ap-btn-gold flex-1"
+                    onClick={() => handleUnlock("full_report")}
+                    disabled={unlocking}
+                  >
+                    {unlocking ? "Preparing…" : "Unlock full report — $10"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleUnlock("backpay_pack")}
+                    disabled={unlocking}
+                    className="flex-1"
+                    style={{
+                      padding: "10px 14px",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                      background: "transparent",
+                      cursor: unlocking ? "not-allowed" : "pointer",
+                      fontWeight: 600,
+                      color: "hsl(var(--foreground))",
+                    }}
+                  >
+                    Check up to 5 payslips — $30
+                  </button>
+                </div>
+              </>
             )}
 
             <div className="flex gap-3 no-print pt-2">
@@ -234,175 +280,5 @@ export default function NewCheck_Step3_Result() {
         </Card>
       </div>
     </>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// TEMP: LockedBreakdown is currently unused — the FullReport renders unlocked
-// for review. Kept here so re-gating behind Stripe is a one-line swap.
-// ---------------------------------------------------------------------------
-function LockedBreakdown({
-  result,
-  advancedPayslip,
-  shiftDetails,
-  potentialAllowances,
-  isUnsureMode,
-}: {
-  result: any;
-  advancedPayslip: any;
-  shiftDetails: any;
-  potentialAllowances: PotentialAllowance[];
-  isUnsureMode: boolean;
-}) {
-  const allAwardAllowances: AwardAllowance[] = result.allAwardAllowances || [];
-  const [open, setOpen] = useState(true);
-  const underpayment = isUnsureMode ? result.overallMaxUnderpayment : (result.underpayment || 0);
-  const isUnderpaid = underpayment > 0;
-
-  return (
-    <div className="space-y-6">
-      {potentialAllowances.length > 0 && (
-        <div className="rounded-lg border-2 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-4 space-y-4">
-          <div className="flex items-center gap-2">
-            <Coins className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            <h3 className="font-bold text-lg text-amber-800 dark:text-amber-200">
-              We found {potentialAllowances.length} potential allowance{potentialAllowances.length > 1 ? "s" : ""} you may be entitled to
-            </h3>
-          </div>
-          <div className="space-y-3">
-            {potentialAllowances.map((a) => (
-              <div key={a.id} className="rounded-lg border border-amber-200 dark:border-amber-800 bg-white dark:bg-background p-3 space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{a.icon}</span>
-                    <div>
-                      <div className="font-semibold">{a.name}</div>
-                      <div className="text-sm text-primary font-medium">{a.amount}</div>
-                    </div>
-                  </div>
-                  {a.estimatedValue > 0 && (
-                    <div className="text-right">
-                      <div className="text-xs text-muted-foreground">Est. today</div>
-                      <div className="font-bold text-green-600 dark:text-green-400">
-                        ${a.estimatedValue.toFixed(2)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="text-sm text-muted-foreground bg-muted/50 rounded p-2">
-                  <span className="font-medium text-foreground">WHY: </span>
-                  {a.reason}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {advancedPayslip && (
-        <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 space-y-3">
-          <div className="font-bold text-base">What you were paid (from your payslip):</div>
-          {advancedPayslip.hoursAtBase > 0 && (
-            <div className="flex justify-between text-sm">
-              <span>Base hours ({advancedPayslip.hoursAtBase} hrs × ${advancedPayslip.payslipBaseRate}/hr)</span>
-              <span className="font-semibold">${(advancedPayslip.hoursAtBase * advancedPayslip.payslipBaseRate).toFixed(2)}</span>
-            </div>
-          )}
-          {advancedPayslip.hoursAt150 > 0 && (
-            <div className="flex justify-between text-sm">
-              <span>Time & half ({advancedPayslip.hoursAt150} hrs × ${(advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}/hr)</span>
-              <span className="font-semibold">${(advancedPayslip.hoursAt150 * advancedPayslip.payslipBaseRate * 1.5).toFixed(2)}</span>
-            </div>
-          )}
-          {advancedPayslip.hoursAt200 > 0 && (
-            <div className="flex justify-between text-sm">
-              <span>Double time ({advancedPayslip.hoursAt200} hrs × ${(advancedPayslip.payslipBaseRate * 2).toFixed(2)}/hr)</span>
-              <span className="font-semibold">${(advancedPayslip.hoursAt200 * advancedPayslip.payslipBaseRate * 2).toFixed(2)}</span>
-            </div>
-          )}
-          <div className="border-t-2 border-primary/30 pt-2 flex justify-between font-bold text-lg">
-            <span>Total you were paid</span>
-            <span className="text-primary">${parseFloat(shiftDetails.actualPaid).toFixed(2)}</span>
-          </div>
-        </div>
-      )}
-
-      {isUnderpaid && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            <div className="font-semibold text-lg">You may be missing: ${underpayment.toFixed(2)}</div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
-        <div className="font-semibold text-sm">What the award says you should earn:</div>
-        <div className="text-xs text-muted-foreground mb-2">
-          Based on ${result.baseRate?.toFixed(2)}/hr award rate
-        </div>
-        <div className="flex justify-between text-sm">
-          <span>Regular hours ({result.breakdown?.regularHours?.toFixed(2) || "0"} hrs × ${result.baseRate?.toFixed(2)}/hr)</span>
-          <span>${result.breakdown?.basePay?.toFixed(2) || "0.00"}</span>
-        </div>
-        {result.breakdown?.overtimeAt150Hours > 0 && (
-          <div className="flex justify-between text-sm">
-            <span>Overtime at 1.5x ({result.breakdown.overtimeAt150Hours.toFixed(2)} hrs)</span>
-            <span>${(result.breakdown.overtimeAt150Hours * result.baseRate * 1.5).toFixed(2)}</span>
-          </div>
-        )}
-        {result.breakdown?.overtimeAt200Hours > 0 && (
-          <div className="flex justify-between text-sm">
-            <span>Overtime at 2x ({result.breakdown.overtimeAt200Hours.toFixed(2)} hrs)</span>
-            <span>${(result.breakdown.overtimeAt200Hours * result.baseRate * 2).toFixed(2)}</span>
-          </div>
-        )}
-        <div className="border-t pt-2 flex justify-between font-bold text-base">
-          <span>Total award pay</span>
-          <span>${result.awardPayTotal?.toFixed(2) || "0.00"}</span>
-        </div>
-      </div>
-
-      {result.reasons && result.reasons.length > 0 && (
-        <div className="space-y-2">
-          <p className="font-semibold">Why this difference?</p>
-          <ul className="space-y-1 list-disc list-inside">
-            {result.reasons.map((r: string, idx: number) => (
-              <li key={idx} className="text-sm text-muted-foreground">{r}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {allAwardAllowances.length > 0 && (
-        <Collapsible open={open} onOpenChange={setOpen}>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 w-full justify-start p-0 h-auto font-normal hover:bg-transparent">
-              <ChevronDown className={cn("h-4 w-4 transition-transform", open && "transform rotate-180")} />
-              <span className="text-sm font-medium">Other allowances under your award</span>
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-3">
-            <div className="rounded-lg border border-border bg-muted/30 p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {allAwardAllowances.map((al, idx) => (
-                  <div key={idx} className="text-sm">
-                    <span className="font-medium">{al.name}</span>
-                    <p className="text-xs text-muted-foreground">{al.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
-
-      <Alert className="border-muted-foreground/30 bg-muted/50">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription className="text-xs leading-relaxed">
-          <strong>Disclaimer:</strong> These calculations are based on Fair Work modern award pay data and your answers. They are general guidance only and are not legal or financial advice.
-        </AlertDescription>
-      </Alert>
-    </div>
   );
 }

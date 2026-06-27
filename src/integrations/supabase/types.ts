@@ -146,6 +146,42 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          created_at: string
+          id: string
+          inputs: Json
+          owed_amount: number
+          payment_status: string
+          product: string
+          result: Json
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inputs: Json
+          owed_amount?: number
+          payment_status?: string
+          product: string
+          result: Json
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          owed_amount?: number
+          payment_status?: string
+          product?: string
+          result?: Json
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
