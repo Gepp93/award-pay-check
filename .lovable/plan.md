@@ -1,85 +1,106 @@
-# Plan — $30 Back-Pay Pack as a 5-use credit bundle
+## Goal
 
-Scope guard: do NOT touch the calculation engine, Step 1/2, or `FullReport`. No back-pay aggregation. Each unlock = its own report + its own PDF. Reuse the existing Stripe webhook and `/report/:id` flow.
+Stop comparing a single shift's award pay against a whole pay period's `actualPaid`. Switch the underpayment math to an **effective hourly rate** comparison so the unsure-mode B&C case (actualPaid $2,250, effective ~$21/hr) actually surfaces an underpayment against the $25–$32/hr CW classifications.
 
----
+No changes to FWC API calls, rate fetching, classification fetching, allowance detection, or the response shape consumed by the UI.
 
-## 1. DB — `user_credits` (migration)
+## Files to change
 
-```sql
-create table public.user_credits (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  credits int not null default 0,
-  updated_at timestamptz not null default now()
-);
+- `supabase/functions/calculate-shift-pay/index.ts` only.
 
-grant select on public.user_credits to authenticated;
-grant all on public.user_credits to service_role;
+Two paths share the same bug and both need the same new math:
 
-alter table public.user_credits enable row level security;
+- `calculateSingleClassification(...)` (~lines 860–1010) — used by the unsure-mode loop, returns `{ awardPayTotal, possibleUnderpayment, ... }` per classification.
+- The single-classification path at the bottom of `serve` (~lines 1336–1530) — returns `{ awardPayTotal, underpayment, ... }`.
 
-create policy "Users read own credits"
-  on public.user_credits for select to authenticated
-  using (user_id = auth.uid());
--- no INSERT/UPDATE/DELETE policies → only service_role (webhook + redeem-credit) writes.
+## New shared helper (inline, top of file)
+
+```text
+computePeriodComparison({
+  baseRate,                        // $/hr from FWC
+  employmentType,                  // for casual loading
+  startTime, finishTime, breakMinutes,  // single shift (fallback only)
+  workedWeekend, workedPublicHoliday,
+  advancedPayslip,                 // { payslipBaseRate, hoursAtBase, hoursAt150, hoursAt200 } | undefined
+  actualPaid,
+})
+  -> { totalHoursPaid, effectiveHourlyPaid, requiredAvgRate, expectedPay, basePay, overtimePay, weekendPay, publicHolidayPay }
 ```
 
-## 2. Stripe webhook — branch by product
+Logic:
 
-Edit existing `supabase/functions/stripe-webhook/index.ts`. On `checkout.session.completed`:
+1. **totalHoursPaid**
+   - If `advancedPayslip` has any of `hoursAtBase|hoursAt150|hoursAt200` > 0:
+     `totalHoursPaid = hoursAtBase + hoursAt150 + hoursAt200`
+   - Else fall back to single-shift hours derived from `startTime/finishTime − breakMinutes` (the existing calculation).
 
-- Determine product from `session.amount_total` (1000 → `full_report`, 3000 → `backpay_pack`) or `session.metadata.product` if present. Prefer metadata when set; fall back to amount.
-- `client_reference_id` = report id (unchanged for both flows).
-- `full_report` ($10): existing behaviour — `update reports set payment_status='paid', stripe_session_id=session.id where id = client_reference_id`.
-- `backpay_pack` ($30):
-  1. Same paid-update on that report (the report they were viewing when they bought).
-  2. Resolve `user_id` from that report row.
-  3. Upsert into `user_credits`: `insert ... (user_id, 5) on conflict (user_id) do update set credits = user_credits.credits + 5, updated_at = now()`.
-- Idempotency: skip if `reports.stripe_session_id` already equals this `session.id` (avoid double-crediting on Stripe webhook retries).
+2. **effectiveHourlyPaid** = `actualPaid / totalHoursPaid` (guard divide-by-zero → 0).
 
-## 3. New edge function — `redeem-credit` (verify_jwt = true)
+3. **requiredAvgRate** — two branches:
+   - **With advancedPayslip** (period mode): weight by the payslip's own split.
+     `expectedBeforeExtras = baseRate*hoursAtBase + baseRate*1.5*hoursAt150 + baseRate*2*hoursAt200`
+     Apply casual 25% loading to the base portion only when `employmentType === 'Casual'`.
+     `requiredAvgRate = expectedBeforeExtras / totalHoursPaid` (used for the comparison + display).
+   - **Without advancedPayslip** (single-shift fallback): re-use the existing single-shift formula (ordinary up to 7.6h / casual 8h, OT first 2h @1.5x then 2x, casual loading on base) to produce `expectedBeforeExtras`, with `totalHoursPaid === shiftTotalHours`.
 
-`supabase/functions/redeem-credit/index.ts`, plus `[functions.redeem-credit] verify_jwt = true` in `supabase/config.toml`.
+4. **Period-level adders applied on top of expectedBeforeExtras**, scaled to `totalHoursPaid` (not to the single shift):
+   - `weekendPay = workedWeekend ? totalHoursPaid * baseRate * 0.5 : 0`
+   - `publicHolidayPay = workedPublicHoliday ? totalHoursPaid * baseRate * 1.5 : 0`
 
-Body: `{ reportId: string }`. Flow:
-1. CORS + origin guard (reuse `_shared/guard.ts`).
-2. `getClaims()` → `userId`.
-3. Service-role client:
-   - Load report; must exist, `user_id === userId`, `payment_status === 'free'`.
-   - Load `user_credits.credits` for user; must be `> 0`.
-   - Single transactional-ish pair: `update user_credits set credits = credits - 1 where user_id = $1 and credits > 0 returning credits`; if no row returned → 402 "no credits". Then `update reports set payment_status='paid' where id = $1 and payment_status='free'`.
-4. Return `{ ok: true, remainingCredits }`.
+   These match the existing behaviour for the flags, but use period hours instead of one shift's hours. Keep them as separate breakdown lines.
 
-## 4. Client — credit-aware unlock
+5. **expectedPay** = `expectedBeforeExtras + weekendPay + publicHolidayPay + perPeriodAllowances`
+   where `perPeriodAllowances` is the existing `droveOwnCar` ($20) and `workedOver10Hours` ($15) additions, unchanged.
 
-New hook `src/hooks/useUserCredits.ts`: reads `user_credits.credits` for current user; exposes `{ credits, refetch }`. Re-fetches on auth change.
+6. **underpayment** = `max(0, expectedPay − actualPaid)`.
 
-Update unlock UI in two places (Step 3 `NewCheck_Step3_Result.tsx` + `Report.tsx`):
+## Wiring into `calculateSingleClassification`
 
-- Show "You have **N** report credits left" line above CTAs whenever `credits > 0`.
-- `handleUnlock('full_report')` behaviour:
-  - If `credits > 0`: call `supabase.functions.invoke('redeem-credit', { body: { reportId } })`. On success → navigate / refetch so the unlocked `FullReport` renders. On failure → toast + fall through to Stripe.
-  - Else: open `FULL_REPORT_LINK` (existing $10 Stripe link) with `client_reference_id=reportId`.
-- `handleUnlock('backpay_pack')`: always opens `BACKPAY_LINK` ($30 Stripe link) with `client_reference_id=reportId`. Buying the pack also unlocks the current report (handled by webhook) and grants 5 credits for future reports.
-- On Step 3 specifically: report row may not exist yet at click time. Keep the current "insert report row → navigate to `/report/:id`" path; for credit redemption, do the insert first, then call `redeem-credit` with the new id, then navigate.
+Replace the block at ~lines 927–981 (`Calculate hours worked` through `const possibleUnderpayment = ...`) with a call to `computePeriodComparison(...)`.
 
-Button copy:
-- Primary: if `credits > 0` → "Unlock with 1 credit (N left)"; else → "Unlock full report — $10".
-- Secondary: "Back-Pay Pack — 5 reports for $30 (save $20)".
+Return shape stays the same to avoid breaking `NewCheck_Step3_Result.tsx`, `LockedTeaser`, `FullReport`, the saved `calculations.breakdown` rows, and the unsure-mode aggregation:
 
-Remove the TEMP "Simulate payment (dev)" button from `Report.tsx` (real Stripe path + credit redemption replaces it).
+```text
+{
+  baseRate,
+  awardPayTotal: expectedPay,        // now period-scaled
+  possibleUnderpayment: underpayment, // now from effective-hourly logic
+  matchScore,
+  potentialAllowances,
+  breakdown: {
+    totalHoursPaid,                  // NEW
+    effectiveHourlyPaid,             // NEW
+    requiredAvgRate,                 // NEW
+    basePay, overtimeAt150Hours, overtimeAt200Hours, overtimePay,
+    weekendPay, publicHolidayPay, allowances,
+  },
+}
+```
 
-## 5. Secrets / config
+Unsure-mode aggregator (~lines 1158–1160) keeps using `r.possibleUnderpayment` to compute `overallMin/MaxUnderpayment`, so no change there.
 
-- `BACKPAY_LINK` (Stripe Payment Link, $30, `client_reference_id` collected) — request via `add_secret` and expose via `VITE_BACKPAY_LINK` mirror like the existing $10 link.
-- Confirm Stripe Price/amount metadata so the webhook's amount-based branch is correct; if user uses metadata on the Payment Link, prefer `session.metadata.product`.
+## Wiring into the single-classification path
 
-## 6. Files
+Same swap around ~lines 1440–1455: derive `expectedPay`/`underpayment` from the helper, keep the existing `reasons`/`warnings` array, just feed it the new numbers. Response stays `{ awardPayTotal, underpayment, breakdown, ... }`.
 
-- Add: migration, `supabase/functions/redeem-credit/index.ts`, `src/hooks/useUserCredits.ts`.
-- Edit: `supabase/functions/stripe-webhook/index.ts`, `supabase/config.toml` (add redeem-credit block), `src/pages/NewCheck_Step3_Result.tsx`, `src/pages/Report.tsx`, `src/components/report/LockedTeaser.tsx` (optional "credits left" prop).
-- Untouched: calc engine, `FullReport.tsx`, Step 1/2, `/check`, marketing pages.
+## What does NOT change
 
-## 7. Out of scope
+- FWC fetch calls (`get pay-rates`, classifications, allowances).
+- Allowance detection (`detectPotentialAllowances`, `awardSpecificRules`, `fetchAwardAllowances`).
+- Response top-level field names and the `mode: 'unsure'` shape.
+- Frontend code (`NewCheck_Step3_Result.tsx`, `LockedTeaser`, `FullReport`, Step 2 invocation payload).
+- `actualPaid` calculation in Step 2 (already correctly period-level).
 
-- Credit expiry, gifting/transfer, admin top-ups, refund handling, multi-currency.
+## Validation after build mode
+
+1. Re-run the captured B&C unsure case via the deployed function with:
+   `awardCode=MA000020`, `classificationId=null`, `employmentType=Full-time`, `startTime=06:00`, `finishTime=18:00`, `breakMinutes=30`, `workedWeekend=true`, `workedPublicHoliday=true`, `actualPaid=2250`, plus `advancedPayslip={ payslipBaseRate: 21, hoursAtBase: ~38, hoursAt150: 0, hoursAt200: 0 }` (approximated from a 38h week at $21/hr if not pulled from the saved row).
+2. Capture and report:
+   - `overallMinUnderpayment`, `overallMaxUnderpayment`
+   - `expectedPay`, `requiredAvgRate`, `effectiveHourlyPaid` for the top 3 `likelyClassifications` (CW1a/b/c at $25.46–$26.31/hr — should now show ~$170–$200+ underpayment per week before the weekend/PH adders, more once those flags scale to the full period).
+3. Sanity-check the non-payslip path: a single classified shift with no `advancedPayslip` should produce the same numbers as before for that shift (fallback branch).
+
+## Notes / risks
+
+- The weekend and public-holiday adders now scale to the full period, which is more aggressive than the previous single-shift scaling. This is the intended behaviour given the user's input (they ticked the flag for the period), and is consistent with the user's instruction to keep period-level flags applied on top.
+- If `advancedPayslip` is present but all three hour buckets are 0 (only `payslipBaseRate` filled), we treat it as "no payslip hours" and fall back to single-shift hours so we never divide by zero.
