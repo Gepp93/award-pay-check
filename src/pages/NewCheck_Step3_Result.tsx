@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertCircle, CheckCircle, ChevronDown, Coins, Lock } from "lucide-react";
+import { FullReport } from "@/components/report/FullReport";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
@@ -159,76 +160,37 @@ export default function NewCheck_Step3_Result() {
               </div>
             )}
 
-            {/* LOCKED breakdown — only when underpaid */}
+            {/* TEMP: report shown unlocked for review — re-gate behind payment in Stripe step */}
+            <FullReport
+              result={result}
+              shiftDetails={shiftDetails}
+              advancedPayslip={advancedPayslip}
+            />
+
+            {/* TEMP: unlock CTAs kept visible while report is unlocked — re-enable paywall in Stripe step */}
             {isUnderpaid && (
-              <div className="relative">
-                <div
-                  aria-hidden
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  className="ap-btn ap-btn-gold flex-1"
+                  onClick={() => navigate("/auth")}
+                >
+                  Unlock full report — $10
+                </button>
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="flex-1"
                   style={{
-                    filter: "blur(6px)",
-                    pointerEvents: "none",
-                    userSelect: "none",
+                    padding: "10px 14px",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: 8,
+                    background: "transparent",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    color: "hsl(var(--foreground))",
                   }}
                 >
-                  <LockedBreakdown
-                    result={result}
-                    advancedPayslip={advancedPayslip}
-                    shiftDetails={shiftDetails}
-                    potentialAllowances={potentialAllowances}
-                    isUnsureMode={isUnsureMode}
-                  />
-                </div>
-                <div
-                  className="absolute inset-0 flex items-center justify-center p-4"
-                  style={{
-                    background:
-                      "linear-gradient(180deg, hsl(var(--background) / 0.4), hsl(var(--background) / 0.92))",
-                  }}
-                >
-                  <div
-                    className="w-full max-w-md rounded-2xl p-6 text-center"
-                    style={{
-                      background: "hsl(var(--card))",
-                      border: "2px solid hsl(var(--gold))",
-                      boxShadow: "0 20px 60px -20px hsl(var(--gold) / 0.35)",
-                    }}
-                  >
-                    <div
-                      className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3"
-                      style={{ background: "hsl(var(--gold) / 0.15)" }}
-                    >
-                      <Lock className="h-5 w-5" style={{ color: "hsl(var(--gold))" }} />
-                    </div>
-                    <h3 className="text-xl font-bold mb-1">Unlock your full report</h3>
-                    <p className="text-sm text-muted-foreground mb-5">
-                      See exactly what's missing and how to claim it.
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      <button
-                        className="ap-btn ap-btn-gold"
-                        onClick={() => navigate("/auth")}
-                        style={{ width: "100%" }}
-                      >
-                        Unlock full report — $10
-                      </button>
-                      <button
-                        onClick={() => navigate("/auth")}
-                        style={{
-                          width: "100%",
-                          padding: "10px 14px",
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: 8,
-                          background: "transparent",
-                          cursor: "pointer",
-                          fontWeight: 600,
-                          color: "hsl(var(--foreground))",
-                        }}
-                      >
-                        Check up to 5 payslips — $30
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  Check up to 5 payslips — $30
+                </button>
               </div>
             )}
 
