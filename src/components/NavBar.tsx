@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Calculator, ClipboardCheck, LogOut, Home, Menu, X, User } from "lucide-react";
+import { Calculator, ClipboardCheck, LogOut, FileText, Menu, X, User } from "lucide-react";
 import { toast } from "sonner";
 
 export const NavBar = () => {
@@ -38,11 +38,11 @@ export const NavBar = () => {
             <div className="hidden md:flex items-center gap-4">
               <Button
                 variant="ghost"
-                onClick={() => handleNavigation("/app-dashboard")}
+                onClick={() => handleNavigation("/reports")}
                 className="flex items-center gap-2"
               >
-                <Home className="h-4 w-4" />
-                Dashboard
+                <FileText className="h-4 w-4" />
+                My Reports
               </Button>
               <Button
                 variant="ghost"
@@ -92,11 +92,11 @@ export const NavBar = () => {
             <div className="flex flex-col p-4 gap-2">
               <Button
                 variant="ghost"
-                onClick={() => handleNavigation("/app-dashboard")}
+                onClick={() => handleNavigation("/reports")}
                 className="flex items-center gap-2 justify-start w-full"
               >
-                <Home className="h-4 w-4" />
-                Dashboard
+                <FileText className="h-4 w-4" />
+                My Reports
               </Button>
               <Button
                 variant="ghost"

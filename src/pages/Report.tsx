@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -27,12 +27,14 @@ interface ReportRow {
 export default function Report() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const params = new URLSearchParams(window.location.search);
   const { user, loading: authLoading } = useAuthUser();
   const [row, setRow] = useState<ReportRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const { credits, refetch: refetchCredits } = useUserCredits();
   const [redeeming, setRedeeming] = useState(false);
+  const autoLaunchedRef = useRef(false);
 
   const fetchReport = async () => {
     if (!id) return;
@@ -83,8 +85,23 @@ export default function Report() {
       toast.error("Couldn't redeem credit — sending you to checkout.");
     }
     const link = product === "full_report" ? FULL_REPORT_LINK : BACKPAY_LINK;
+    localStorage.setItem("pendingReportId", id);
     window.location.href = buildCheckoutUrl(link, id);
   };
+
+  // Auto-launch checkout if we arrived here straight after sign-up with a pending product.
+  useEffect(() => {
+    if (autoLaunchedRef.current) return;
+    if (!row || row.payment_status === "paid") return;
+    const pending = (window.history.state?.usr?.pendingProduct ||
+      params.get("auto")) as "full_report" | "backpay_pack" | null;
+    if (!pending) return;
+    // Don't auto-burn a credit on the $10 tier — let the user click.
+    if (pending === "full_report" && credits > 0) return;
+    autoLaunchedRef.current = true;
+    handleUnlock(pending);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [row, credits]);
 
   if (authLoading || loading) {
     return (

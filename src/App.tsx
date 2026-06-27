@@ -27,6 +27,8 @@ import Profile from "./pages/Profile";
 import ThankYou from "./pages/ThankYou";
 import CheckUpload from "./pages/CheckUpload";
 import Report from "./pages/Report";
+import MyReports from "./pages/MyReports";
+import PaymentComplete from "./pages/PaymentComplete";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +60,8 @@ const App = () => (
           <Route path="/new-check-step-2" element={<NewCheck_Step2_ShiftDetails />} />
           <Route path="/new-check-step-3" element={<NewCheck_Step3_Result />} />
           <Route path="/report/:id" element={<Report />} />
+          <Route path="/reports" element={<MyReports />} />
+          <Route path="/payment-complete" element={<PaymentComplete />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/thank-you" element={<ThankYou />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
