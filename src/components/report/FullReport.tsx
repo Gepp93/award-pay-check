@@ -43,6 +43,43 @@ function getPeriod(shiftDetails: any): string | null {
   return null;
 }
 
+function getHeadline(result: any) {
+  const isUnsure = result?.mode === "unsure";
+  const min = isUnsure ? Number(result?.overallMinUnderpayment) || 0 : 0;
+  const max = isUnsure ? Number(result?.overallMaxUnderpayment) || 0 : 0;
+  const exact = isUnsure ? 0 : Number(result?.underpayment) || 0;
+  const showRange = isUnsure && min > 0 && min !== max;
+
+  if (isUnsure) {
+    if (showRange) {
+      return {
+        label: "Estimated range",
+        amount: `${fmt(min)} – ${fmt(max)}`,
+        caveat: "This is an estimate across the likely classification levels for your role. For an exact figure, select your classification.",
+      };
+    }
+    return {
+      label: "You may be owed up to",
+      amount: `~${fmt(max)}`,
+      caveat: "This is an estimate across the likely classification levels for your role. For an exact figure, select your classification.",
+    };
+  }
+
+  if (exact > 0) {
+    return {
+      label: "You may be owed",
+      amount: fmt(exact),
+      caveat: null,
+    };
+  }
+
+  return {
+    label: "Result",
+    amount: "Pay looks correct",
+    caveat: null,
+  };
+}
+
 function recoverySteps(result: any, owed: number) {
   const reasons: string[] = Array.isArray(result?.reasons) ? result.reasons : [];
   const allowances: any[] = Array.isArray(result?.potentialAllowances)
