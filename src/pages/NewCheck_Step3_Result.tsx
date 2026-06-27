@@ -80,17 +80,17 @@ export default function NewCheck_Step3_Result() {
   }, [shiftDetails, result, fromDashboard]);
 
   const isUnsureMode = result?.mode === "unsure";
-  const underpayment = result
-    ? isUnsureMode
-      ? result.overallMaxUnderpayment || 0
-      : result.underpayment || 0
-    : 0;
+  const minUnsure = isUnsureMode ? (result?.overallMinUnderpayment || 0) : 0;
+  const maxUnsure = isUnsureMode ? (result?.overallMaxUnderpayment || 0) : 0;
+  const underpayment = isUnsureMode ? maxUnsure : (result?.underpayment || 0);
   const isUnderpaid = underpayment > 0;
   const potentialAllowances: PotentialAllowance[] = result?.potentialAllowances || [];
   const issueCount =
     (Array.isArray(result?.reasons) ? result.reasons.length : 0) +
     (potentialAllowances?.length || 0);
+  const showRange = isUnsureMode && minUnsure > 0 && minUnsure !== maxUnsure;
   const owedAnimated = useCountUp(isUnderpaid ? underpayment : 0);
+
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -120,7 +120,11 @@ export default function NewCheck_Step3_Result() {
                 }}
               >
                 <div className="text-sm font-semibold uppercase tracking-wider text-primary mb-2">
-                  You may be owed
+                  {showRange
+                    ? "Estimated range"
+                    : isUnsureMode
+                    ? "You may be owed up to"
+                    : "You may be owed"}
                 </div>
                 <div
                   className="font-extrabold tabular-nums"
@@ -131,13 +135,35 @@ export default function NewCheck_Step3_Result() {
                     letterSpacing: "-0.02em",
                   }}
                 >
-                  ${owedAnimated.toLocaleString("en-AU", { maximumFractionDigits: 2, minimumFractionDigits: 2 })}
+                  {showRange
+                    ? `${minUnsure.toLocaleString("en-AU", {
+                        maximumFractionDigits: 2,
+                        minimumFractionDigits: 2,
+                        style: "currency",
+                        currency: "AUD",
+                      })} – ${maxUnsure.toLocaleString("en-AU", {
+                        maximumFractionDigits: 2,
+                        minimumFractionDigits: 2,
+                        style: "currency",
+                        currency: "AUD",
+                      })}`
+                    : `${isUnsureMode ? "~" : ""}$${owedAnimated.toLocaleString(
+                        "en-AU",
+                        { maximumFractionDigits: 2, minimumFractionDigits: 2 }
+                      )}`}
                 </div>
-                <div className="mt-4 text-base text-muted-foreground">
-                  We found{" "}
-                  <strong className="text-foreground">{issueCount || 1}</strong>{" "}
-                  issue{(issueCount || 1) === 1 ? "" : "s"} with your pay.
-                </div>
+                {isUnsureMode ? (
+                  <div className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
+                    This is an estimate across the likely classification levels for your
+                    role. For an exact figure, go back and select your classification.
+                  </div>
+                ) : (
+                  <div className="mt-4 text-base text-muted-foreground">
+                    We found{" "}
+                    <strong className="text-foreground">{issueCount || 1}</strong>{" "}
+                    issue{(issueCount || 1) === 1 ? "" : "s"} with your pay.
+                  </div>
+                )}
               </div>
             ) : (
               <div
@@ -159,6 +185,7 @@ export default function NewCheck_Step3_Result() {
                 </p>
               </div>
             )}
+
 
             {/* TEMP: report shown unlocked for review — re-gate behind payment in Stripe step */}
             <FullReport

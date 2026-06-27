@@ -1,73 +1,84 @@
-# Build the Full Report (unlocked for review)
+Plan: make classification optional in Step 2 so the engine's unsure mode actually triggers, and surface the estimate honestly on Step 3 and in the Full Report.
 
-Goal: surface the paid "Full Report" so we can see it end-to-end. Render it UNLOCKED on Step 3 directly below the existing free headline. Re-gating behind Stripe is the next task and is out of scope here.
+Out of scope: calculation engine, routing, other pages, payment gating.
 
-No changes to the calculation engine, routing, or other pages.
+## 1. Step 2 — `src/pages/NewCheck_Step2_ShiftDetails.tsx`
 
----
+Edit only inside `handleCheckPay`.
 
-## 1. New component — `src/components/report/FullReport.tsx`
+### 1.1 Relax validation
+Replace the current check:
 
-Reusable, presentational. Props:
-
-```ts
-type Props = {
-  result: any;            // engine result already in Step 3 state
-  shiftDetails: any;      // already in Step 3 state
-  advancedPayslip?: any;  // already in Step 3 state (optional)
+```tsx
+if (!awardCode || !classificationId) {
+  toast({ title: "Award not selected", description: "Go back to Step 1 and choose your award and classification.", variant: "destructive" });
+  return;
 }
 ```
 
-Owed amount logic (matches existing Step 3):
-- `isUnsure = result.mode === 'unsure'`
-- `owed = isUnsure ? (result.overallMaxUnderpayment ?? 0) : (result.underpayment ?? 0)`
+with:
 
-Sections (rendered defensively — only show fields that exist):
+```tsx
+if (!awardCode) {
+  toast({ title: "Award needed", description: "Go back to Step 1 and choose your award.", variant: "destructive" });
+  return;
+}
+```
 
-1. **Header** — AwardPay wordmark, "Pay Check Report", today's date (`en-AU`), pay period if derivable from `shiftDetails.shifts` (first → last date) or `shiftDetails.date`.
-2. **Headline** —
-   - If `owed > 0`: large gold "You may be owed $X" + 1-line summary of issue count.
-   - Else: neutral "Your pay looks correct for this period" panel.
-3. **Your details** — award name, classification, employment type, base hourly rate, total hours, hours at base / 1.5x / 2x (from `advancedPayslip` when present, else from `result.breakdown`), total actually paid.
-4. **What's missing** — itemised breakdown reusing the SAME fields Step 3 currently renders behind the blur:
-   - Expected award pay table: regularHours×baseRate, overtimeAt150Hours×1.5, overtimeAt200Hours×2, `awardPayTotal`.
-   - Vs actually paid (`shiftDetails.actualPaid` / advancedPayslip totals).
-   - `result.reasons[]` as a bullet list of missing penalties/loadings.
-   - `result.potentialAllowances[]` with name, amount string, estimated value, reason.
-5. **How to recover it** — static templated 4-step list, personalised by interpolating `$owed` and the names/amounts from `reasons` + `potentialAllowances`. Ends with the line: *"AwardPay provides general information, not legal advice."*
-6. **Footer** — small print, generated date, awardpay.com.au.
+Keep the existing shift and payslip-figures checks unchanged.
 
-Styling: existing semantic tokens (`--primary` green, `--gold`, `--card`, `--border`, `--muted`). Plus Jakarta Sans is already the body font; figures use `font-mono tabular-nums` (IBM Plex Mono is not currently loaded — using the existing mono stack avoids a new font load and keeps the report crisp). No hardcoded colors.
+### 1.2 Send `null` for missing classification
+In the `calculate-shift-pay` invoke body, change:
 
-## 2. Client-side PDF — "Download report (PDF)" button
+```tsx
+classificationId,
+```
 
-- Install `jspdf` (and `jspdf-autotable` for the breakdown tables — keeps it crisp and avoids manual column math).
-- Button lives inside `FullReport.tsx` top-right of the header.
-- `buildPdf(result, shiftDetails, advancedPayslip)` writes the SAME sections as the on-screen report using text + autoTable — not a canvas screenshot.
-- Filename: `awardpay-report-YYYY-MM-DD.pdf`.
-- The existing `generate-pdf-report` edge function is left untouched but unused by this flow (noted in a code comment).
+to:
 
-## 3. Step 3 wiring — `src/pages/NewCheck_Step3_Result.tsx`
+```tsx
+classificationId: classificationId || null,
+```
 
-- Import `FullReport`.
-- Keep the existing free headline block exactly as-is at the top.
-- Remove the blur wrapper + paywall overlay around `LockedBreakdown`. Replace with:
-  ```tsx
-  {/* TEMP: report shown unlocked for review — re-gate behind payment in Stripe step */}
-  <FullReport result={result} shiftDetails={shiftDetails} advancedPayslip={advancedPayslip} />
-  ```
-- `LockedBreakdown` is no longer rendered. Leave the function defined (dead code) so the re-gating step can restore it quickly, with a `// TEMP` comment above it.
-- The two CTA buttons ($10 unlock / $30 5-payslip) stay where they are below the report.
-- "Check another payslip" outline button stays.
+Keep `workArea` and all other fields exactly as they are now. This lets the engine's existing unsure-mode path (which requires `classificationId === null`) run for users who skipped classification.
+
+## 2. Step 3 — `src/pages/NewCheck_Step3_Result.tsx`
+
+### 2.1 Unsure headline
+When `result.mode === 'unsure'` and `overallMaxUnderpayment > 0`:
+
+- If `overallMinUnderpayment` exists and differs from `overallMaxUnderpayment`, show a range:  
+  **"You may be owed $[min]–$[max]"**
+- Otherwise show:  
+  **"You may be owed up to ~$[max]"**
+
+When `result.mode !== 'unsure'`, keep the existing single exact figure unchanged.
+
+### 2.2 Caveat line
+Beneath the unsure headline, add a small line:
+
+> "This is an estimate across the likely classification levels for your role. For an exact figure, go back and select your classification."
+
+Keep the rest of the Step 3 layout unchanged (free headline block, FullReport unlocked, CTA buttons, "Check another payslip").
+
+## 3. Full Report — `src/components/report/FullReport.tsx`
+
+### 3.1 Shared helper
+Introduce a helper that computes the display headline and subtitle from `result`:
+
+- `mode === 'unsure'`: return range or "up to ~" wording.
+- Otherwise: return the exact owed figure.
+
+Use this helper in both the on-screen headline section and inside `buildPdf()` so the PDF matches.
+
+### 3.2 Caveat line
+Add the same caveat line under the headline in the on-screen report when `mode === 'unsure'`. The PDF can keep a shorter note or the same line.
 
 ## Files touched
-- ADD `src/components/report/FullReport.tsx`
-- EDIT `src/pages/NewCheck_Step3_Result.tsx` (remove blur/overlay, render `<FullReport />`, add TEMP comments)
-- EDIT `package.json` (add `jspdf`, `jspdf-autotable`)
+- `src/pages/NewCheck_Step2_ShiftDetails.tsx` (validation + payload)
+- `src/pages/NewCheck_Step3_Result.tsx` (unsure headline + caveat)
+- `src/components/report/FullReport.tsx` (unsure headline + caveat, PDF parity)
 
 ## Out of scope
-- Payment gating (next task).
-- Engine, routing, edge functions, other pages.
-- Replacing or deleting `generate-pdf-report` edge function.
-
-Approve and I'll build it.
+- Calculation engine (`calculate-shift-pay` edge function)
+- Routing, other pages, payment gating, Stripe flows
