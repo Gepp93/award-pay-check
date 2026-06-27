@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { FullReport } from "@/components/report/FullReport";
 import { LockedTeaser } from "@/components/report/LockedTeaser";
 import { NavBar } from "@/components/NavBar";
+import { useUserCredits } from "@/hooks/useUserCredits";
+import { FULL_REPORT_LINK, BACKPAY_LINK, buildCheckoutUrl } from "@/lib/paymentLinks";
 
 interface ReportRow {
   id: string;
@@ -29,6 +31,8 @@ export default function Report() {
   const [row, setRow] = useState<ReportRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const { credits, refetch: refetchCredits } = useUserCredits();
+  const [redeeming, setRedeeming] = useState(false);
 
   const fetchReport = async () => {
     if (!id) return;
@@ -60,26 +64,26 @@ export default function Report() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user, id]);
 
-  // TEMP: remove when Stripe is live
-  const simulatePayment = async () => {
+  const handleUnlock = async (product: "full_report" | "backpay_pack") => {
     if (!id) return;
-    const { error } = await (supabase as any)
-      .from("reports")
-      .update({ payment_status: "paid" })
-      .eq("id", id);
-    if (error) {
-      toast.error("Could not simulate payment");
-      console.error(error);
-      return;
+    // Use a credit if available (single-report tier only).
+    if (product === "full_report" && credits > 0) {
+      setRedeeming(true);
+      const { data, error } = await supabase.functions.invoke("redeem-credit", {
+        body: { reportId: id },
+      });
+      setRedeeming(false);
+      if (!error && (data as any)?.ok) {
+        toast.success("Unlocked with 1 credit");
+        await refetchCredits();
+        fetchReport();
+        return;
+      }
+      console.error("redeem-credit failed:", error, data);
+      toast.error("Couldn't redeem credit — sending you to checkout.");
     }
-    toast.success("Marked as paid (dev)");
-    fetchReport();
-  };
-
-  // Stub — real Stripe checkout wires here in the next step.
-  const handleStartCheckout = (product: "full_report" | "backpay_pack") => {
-    console.log("[stub] start checkout for", product, "report", id);
-    toast.info("Payments coming next — use the dev button below for now.");
+    const link = product === "full_report" ? FULL_REPORT_LINK : BACKPAY_LINK;
+    window.location.href = buildCheckoutUrl(link, id);
   };
 
   if (authLoading || loading) {
@@ -184,40 +188,42 @@ export default function Report() {
             ) : (
               <>
                 <LockedTeaser result={result} />
+                {credits > 0 && (
+                  <div className="text-sm text-center text-muted-foreground">
+                    You have <strong className="text-foreground">{credits}</strong> report
+                    credit{credits === 1 ? "" : "s"} left from your Back-Pay Pack.
+                  </div>
+                )}
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
                     className="ap-btn ap-btn-gold flex-1"
-                    onClick={() => handleStartCheckout("full_report")}
+                    onClick={() => handleUnlock("full_report")}
+                    disabled={redeeming}
                   >
-                    Unlock full report — $10
+                    {redeeming
+                      ? "Unlocking…"
+                      : credits > 0
+                      ? `Unlock with 1 credit (${credits} left)`
+                      : "Unlock full report — $10"}
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleStartCheckout("backpay_pack")}
+                    onClick={() => handleUnlock("backpay_pack")}
+                    disabled={redeeming}
                     className="flex-1"
                     style={{
                       padding: "10px 14px",
                       border: "1px solid hsl(var(--border))",
                       borderRadius: 8,
                       background: "transparent",
-                      cursor: "pointer",
+                      cursor: redeeming ? "not-allowed" : "pointer",
                       fontWeight: 600,
                       color: "hsl(var(--foreground))",
                     }}
                   >
-                    Check up to 5 payslips — $30
+                    Back-Pay Pack — 5 reports for $30 (save $20)
                   </button>
-                </div>
-
-                {/* TEMP: remove when Stripe is live */}
-                <div className="rounded-lg border border-dashed border-amber-500/60 bg-amber-50/40 dark:bg-amber-950/10 p-3 text-center">
-                  <div className="text-xs text-amber-700 dark:text-amber-400 mb-2 font-mono">
-                    DEV ONLY — simulates a successful Stripe payment
-                  </div>
-                  <Button variant="outline" size="sm" onClick={simulatePayment}>
-                    Simulate payment (dev)
-                  </Button>
                 </div>
               </>
             )}
