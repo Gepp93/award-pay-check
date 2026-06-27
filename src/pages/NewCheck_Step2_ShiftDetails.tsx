@@ -222,14 +222,15 @@ export default function NewCheck_Step2_ShiftDetails() {
         ? parseInt(breakMinutes)
         : (firstShift?.break_minutes ?? 0);
 
-    if (!awardCode || !classificationId) {
+    if (!awardCode) {
       toast({
-        title: "Award not selected",
-        description: "Go back to Step 1 and choose your award and classification.",
+        title: "Award needed",
+        description: "Go back to Step 1 and choose your award.",
         variant: "destructive",
       });
       return;
     }
+
 
     if (!effDate || !effStart || !effFinish) {
       toast({
@@ -280,8 +281,9 @@ export default function NewCheck_Step2_ShiftDetails() {
       const { data, error } = await supabase.functions.invoke("calculate-shift-pay", {
         body: {
           awardCode,
-          classificationId,
+          classificationId: classificationId || null,
           employmentType,
+
           workArea,
           date: effDate,
           startTime: effStart,
