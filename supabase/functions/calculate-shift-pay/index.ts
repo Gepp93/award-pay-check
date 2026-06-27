@@ -850,6 +850,7 @@ function detectPotentialAllowances(params: any): any[] {
 
 // Helper function to calculate pay for a single classification
 async function calculateSingleClassification(params: any) {
+  // see computePeriodComparison() below
   const {
     awardCode,
     classificationId,
@@ -924,61 +925,35 @@ async function calculateSingleClassification(params: any) {
     matchScore = Math.max(0, 100 - percentageDifference * 2);
   }
 
-  // Calculate hours worked
-  const [startHour, startMinute] = startTime.split(':').map(Number);
-  const [finishHour, finishMinute] = finishTime.split(':').map(Number);
-  const startMinutes = startHour * 60 + startMinute;
-  const finishMinutes = finishHour * 60 + finishMinute;
-  const totalMinutes = finishMinutes - startMinutes - breakMinutes;
-  const totalHours = totalMinutes / 60;
-
-  // Calculate base pay and overtime
-  const standardDayHours = employmentType === 'Casual' ? 8 : 7.6;
-  const regularHours = Math.min(totalHours, standardDayHours);
-  const overtimeHours = Math.max(0, totalHours - standardDayHours);
-  
-  let basePay = regularHours * baseRate;
-  let overtimePay = 0;
-  let overtimeAt150Hours = 0;
-  let overtimeAt200Hours = 0;
-  let weekendPay = 0;
-  let publicHolidayPay = 0;
-  let allowances = 0;
-
-  // Apply casual loading if applicable
-  if (employmentType === 'Casual') {
-    const casualLoading = basePay * 0.25;
-    basePay += casualLoading;
-  }
-
-  // Calculate overtime: first 2 hours at 1.5x, rest at 2x
-  if (overtimeHours > 0) {
-    overtimeAt150Hours = Math.min(overtimeHours, 2);
-    overtimeAt200Hours = Math.max(0, overtimeHours - 2);
-    overtimePay = (overtimeAt150Hours * baseRate * 0.5) + (overtimeAt200Hours * baseRate);
-  }
-
-  // Weekend penalty (50% extra)
-  if (workedWeekend) {
-    weekendPay = totalHours * baseRate * 0.5;
-  }
-
-  // Public holiday (double time and a half)
-  if (workedPublicHoliday) {
-    publicHolidayPay = totalHours * baseRate * 1.5;
-  }
-
-  // Allowances
-  if (droveOwnCar) {
-    allowances += 20;
-  }
-
-  if (workedOver10Hours) {
-    allowances += 15;
-  }
-
-  const awardPayTotal = basePay + overtimePay + weekendPay + publicHolidayPay + allowances;
-  const possibleUnderpayment = Math.max(0, awardPayTotal - actualPaid);
+  const comp = computePeriodComparison({
+    baseRate,
+    employmentType,
+    startTime,
+    finishTime,
+    breakMinutes,
+    workedWeekend,
+    workedPublicHoliday,
+    droveOwnCar,
+    workedOver10Hours,
+    advancedPayslip,
+    actualPaid,
+  });
+  const {
+    totalHoursPaid,
+    effectiveHourlyPaid,
+    requiredAvgRate,
+    basePay,
+    overtimePay,
+    overtimeAt150Hours,
+    overtimeAt200Hours,
+    weekendPay,
+    publicHolidayPay,
+    allowances,
+    expectedPay,
+    underpayment: possibleUnderpayment,
+    regularHours,
+  } = comp;
+  const awardPayTotal = expectedPay;
 
   // Detect potential allowances
   const potentialAllowances = detectPotentialAllowances({
@@ -987,7 +962,7 @@ async function calculateSingleClassification(params: any) {
     workedWeekend,
     workedPublicHoliday,
     allowanceConditions,
-    totalHours,
+    totalHours: totalHoursPaid,
     baseRate,
   });
 
@@ -998,6 +973,9 @@ async function calculateSingleClassification(params: any) {
     matchScore,
     potentialAllowances,
     breakdown: {
+      totalHoursPaid,
+      effectiveHourlyPaid,
+      requiredAvgRate,
       regularHours,
       basePay,
       overtimeAt150Hours,
