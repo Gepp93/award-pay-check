@@ -4,8 +4,8 @@
 //   - set metadata.product = 'full_report' OR 'backpay_pack' (or rely on amount: 1000 / 3000)
 // Both links should redirect back to `${origin}/report/<reportId>` after success.
 
-export const FULL_REPORT_LINK = "https://buy.stripe.com/REPLACE_ME_FULL_REPORT_10";
-export const BACKPAY_LINK = "https://buy.stripe.com/REPLACE_ME_BACKPAY_PACK_30";
+export const FULL_REPORT_LINK = "https://buy.stripe.com/5kQ00k2ss5J7623gsd6AM05";
+export const BACKPAY_LINK = "https://buy.stripe.com/aFa4gA4AA5J7bmn1xj6AM06";
 
 export function buildCheckoutUrl(link: string, reportId: string): string {
   const u = new URL(link);
