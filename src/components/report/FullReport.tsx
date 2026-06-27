@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Download, CheckCircle, AlertCircle } from "lucide-react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import { jsPDF } from "jspdf";
+import { toast } from "@/hooks/use-toast";
 
 type Props = {
   result: any;
@@ -102,14 +102,52 @@ function recoverySteps(result: any, owed: number) {
 function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   const owed = getOwed(result);
   const headline = getHeadline(result);
+  const isUnsure = result?.mode === "unsure";
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
   let y = 48;
+  const LEFT = 48;
+  const RIGHT = pageW - 48;
+  const ensureSpace = (needed = 16) => {
+    if (y + needed > 780) {
+      doc.addPage();
+      y = 48;
+    }
+  };
+  const line = (label: string, value?: string, opts?: { bold?: boolean }) => {
+    ensureSpace(14);
+    doc.setFont("helvetica", opts?.bold ? "bold" : "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text(label, LEFT, y);
+    if (value != null) doc.text(value, RIGHT, y, { align: "right" });
+    y += 14;
+  };
+  const para = (text: string, size = 10, color: number = 0) => {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(size);
+    doc.setTextColor(color);
+    const lines = doc.splitTextToSize(text, pageW - 96);
+    ensureSpace(lines.length * (size + 2));
+    doc.text(lines, LEFT, y);
+    y += lines.length * (size + 2);
+    doc.setTextColor(0);
+  };
+  const heading = (text: string) => {
+    ensureSpace(22);
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(20, 83, 45);
+    doc.text(text, LEFT, y);
+    doc.setTextColor(0);
+    y += 14;
+  };
 
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.setTextColor(20, 83, 45); // green-ish
+  doc.setTextColor(20, 83, 45);
   doc.text("AwardPay", 48, y);
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(12);
@@ -117,9 +155,9 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   doc.text("Pay Check Report", 48, y + 18);
   doc.setFontSize(10);
   doc.setTextColor(110);
-  doc.text(`Generated ${todayAU()}`, pageW - 48, y, { align: "right" });
+  doc.text(`Generated ${todayAU()}`, RIGHT, y, { align: "right" });
   const period = getPeriod(shiftDetails);
-  if (period) doc.text(`Period: ${period}`, pageW - 48, y + 14, { align: "right" });
+  if (period) doc.text(`Period: ${period}`, RIGHT, y + 14, { align: "right" });
   doc.setTextColor(0);
   y += 50;
 
@@ -127,7 +165,8 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   doc.setFontSize(11);
   doc.setTextColor(110);
   doc.text(headline.label, 48, y);
-  doc.setTextColor(owed > 0 ? 184 : 20, owed > 0 ? 134 : 83, owed > 0 ? 11 : 45);
+  if (owed > 0) doc.setTextColor(184, 134, 11);
+  else doc.setTextColor(20, 83, 45);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(28);
   doc.text(headline.amount, 48, y + 28);
@@ -135,86 +174,49 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   doc.setFont("helvetica", "normal");
   y += 46;
   if (headline.caveat) {
-    doc.setFontSize(10);
-    doc.setTextColor(110);
-    const caveatLines = doc.splitTextToSize(headline.caveat, pageW - 96);
-    doc.text(caveatLines, 48, y);
-    y += caveatLines.length * 12 + 8;
-    doc.setTextColor(0);
+    para(headline.caveat, 10, 110);
+    y += 4;
   } else {
     y += 10;
   }
 
   // Your details
   const jobInfo = shiftDetails?.jobInfo || {};
-  const details: [string, string][] = [
-    ["Award", result?.awardName || jobInfo.award_name || jobInfo.selected_award_code || "—"],
-    ["Classification", result?.classification || jobInfo.classification || "—"],
-    ["Employment", shiftDetails?.employmentType || "—"],
-    ["Base rate", result?.baseRate ? `${fmt(result.baseRate)}/hr` : "—"],
-    ["Total paid", shiftDetails?.actualPaid ? fmt(parseFloat(shiftDetails.actualPaid)) : "—"],
-  ];
-  autoTable(doc, {
-    startY: y,
-    head: [["Your details", ""]],
-    body: details,
-    theme: "grid",
-    headStyles: { fillColor: [20, 83, 45] },
-    styles: { fontSize: 10 },
-    margin: { left: 48, right: 48 },
-  });
-  y = (doc as any).lastAutoTable.finalY + 20;
+  heading("Your details");
+  line("Award", String(result?.awardName || jobInfo.award_name || jobInfo.selected_award_code || "—"));
+  line("Classification", String(result?.classification || jobInfo.classification || "—"));
+  line("Employment", String(shiftDetails?.employmentType || "—"));
+  line("Base rate", result?.baseRate ? `${fmt(result.baseRate)}/hr` : "—");
+  if (advancedPayslip?.hoursAtBase != null) line("Hours at base", `${advancedPayslip.hoursAtBase}`);
+  if (advancedPayslip?.hoursAt150 != null) line("Hours at 1.5x", `${advancedPayslip.hoursAt150}`);
+  if (advancedPayslip?.hoursAt200 != null) line("Hours at 2x", `${advancedPayslip.hoursAt200}`);
+  line("Total paid", shiftDetails?.actualPaid ? fmt(parseFloat(shiftDetails.actualPaid)) : "—");
 
   // What's missing — expected vs paid
   const bd = result?.breakdown || {};
   const rate = Number(result?.baseRate) || 0;
-  const expRows: any[] = [];
+  heading("What's missing");
   if (bd.regularHours)
-    expRows.push([
-      `Regular hours (${Number(bd.regularHours).toFixed(2)} × ${fmt(rate)})`,
-      fmt(Number(bd.basePay) || 0),
-    ]);
+    line(`Regular hours (${Number(bd.regularHours).toFixed(2)} × ${fmt(rate)})`, fmt(Number(bd.basePay) || 0));
   if (bd.overtimeAt150Hours)
-    expRows.push([
-      `Overtime 1.5x (${Number(bd.overtimeAt150Hours).toFixed(2)} hrs)`,
-      fmt(Number(bd.overtimeAt150Hours) * rate * 1.5),
-    ]);
+    line(`Overtime 1.5x (${Number(bd.overtimeAt150Hours).toFixed(2)} hrs)`, fmt(Number(bd.overtimeAt150Hours) * rate * 1.5));
   if (bd.overtimeAt200Hours)
-    expRows.push([
-      `Overtime 2x (${Number(bd.overtimeAt200Hours).toFixed(2)} hrs)`,
-      fmt(Number(bd.overtimeAt200Hours) * rate * 2),
-    ]);
-  expRows.push(["Award pay total", fmt(Number(result?.awardPayTotal) || 0)]);
-  expRows.push([
-    "Actually paid",
-    shiftDetails?.actualPaid ? fmt(parseFloat(shiftDetails.actualPaid)) : "—",
-  ]);
-  autoTable(doc, {
-    startY: y,
-    head: [["What's missing", "Amount"]],
-    body: expRows,
-    theme: "striped",
-    headStyles: { fillColor: [20, 83, 45] },
-    styles: { fontSize: 10 },
-    margin: { left: 48, right: 48 },
-  });
-  y = (doc as any).lastAutoTable.finalY + 16;
+    line(`Overtime 2x (${Number(bd.overtimeAt200Hours).toFixed(2)} hrs)`, fmt(Number(bd.overtimeAt200Hours) * rate * 2));
+  if (isUnsure) {
+    const min = Number(result?.overallMinUnderpayment) || 0;
+    const max = Number(result?.overallMaxUnderpayment) || 0;
+    line("Award pay estimate (range)", min && min !== max ? `${fmt(min)} – ${fmt(max)}` : `~${fmt(max)}`, { bold: true });
+  } else {
+    line("Award pay total", fmt(Number(result?.awardPayTotal) || 0), { bold: true });
+  }
+  line("Actually paid", shiftDetails?.actualPaid ? fmt(parseFloat(shiftDetails.actualPaid)) : "—");
+  if (owed > 0) line("Shortfall", `${isUnsure ? "up to ~" : ""}${fmt(owed)}`, { bold: true });
 
   // Reasons
   const reasons: string[] = Array.isArray(result?.reasons) ? result.reasons : [];
   if (reasons.length) {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("Why the difference", 48, y);
-    y += 14;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    reasons.forEach((r) => {
-      const lines = doc.splitTextToSize(`• ${r}`, pageW - 96);
-      doc.text(lines, 48, y);
-      y += lines.length * 12;
-    });
-    y += 8;
+    heading("Why the difference");
+    reasons.forEach((r) => para(`• ${r}`));
   }
 
   // Allowances
@@ -222,47 +224,27 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
     ? result.potentialAllowances
     : [];
   if (allowances.length) {
-    autoTable(doc, {
-      startY: y,
-      head: [["Potential allowance", "Amount", "Est. value"]],
-      body: allowances.map((a) => [
-        a.name,
-        a.amount,
-        a.estimatedValue ? fmt(Number(a.estimatedValue)) : "—",
-      ]),
-      theme: "grid",
-      headStyles: { fillColor: [184, 134, 11] },
-      styles: { fontSize: 10 },
-      margin: { left: 48, right: 48 },
+    heading("Potential allowances");
+    allowances.forEach((a) => {
+      const est = a.estimatedValue ? fmt(Number(a.estimatedValue)) : "—";
+      line(`${a.name} — ${a.amount}`, est, { bold: true });
+      if (a.reason) para(`Why: ${a.reason}`, 9, 110);
+      y += 2;
     });
-    y = (doc as any).lastAutoTable.finalY + 16;
   }
 
   // Recovery
-  if (y > 720) {
-    doc.addPage();
-    y = 48;
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("How to recover it", 48, y);
-  y += 16;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  heading("How to recover it");
   recoverySteps(result, owed).forEach((step, i) => {
-    const lines = doc.splitTextToSize(`${i + 1}. ${step}`, pageW - 96);
-    doc.text(lines, 48, y);
-    y += lines.length * 12 + 4;
+    para(`${i + 1}. ${step}`);
+    y += 2;
   });
   y += 8;
+  ensureSpace(28);
   doc.setTextColor(110);
   doc.setFontSize(9);
-  doc.text(
-    "AwardPay provides general information, not legal advice.",
-    48,
-    y,
-  );
-  doc.text(`awardpay.com.au · Generated ${todayAU()}`, 48, y + 14);
+  doc.text("AwardPay provides general information, not legal advice.", LEFT, y);
+  doc.text(`awardpay.com.au · Generated ${todayAU()}`, LEFT, y + 14);
 
   doc.save(`awardpay-report-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
@@ -299,7 +281,18 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
           </div>
         </div>
         <Button
-          onClick={() => buildPdf(result, shiftDetails, advancedPayslip)}
+          type="button"
+          onClick={() => {
+            try {
+              buildPdf(result, shiftDetails, advancedPayslip);
+            } catch (err) {
+              console.error("PDF generation failed", err);
+              toast({
+                title: "Couldn't generate the PDF — please try again.",
+                variant: "destructive",
+              });
+            }
+          }}
           className="gap-2"
         >
           <Download className="h-4 w-4" />

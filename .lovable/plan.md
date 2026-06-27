@@ -1,84 +1,37 @@
-Plan: make classification optional in Step 2 so the engine's unsure mode actually triggers, and surface the estimate honestly on Step 3 and in the Full Report.
+## Fix: PDF download on Step 3 / FullReport
 
-Out of scope: calculation engine, routing, other pages, payment gating.
+**Root cause (most likely):** `import jsPDF from "jspdf"` is a default import, but jsPDF v4 only ships the **named** export. `new jsPDF()` throws silently inside the click handler, so nothing downloads. The `jspdf-autotable` plugin is a second fragile dependency that often fails to attach to the jsPDF instance.
 
-## 1. Step 2 — `src/pages/NewCheck_Step2_ShiftDetails.tsx`
+### Changes (single file: `src/components/report/FullReport.tsx`)
 
-Edit only inside `handleCheckPay`.
+1. **Imports**
+   - Replace `import jsPDF from "jspdf"` with `import { jsPDF } from "jspdf"`.
+   - Remove `import autoTable from "jspdf-autotable"` entirely.
+   - Add `import { toast } from "@/hooks/use-toast"`.
 
-### 1.1 Relax validation
-Replace the current check:
+2. **Rewrite `buildPdf`** using only plain jsPDF text primitives — no autoTable, no plugins.
+   - Track a `y` cursor starting at ~48pt, increment per line, page-break when `y > 780` via `doc.addPage(); y = 48;`.
+   - Sections, reusing the same data the on-screen report shows (no engine changes):
+     - Header: "AwardPay — Pay Check Report", "Generated <date>", period.
+     - Headline: owed > 0 → `isUnsure ? "You may be owed up to ~$X" : "You may be owed $X"`, else "Your pay looks correct for this period". Include caveat in unsure mode.
+     - **Your details**: employment, award, classification, base rate, hours at base / 1.5x / 2x (from `advancedPayslip`), total paid — rendered as `Label: value` lines.
+     - **What's missing**: regular-hours line, 1.5x line, 2x line, award pay total, actually paid, shortfall — each as a label + right-aligned amount via `doc.text(amount, pageW - 48, y, { align: "right" })`. In unsure mode show estimate range string instead of single award total.
+     - **Potential allowances**: loop `result.potentialAllowances` — name + amount on one line, wrapped "Why: …" using `doc.splitTextToSize`.
+     - **How to recover it**: numbered list from `recoverySteps()`.
+     - Footer: "AwardPay provides general information, not legal advice." + `awardpay.com.au · Generated <date>`.
+   - `doc.save(`awardpay-report-${new Date().toISOString().slice(0,10)}.pdf`)`.
 
-```tsx
-if (!awardCode || !classificationId) {
-  toast({ title: "Award not selected", description: "Go back to Step 1 and choose your award and classification.", variant: "destructive" });
-  return;
-}
-```
+3. **Handler hardening**
+   - Wrap the whole `buildPdf(...)` call in `try/catch`. On error: `console.error("PDF generation failed", err)` and `toast({ title: "Couldn't generate the PDF — please try again.", variant: "destructive" })`.
+   - Button is already a shadcn `<Button>` (renders `<button type="button">` by default) and not inside a `<form>` — confirm and leave as-is. Use a dedicated `handleDownload` function for the onClick.
 
-with:
+### Out of scope
+- Calculation engine, on-screen layout, routing, payment gating.
+- The `jspdf-autotable` dependency stays in `package.json` (unused after this change); removing it is a separate cleanup.
 
-```tsx
-if (!awardCode) {
-  toast({ title: "Award needed", description: "Go back to Step 1 and choose your award.", variant: "destructive" });
-  return;
-}
-```
+### Verification
+- Build / tsgo.
+- Manually click "Download report (PDF)" on Step 3 in both `mode === 'unsure'` and exact modes; confirm a file downloads and opens.
 
-Keep the existing shift and payslip-figures checks unchanged.
-
-### 1.2 Send `null` for missing classification
-In the `calculate-shift-pay` invoke body, change:
-
-```tsx
-classificationId,
-```
-
-to:
-
-```tsx
-classificationId: classificationId || null,
-```
-
-Keep `workArea` and all other fields exactly as they are now. This lets the engine's existing unsure-mode path (which requires `classificationId === null`) run for users who skipped classification.
-
-## 2. Step 3 — `src/pages/NewCheck_Step3_Result.tsx`
-
-### 2.1 Unsure headline
-When `result.mode === 'unsure'` and `overallMaxUnderpayment > 0`:
-
-- If `overallMinUnderpayment` exists and differs from `overallMaxUnderpayment`, show a range:  
-  **"You may be owed $[min]–$[max]"**
-- Otherwise show:  
-  **"You may be owed up to ~$[max]"**
-
-When `result.mode !== 'unsure'`, keep the existing single exact figure unchanged.
-
-### 2.2 Caveat line
-Beneath the unsure headline, add a small line:
-
-> "This is an estimate across the likely classification levels for your role. For an exact figure, go back and select your classification."
-
-Keep the rest of the Step 3 layout unchanged (free headline block, FullReport unlocked, CTA buttons, "Check another payslip").
-
-## 3. Full Report — `src/components/report/FullReport.tsx`
-
-### 3.1 Shared helper
-Introduce a helper that computes the display headline and subtitle from `result`:
-
-- `mode === 'unsure'`: return range or "up to ~" wording.
-- Otherwise: return the exact owed figure.
-
-Use this helper in both the on-screen headline section and inside `buildPdf()` so the PDF matches.
-
-### 3.2 Caveat line
-Add the same caveat line under the headline in the on-screen report when `mode === 'unsure'`. The PDF can keep a shorter note or the same line.
-
-## Files touched
-- `src/pages/NewCheck_Step2_ShiftDetails.tsx` (validation + payload)
-- `src/pages/NewCheck_Step3_Result.tsx` (unsure headline + caveat)
-- `src/components/report/FullReport.tsx` (unsure headline + caveat, PDF parity)
-
-## Out of scope
-- Calculation engine (`calculate-shift-pay` edge function)
-- Routing, other pages, payment gating, Stripe flows
+### Install status
+`jspdf ^4.2.1` is already in `package.json` — **no install needed**. `jspdf-autotable ^5.0.8` is also present but will no longer be imported.
