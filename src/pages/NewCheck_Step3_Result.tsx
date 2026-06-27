@@ -214,7 +214,6 @@ export default function NewCheck_Step3_Result() {
 // TEMP: LockedBreakdown is currently unused — the FullReport renders unlocked
 // for review. Kept here so re-gating behind Stripe is a one-line swap.
 // ---------------------------------------------------------------------------
-// @ts-expect-error - intentionally unused while report is unlocked
 function LockedBreakdown({
   result,
   advancedPayslip,
