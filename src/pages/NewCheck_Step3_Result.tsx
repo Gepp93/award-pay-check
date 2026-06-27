@@ -1,16 +1,14 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, CheckCircle, ChevronDown, Coins, Lock } from "lucide-react";
-import { FullReport } from "@/components/report/FullReport";
+import { CheckCircle } from "lucide-react";
+import { LockedTeaser } from "@/components/report/LockedTeaser";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
 interface PotentialAllowance {
@@ -20,11 +18,6 @@ interface PotentialAllowance {
   estimatedValue: number;
   reason: string;
   icon: string;
-}
-
-interface AwardAllowance {
-  name: string;
-  description: string;
 }
 
 // Count-up hook for animating the headline owed figure.
