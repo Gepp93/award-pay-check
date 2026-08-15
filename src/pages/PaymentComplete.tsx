@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { NavBar } from "@/components/NavBar";
+import { PublicNavBar } from "@/components/PublicNavBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle } from "lucide-react";
@@ -21,12 +22,6 @@ export default function PaymentComplete() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
-      const full = `/payment-complete${window.location.search}`;
-      navigate("/auth", { state: { returnTo: full } });
-      return;
-    }
-
     cancelledRef.current = false;
     const run = async () => {
       setPhase("resolving");
@@ -76,7 +71,7 @@ export default function PaymentComplete() {
 
   return (
     <>
-      <NavBar />
+      {user ? <NavBar /> : <PublicNavBar />}
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
@@ -97,7 +92,13 @@ export default function PaymentComplete() {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                <Button onClick={() => navigate("/reports")}>Go to My Reports</Button>
+                {reportId ? (
+                  <Button onClick={() => navigate(`/report/${reportId}`)}>
+                    Open my report
+                  </Button>
+                ) : (
+                  <Button onClick={() => navigate("/reports")}>Go to My Reports</Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -107,11 +108,6 @@ export default function PaymentComplete() {
                 >
                   Refresh
                 </Button>
-                {reportId && (
-                  <Button variant="ghost" onClick={() => navigate(`/report/${reportId}`)}>
-                    Open report anyway
-                  </Button>
-                )}
               </div>
             )}
           </CardContent>

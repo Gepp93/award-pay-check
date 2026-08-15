@@ -1,4 +1,4 @@
-import { Lock, Sparkles } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 
 interface PotentialAllowance {
   id: string;
@@ -17,12 +17,18 @@ export function LockedTeaser({ result }: Props) {
   const allowances: PotentialAllowance[] = result?.potentialAllowances || [];
   const reasonsCount = Array.isArray(result?.reasons) ? result.reasons.length : 0;
   const issueCount = allowances.length + reasonsCount;
-  const previewNames = allowances.slice(0, 3).map((a) => a.name);
-  const moreCount = Math.max(0, allowances.length - previewNames.length);
+
+  const includes = [
+    "Your award, classification and the exact hourly rate you should be on",
+    "A shift-by-shift breakdown of what you were paid vs what you were owed",
+    "Every penalty, overtime and allowance line that was missed",
+    "The exact shortfall figure for the period",
+    "A dated PDF you can send to your employer or Fair Work",
+  ];
 
   return (
     <div
-      className="rounded-2xl p-6 space-y-4 relative overflow-hidden"
+      className="rounded-2xl p-6 space-y-4 relative overflow-hidden text-left"
       style={{
         background: "hsl(var(--muted) / 0.4)",
         border: "1px solid hsl(var(--border))",
@@ -37,29 +43,24 @@ export function LockedTeaser({ result }: Props) {
         </div>
         <div className="space-y-1">
           <h3 className="text-lg font-bold">
-            We found {issueCount || allowances.length || "potential"}{" "}
-            {issueCount === 1 ? "item" : "items"} that may be missing from your pay
+            Your full report shows exactly where the money went missing
           </h3>
-          {previewNames.length > 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Including <strong className="text-foreground">{previewNames.join(", ")}</strong>
-              {moreCount > 0 ? ` and ${moreCount} more` : ""}.
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Including overtime, penalty rates and allowances under your award.
-            </p>
-          )}
+          <p className="text-sm text-muted-foreground">
+            {issueCount > 0
+              ? `We found ${issueCount} item${issueCount === 1 ? "" : "s"} to explain. Here's what you get for $10:`
+              : "Here's what you get for $10:"}
+          </p>
         </div>
       </div>
 
-      <div className="rounded-lg bg-background/60 border border-border/60 p-4 flex items-start gap-2">
-        <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-        <p className="text-sm text-muted-foreground">
-          Unlock the full report to see each item, the exact amounts you may be owed, and a
-          step-by-step guide to claim it back from your employer.
-        </p>
-      </div>
+      <ul className="rounded-lg bg-background/60 border border-border/60 p-4 space-y-2">
+        {includes.map((item) => (
+          <li key={item} className="flex items-start gap-2 text-sm">
+            <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <span className="text-foreground">{item}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

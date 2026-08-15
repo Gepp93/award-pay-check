@@ -9,12 +9,14 @@ import { toast } from "sonner";
 import { FullReport } from "@/components/report/FullReport";
 import { LockedTeaser } from "@/components/report/LockedTeaser";
 import { NavBar } from "@/components/NavBar";
+import { PublicNavBar } from "@/components/PublicNavBar";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import { FULL_REPORT_LINK, BACKPAY_LINK, buildCheckoutUrl } from "@/lib/paymentLinks";
 
 interface ReportRow {
   id: string;
-  user_id: string;
+  user_id: string | null;
+  email: string | null;
   result: any;
   inputs: any;
   owed_amount: number;
@@ -34,6 +36,7 @@ export default function Report() {
   const [notFound, setNotFound] = useState(false);
   const { credits, refetch: refetchCredits } = useUserCredits();
   const [redeeming, setRedeeming] = useState(false);
+  const [claiming, setClaiming] = useState(false);
   const autoLaunchedRef = useRef(false);
 
   const fetchReport = async () => {
@@ -58,13 +61,28 @@ export default function Report() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
-      navigate("/auth", { state: { returnTo: `/report/${id}` } });
-      return;
-    }
     fetchReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, user, id]);
+
+  // Offer to save an unowned report into the account of a signed-in visitor.
+  const handleClaim = async () => {
+    if (!id || !user || claiming) return;
+    setClaiming(true);
+    const { error } = await (supabase as any)
+      .from("reports")
+      .update({ user_id: user.id })
+      .eq("id", id)
+      .is("user_id", null);
+    setClaiming(false);
+    if (error) {
+      console.error("Error claiming report:", error);
+      toast.error("Couldn't save this report to your account.");
+      return;
+    }
+    toast.success("Saved to your account.");
+    fetchReport();
+  };
 
   const handleUnlock = async (product: "full_report" | "backpay_pack") => {
     if (!id) return;
@@ -86,7 +104,7 @@ export default function Report() {
     }
     const link = product === "full_report" ? FULL_REPORT_LINK : BACKPAY_LINK;
     localStorage.setItem("pendingReportId", id);
-    window.location.href = buildCheckoutUrl(link, id);
+    window.location.href = buildCheckoutUrl(link, id, row?.email || user?.email || undefined);
   };
 
   // Auto-launch checkout if we arrived here straight after sign-up with a pending product.
@@ -106,7 +124,7 @@ export default function Report() {
   if (authLoading || loading) {
     return (
       <>
-        <NavBar />
+        {user ? <NavBar /> : <PublicNavBar />}
         <div className="min-h-screen flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
@@ -117,7 +135,7 @@ export default function Report() {
   if (notFound || !row) {
     return (
       <>
-        <NavBar />
+        {user ? <NavBar /> : <PublicNavBar />}
         <div className="min-h-screen flex items-center justify-center p-4 pt-24">
           <Card className="w-full max-w-md">
             <CardHeader>
@@ -146,7 +164,7 @@ export default function Report() {
 
   return (
     <>
-      <NavBar />
+      {user ? <NavBar /> : <PublicNavBar />}
       <div className="min-h-screen flex items-start justify-center p-4 pt-24 bg-background">
         <Card className="w-full max-w-3xl">
           <CardHeader>
@@ -197,15 +215,40 @@ export default function Report() {
             )}
 
             {isPaid ? (
-              <FullReport
-                result={result}
-                shiftDetails={inputs.shiftDetails}
-                advancedPayslip={inputs.advancedPayslip}
-              />
+              <>
+                <FullReport
+                  result={result}
+                  shiftDetails={inputs.shiftDetails}
+                  advancedPayslip={inputs.advancedPayslip}
+                />
+                {!row.user_id && (
+                  <div className="rounded-lg border border-border p-4 text-sm flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                    <span className="text-muted-foreground">
+                      Keep this report — save it to an account so you can come back to it.
+                    </span>
+                    {user ? (
+                      <Button variant="outline" onClick={handleClaim} disabled={claiming}>
+                        {claiming ? "Saving…" : "Save to my account"}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          navigate("/auth", {
+                            state: { returnTo: `/report/${id}`, mode: "signup" },
+                          })
+                        }
+                      >
+                        Create a free account
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </>
             ) : (
               <>
                 <LockedTeaser result={result} />
-                {credits > 0 && (
+                {user && credits > 0 && (
                   <div className="text-sm text-center text-muted-foreground">
                     You have <strong className="text-foreground">{credits}</strong> report
                     credit{credits === 1 ? "" : "s"} left from your Back-Pay Pack.
@@ -220,28 +263,15 @@ export default function Report() {
                   >
                     {redeeming
                       ? "Unlocking…"
-                      : credits > 0
+                      : user && credits > 0
                       ? `Unlock with 1 credit (${credits} left)`
                       : "Unlock full report — $10"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleUnlock("backpay_pack")}
-                    disabled={redeeming}
-                    className="flex-1"
-                    style={{
-                      padding: "10px 14px",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 8,
-                      background: "transparent",
-                      cursor: redeeming ? "not-allowed" : "pointer",
-                      fontWeight: 600,
-                      color: "hsl(var(--foreground))",
-                    }}
-                  >
-                    Back-Pay Pack — 5 reports for $30 (save $20)
-                  </button>
                 </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  One-off $10 payment · no account needed · no subscription · refunded if the
+                  report is wrong
+                </p>
               </>
             )}
           </CardContent>
