@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { NavBar } from "@/components/NavBar";
+import { PublicNavBar } from "@/components/PublicNavBar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle } from "lucide-react";
@@ -21,12 +22,6 @@ export default function PaymentComplete() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
-      const full = `/payment-complete${window.location.search}`;
-      navigate("/auth", { state: { returnTo: full } });
-      return;
-    }
-
     cancelledRef.current = false;
     const run = async () => {
       setPhase("resolving");
