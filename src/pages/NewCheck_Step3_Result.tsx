@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 import { useUserCredits } from "@/hooks/useUserCredits";
+import { FULL_REPORT_LINK, buildCheckoutUrl } from "@/lib/paymentLinks";
 
 interface PotentialAllowance {
   id: string;
@@ -49,14 +50,12 @@ export default function NewCheck_Step3_Result() {
   const { result, shiftDetails, advancedPayslip } = location.state || {};
   const [user, setUser] = useState<User | null>(null);
   const fromDashboard = location.state?.fromDashboard;
-  const pendingProduct = (location.state as any)?.pendingProduct as
-    | "full_report"
-    | "backpay_pack"
-    | undefined;
   const [unlocking, setUnlocking] = useState(false);
-  const autoResumedRef = useRef(false);
   const { credits, refetch: refetchCredits } = useUserCredits();
   const sessionReportIdRef = useRef<string | null>(null);
+  const [leadEmail, setLeadEmail] = useState("");
+  const [leadSent, setLeadSent] = useState(false);
+  const [sendingLead, setSendingLead] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
@@ -93,21 +92,10 @@ export default function NewCheck_Step3_Result() {
   const showRange = isUnsureMode && minUnsure > 0 && minUnsure !== maxUnsure;
   const owedAnimated = useCountUp(isUnderpaid ? underpayment : 0);
 
-  // Account-first: ensure a report row exists for the signed-in user, then
-  // navigate them to /report/:id (which is the Stripe launch point). If not
-  // signed in, bounce to /auth carrying the pending product so we auto-resume.
-  const handleUnlock = async (product: "full_report" | "backpay_pack") => {
+  // No account required to buy: save the report (owned if signed in, otherwise
+  // anonymous) and send the buyer straight to Stripe with the report id.
+  const handleUnlock = async (product: "full_report" | "backpay_pack" = "full_report") => {
     if (!result || !shiftDetails) return;
-    if (!user) {
-      navigate("/auth", {
-        state: {
-          returnTo: "/new-check-step-3",
-          returnState: { ...(location.state || {}), pendingProduct: product },
-          mode: "signup",
-        },
-      });
-      return;
-    }
     if (unlocking) return;
     setUnlocking(true);
     try {
@@ -117,7 +105,8 @@ export default function NewCheck_Step3_Result() {
         const { data, error } = await (supabase as any)
           .from("reports")
           .insert({
-            user_id: user.id,
+            user_id: user?.id ?? null,
+            email: leadEmail || user?.email || null,
             result,
             inputs: { shiftDetails, advancedPayslip },
             owed_amount: isUnderpaid ? underpayment : 0,
@@ -138,7 +127,18 @@ export default function NewCheck_Step3_Result() {
       }
 
       localStorage.setItem("pendingReportId", reportId);
-      navigate(`/report/${reportId}`, { state: { pendingProduct: product } });
+
+      // Signed-in users with credits get the report unlocked without paying.
+      if (user && credits > 0) {
+        navigate(`/report/${reportId}`);
+        return;
+      }
+
+      window.location.href = buildCheckoutUrl(
+        FULL_REPORT_LINK,
+        reportId,
+        leadEmail || user?.email || undefined,
+      );
     } catch (e: any) {
       console.error("Error creating report:", e);
       toast.error("Couldn't start your report — please try again.");
@@ -146,14 +146,25 @@ export default function NewCheck_Step3_Result() {
     }
   };
 
-  // Auto-resume: user just came back from /auth with a pending product.
-  useEffect(() => {
-    if (autoResumedRef.current) return;
-    if (!user || !pendingProduct || !result || !shiftDetails) return;
-    autoResumedRef.current = true;
-    handleUnlock(pendingProduct);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, pendingProduct, result, shiftDetails]);
+  const handleEmailResult = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = leadEmail.trim();
+    if (!email || sendingLead) return;
+    setSendingLead(true);
+    const { error } = await supabase.from("leads").insert({
+      email,
+      calculation_data: result,
+      shift_details: shiftDetails,
+    });
+    setSendingLead(false);
+    if (error) {
+      console.error("Error saving lead:", error);
+      toast.error("Couldn't save your email — please try again.");
+      return;
+    }
+    setLeadSent(true);
+    toast.success("Saved — we'll email your result.");
+  };
 
   if (!result || !shiftDetails) {
     navigate("/new-check-step-1");
@@ -273,24 +284,34 @@ export default function NewCheck_Step3_Result() {
                       ? `Unlock with 1 credit (${credits} left)`
                       : "Unlock full report — $10"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleUnlock("backpay_pack")}
-                    disabled={unlocking}
-                    className="flex-1"
-                    style={{
-                      padding: "10px 14px",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 8,
-                      background: "transparent",
-                      cursor: unlocking ? "not-allowed" : "pointer",
-                      fontWeight: 600,
-                      color: "hsl(var(--foreground))",
-                    }}
-                  >
-                    Back-Pay Pack — 5 reports for $30 (save $20)
-                  </button>
                 </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  One-off $10 payment · no account needed · no subscription · refunded if the
+                  report is wrong
+                </p>
+
+                {!leadSent ? (
+                  <form
+                    onSubmit={handleEmailResult}
+                    className="flex flex-col sm:flex-row gap-2 pt-2"
+                  >
+                    <input
+                      type="email"
+                      required
+                      value={leadEmail}
+                      onChange={(e) => setLeadEmail(e.target.value)}
+                      placeholder="Not ready? Email me my result"
+                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                    />
+                    <Button type="submit" variant="outline" disabled={sendingLead}>
+                      {sendingLead ? "Sending…" : "Email it to me"}
+                    </Button>
+                  </form>
+                ) : (
+                  <p className="text-sm text-center text-muted-foreground pt-2">
+                    Thanks — we'll send your result to {leadEmail}.
+                  </p>
+                )}
               </>
             )}
 
