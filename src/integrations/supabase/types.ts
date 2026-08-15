@@ -149,6 +149,7 @@ export type Database = {
       reports: {
         Row: {
           created_at: string
+          email: string | null
           id: string
           inputs: Json
           owed_amount: number
@@ -156,10 +157,11 @@ export type Database = {
           product: string
           result: Json
           stripe_session_id: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
+          email?: string | null
           id?: string
           inputs: Json
           owed_amount?: number
@@ -167,10 +169,11 @@ export type Database = {
           product: string
           result: Json
           stripe_session_id?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
+          email?: string | null
           id?: string
           inputs?: Json
           owed_amount?: number
@@ -178,7 +181,7 @@ export type Database = {
           product?: string
           result?: Json
           stripe_session_id?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
