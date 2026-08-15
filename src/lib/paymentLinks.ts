@@ -7,8 +7,9 @@
 export const FULL_REPORT_LINK = "https://buy.stripe.com/5kQ00k2ss5J7623gsd6AM05";
 export const BACKPAY_LINK = "https://buy.stripe.com/aFa4gA4AA5J7bmn1xj6AM06";
 
-export function buildCheckoutUrl(link: string, reportId: string): string {
+export function buildCheckoutUrl(link: string, reportId: string, email?: string): string {
   const u = new URL(link);
   u.searchParams.set("client_reference_id", reportId);
+  if (email) u.searchParams.set("prefilled_email", email);
   return u.toString();
 }
