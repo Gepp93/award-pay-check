@@ -71,7 +71,7 @@ export default function PaymentComplete() {
 
   return (
     <>
-      <NavBar />
+      {user ? <NavBar /> : <PublicNavBar />}
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
