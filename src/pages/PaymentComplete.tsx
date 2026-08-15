@@ -92,7 +92,13 @@ export default function PaymentComplete() {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                <Button onClick={() => navigate("/reports")}>Go to My Reports</Button>
+                {reportId ? (
+                  <Button onClick={() => navigate(`/report/${reportId}`)}>
+                    Open my report
+                  </Button>
+                ) : (
+                  <Button onClick={() => navigate("/reports")}>Go to My Reports</Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -102,11 +108,6 @@ export default function PaymentComplete() {
                 >
                   Refresh
                 </Button>
-                {reportId && (
-                  <Button variant="ghost" onClick={() => navigate(`/report/${reportId}`)}>
-                    Open report anyway
-                  </Button>
-                )}
               </div>
             )}
           </CardContent>
