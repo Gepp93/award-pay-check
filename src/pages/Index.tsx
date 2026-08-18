@@ -202,7 +202,7 @@ const Index = () => {
 
       {/* Prominent 12-month offer card */}
       <section className="ap-wrap" style={{ paddingTop: 8, paddingBottom: 56 }}>
-        <div className="ap-offer-card" data-reveal>
+        <div className="ap-offer-card">
           <div className="ap-offer-badge">Best value</div>
           <div className="ap-offer-inner">
             <div className="ap-offer-main">
