@@ -37,8 +37,8 @@ serve(async (req) => {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      const reportId = session.client_reference_id;
-      if (!reportId) {
+      const refId = session.client_reference_id;
+      if (!refId) {
         console.warn("checkout.session.completed missing client_reference_id");
         return new Response("ok", { status: 200 });
       }
@@ -46,9 +46,57 @@ serve(async (req) => {
       // Determine product. Metadata wins; otherwise infer from amount.
       let product = (session.metadata?.product as string | undefined) ?? null;
       if (!product) {
-        if (session.amount_total === 1000) product = "full_report";
+        if (session.amount_total === 1000) product = "yearly_access";
         else if (session.amount_total === 3000) product = "backpay_pack";
       }
+
+      // ---- 12-month unlimited subscription ($10) ----
+      if (product === "yearly_access" || session.amount_total === 1000) {
+        const { data: existing } = await admin
+          .from("subscription_purchases")
+          .select("id, user_id, status, email")
+          .eq("id", refId)
+          .maybeSingle();
+
+        if (!existing) {
+          console.warn("subscription_purchase not found for session", refId);
+          return new Response("ok", { status: 200 });
+        }
+
+        if (existing.status === "paid") {
+          return new Response("ok", { status: 200 });
+        }
+
+        const expiresAt = new Date();
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+
+        const customerEmail = session.customer_details?.email ?? existing.email ?? null;
+
+        await admin
+          .from("subscription_purchases")
+          .update({
+            status: "paid",
+            stripe_session_id: session.id,
+            email: customerEmail,
+            expires_at: expiresAt.toISOString(),
+          })
+          .eq("id", refId);
+
+        // If a user was already signed in when the purchase started, activate their profile.
+        if (existing.user_id) {
+          await admin
+            .from("profiles")
+            .update({ subscription_status: "yearly" })
+            .eq("id", existing.user_id);
+        }
+
+        return new Response(JSON.stringify({ received: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // ---- legacy report-based purchases ----
       if (product !== "full_report" && product !== "backpay_pack") {
         console.warn("Unknown product for session", session.id, session.amount_total);
         return new Response("ok", { status: 200 });
@@ -58,10 +106,10 @@ serve(async (req) => {
       const { data: existing } = await admin
         .from("reports")
         .select("id, user_id, stripe_session_id, payment_status")
-        .eq("id", reportId)
+        .eq("id", refId)
         .maybeSingle();
       if (!existing) {
-        console.warn("Report not found for session", reportId);
+        console.warn("Report not found for session", refId);
         return new Response("ok", { status: 200 });
       }
       if (existing.stripe_session_id === session.id) {
@@ -72,7 +120,7 @@ serve(async (req) => {
       await admin
         .from("reports")
         .update({ payment_status: "paid", stripe_session_id: session.id })
-        .eq("id", reportId);
+        .eq("id", refId);
 
       // Back-pay pack also grants 5 credits to that report's owner.
       if (product === "backpay_pack" && existing.user_id) {
@@ -99,6 +147,7 @@ serve(async (req) => {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (e) {
     console.error("stripe-webhook handler error:", e);
     return new Response("error", { status: 500 });
