@@ -36,12 +36,12 @@ export default function PaymentComplete() {
 
         const started = Date.now();
         while (!cancelledRef.current && Date.now() - started < 20_000) {
-          const { data } = await (supabase as any)
-            .from("subscription_purchases")
-            .select("status, user_id")
-            .eq("id", pendingSubId)
+          const { data, error } = await (supabase as any)
+            .rpc("get_subscription_status", { purchase_id: pendingSubId })
             .maybeSingle();
-          if (data?.status === "paid") {
+          if (error) {
+            console.error("get_subscription_status error:", error);
+          } else if (data?.status === "paid") {
             setSubscriptionPaid(true);
             localStorage.removeItem("pendingSubscriptionId");
             if (user) {
