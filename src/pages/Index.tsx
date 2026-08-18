@@ -201,34 +201,36 @@ const Index = () => {
       </header>
 
       {/* Prominent 12-month offer card */}
-      <section className="ap-wrap ap-offer-section">
-        <div className="ap-offer-card">
-          <div className="ap-offer-badge">Best value</div>
-          <div className="ap-offer-inner">
-            <div className="ap-offer-main">
-              <h2 className="ap-h2" style={{ marginBottom: 10 }}>
-                Check any payslip, anytime — for 12 months
-              </h2>
-              <p className="ap-sub" style={{ maxWidth: "none", marginBottom: 22 }}>
-                Unlimited payslip checks + AI Payslip Checker. One payment, $10 for a full year.
-              </p>
+      <section className="ap-offer-section">
+        <div className="ap-wrap">
+          <div className="ap-offer-card">
+            <div className="ap-offer-badge">Best value</div>
+            <div className="ap-offer-inner">
+              <div className="ap-offer-main">
+                <h2 className="ap-h2" style={{ marginBottom: 10 }}>
+                  Check any payslip, anytime — for 12 months
+                </h2>
+                <p className="ap-sub" style={{ maxWidth: "none", marginBottom: 22 }}>
+                  Unlimited payslip checks + AI Payslip Checker. One payment, $10 for a full year.
+                </p>
 
-              <div className="ap-offer-price">
-                <span className="ap-offer-amount">$10</span>
-                <span className="ap-offer-term">/ 12 months unlimited</span>
+                <div className="ap-offer-price">
+                  <span className="ap-offer-amount">$10</span>
+                  <span className="ap-offer-term">/ 12 months unlimited</span>
+                </div>
+
+                <ul className="ap-offer-list">
+                  <li><span className="ap-offer-tick">✓</span>Unlimited checks</li>
+                  <li><span className="ap-offer-tick">✓</span>AI underpayment detection</li>
+                  <li><span className="ap-offer-tick">✓</span>Full 12-month access</li>
+                  <li><span className="ap-offer-tick">✓</span>One-time payment — no subscription</li>
+                </ul>
+
+                <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
+                  Get 12 months for $10 →
+                </button>
+                <p className="ap-offer-note">Launch price — locks in your rate for 12 months.</p>
               </div>
-
-              <ul className="ap-offer-list">
-                <li><span className="ap-offer-tick">✓</span>Unlimited checks</li>
-                <li><span className="ap-offer-tick">✓</span>AI underpayment detection</li>
-                <li><span className="ap-offer-tick">✓</span>Full 12-month access</li>
-                <li><span className="ap-offer-tick">✓</span>One-time payment — no subscription</li>
-              </ul>
-
-              <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
-                Get 12 months for $10 →
-              </button>
-              <p className="ap-offer-note">Launch price — locks in your rate for 12 months.</p>
             </div>
           </div>
         </div>
