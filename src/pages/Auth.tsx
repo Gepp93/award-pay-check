@@ -129,12 +129,15 @@ const Auth = () => {
           <CardDescription>
             {isCheckoutRedirect
               ? `Sign ${isLogin ? "in" : "up"} to complete your 3-month access pass`
-              : returnTo
-                ? `Sign ${isLogin ? "in" : "up"} to see your pay check results`
-                : isLogin
-                  ? "Sign in to access your calculations"
-                  : "Start checking your award pay today"}
+              : redirectParam
+                ? `Sign ${isLogin ? "in" : "up"} to activate your 12-month pass`
+                : returnTo
+                  ? `Sign ${isLogin ? "in" : "up"} to see your pay check results`
+                  : isLogin
+                    ? "Sign in to access your calculations"
+                    : "Start checking your award pay today"}
           </CardDescription>
+
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
