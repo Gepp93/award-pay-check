@@ -254,9 +254,14 @@ const Index = () => {
                   <li><span className="ap-offer-tick">✓</span>One-time payment — no subscription</li>
                 </ul>
 
-                <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
-                  Get 12 months for $10 →
+                <button
+                  className="ap-btn ap-btn-gold ap-btn-lg"
+                  onClick={handleYearlyCheckout}
+                  disabled={checkingOut}
+                >
+                  {checkingOut ? "Opening checkout…" : "Get 12 months for $10 →"}
                 </button>
+
                 <p className="ap-offer-note">Launch price — locks in your rate for 12 months.</p>
               </div>
             </div>
