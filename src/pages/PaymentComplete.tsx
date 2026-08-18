@@ -101,7 +101,6 @@ export default function PaymentComplete() {
   }, [authLoading, user, sessionId]);
 
   return (
-
     <>
       {user ? <NavBar /> : <PublicNavBar />}
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
@@ -113,7 +112,11 @@ export default function PaymentComplete() {
             <CardTitle>Payment received</CardTitle>
             <CardDescription>
               {phase === "timeout"
-                ? "Your full report is unlocking now and will appear under My Reports in a moment."
+                ? subscriptionId
+                  ? "Your 12-month pass is ready — create your account to start using it."
+                  : "Your full report is unlocking now and will appear under My Reports in a moment."
+                : subscriptionId
+                ? "Activating your 12-month pass…"
                 : "Unlocking your full report…"}
             </CardDescription>
           </CardHeader>
@@ -124,7 +127,11 @@ export default function PaymentComplete() {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                {reportId ? (
+                {subscriptionId && !user ? (
+                  <Button onClick={() => navigate(`/auth?redirect=app-dashboard&subscriptionId=${subscriptionId}`)}>
+                    Create account to activate pass
+                  </Button>
+                ) : reportId ? (
                   <Button onClick={() => navigate(`/report/${reportId}`)}>
                     Open my report
                   </Button>
