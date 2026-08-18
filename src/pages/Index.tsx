@@ -142,9 +142,33 @@ const PayslipStage = () => (
 
 const Index = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [checkingOut, setCheckingOut] = useState(false);
   const startCheck = () => navigate("/check");
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUser({ id: user.id, email: user.email });
+    });
+  }, []);
+
+  const handleYearlyCheckout = async () => {
+    if (checkingOut) return;
+    setCheckingOut(true);
+    try {
+      const url = await startSubscriptionCheckout("yearly_access", user?.email, user?.id);
+      if (url) {
+        window.location.href = url;
+      } else {
+        toast.error("Could not start checkout — please try again.");
+      }
+    } finally {
+      setCheckingOut(false);
+    }
+  };
+
   return (
+
     <div>
       <SEO
         title="Am I Being Underpaid? Free Award Pay Check | AwardPay"
