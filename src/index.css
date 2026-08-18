@@ -238,7 +238,12 @@
   .ap-stat { border-left: none; border-top: 1px solid hsl(var(--border)); padding-left: 0; }
   .ap-stat:first-child { border-top: none; }
   .ap-band { grid-template-columns: 1fr; }
+  .ap-offer-inner { padding: 34px 24px; }
+  .ap-offer-list { grid-template-columns: 1fr; }
+  .ap-offer-main { text-align: center; margin: 0 auto; }
+  .ap-offer-price { justify-content: center; }
 }
+
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 
 /* Scroll reveal */
