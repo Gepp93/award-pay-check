@@ -1,0 +1,1 @@
+UPDATE public.subscription_purchases SET status = 'paid', expires_at = now() + interval '1 year' WHERE id = 'a612fe6c-c6f5-4f41-931a-5fd9498d2428';
