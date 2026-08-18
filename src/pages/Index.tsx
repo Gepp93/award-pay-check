@@ -1,7 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import SEO from "@/components/SEO";
 import { ApNav } from "@/components/ApNav";
+import { supabase } from "@/integrations/supabase/client";
+import { startSubscriptionCheckout } from "@/lib/paymentLinks";
+import { toast } from "sonner";
+
 
 /* Animated "owed" figure — counts up on load, respects reduced motion */
 const OwedFigure = ({ target = 1542, suffix = "/yr" }: { target?: number; suffix?: string }) => {
