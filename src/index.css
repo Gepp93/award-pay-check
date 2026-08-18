@@ -262,24 +262,35 @@
   .ap-mobile-menu .ap-btn { margin-top: 12px; }
   .ap-hero { grid-template-columns: 1fr; gap: 18px; padding-top: 24px; padding-bottom: 10px; }
   .ap-stage, .ap-scan, .ap-chip-pen, .ap-chip-found, .ap-chip-owed { display: none; }
-  .ap-h1 { font-size: 32px; margin-bottom: 16px; }
-  .ap-lede { font-size: 16px; line-height: 1.5; margin-bottom: 22px; }
-  .ap-pill { margin-bottom: 18px; }
-  .ap-cta-row { margin-bottom: 14px; }
-  .ap-trust { gap: 10px; font-size: 12.5px; }
+  .ap-h1 { font-size: 28px; margin-bottom: 14px; }
+  .ap-lede { font-size: 15px; line-height: 1.4; margin-bottom: 18px; }
+  .ap-pill { margin-bottom: 14px; padding: 5px 11px; font-size: 12px; }
+  .ap-cta-row { margin-bottom: 12px; }
+  .ap-btn-lg { padding: 12px 20px; font-size: 15px; }
+  .ap-trust { gap: 8px; font-size: 12px; }
 
+  .ap-offer-section { padding-top: 12px; padding-bottom: 36px; }
+  .ap-offer-badge { top: 14px; font-size: 11.5px; padding: 5px 14px; }
+  .ap-offer-inner { padding: 38px 14px 18px; }
+  .ap-offer-main .ap-h2 { font-size: 22px !important; margin-bottom: 8px !important; }
+  .ap-offer-main .ap-sub { font-size: 14px !important; margin-bottom: 14px !important; }
+  .ap-offer-price { margin-bottom: 14px; }
+  .ap-offer-amount { font-size: 32px; }
+  .ap-offer-term { font-size: 14px; }
+  .ap-offer-list { gap: 6px; margin-bottom: 16px; }
+  .ap-offer-list li { font-size: 13.5px; }
+  .ap-offer-card .ap-btn-lg { padding: 11px 18px; font-size: 14px; }
+  .ap-offer-note { font-size: 11.5px; }
 
   .ap-steps, .ap-stats { grid-template-columns: 1fr; }
   .ap-check-grid { grid-template-columns: 1fr; }
   .ap-stat { border-left: none; border-top: 1px solid hsl(var(--border)); padding-left: 0; }
   .ap-stat:first-child { border-top: none; }
   .ap-band { grid-template-columns: 1fr; }
-  .ap-offer-section { padding-top: 12px; padding-bottom: 36px; }
-  .ap-offer-inner { padding: 58px 20px 28px; }
-
   .ap-offer-list { grid-template-columns: 1fr; }
   .ap-offer-main { text-align: center; margin: 0 auto; }
   .ap-offer-price { justify-content: center; }
+
 }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
