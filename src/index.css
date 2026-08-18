@@ -200,11 +200,24 @@
 .ap-final p { font-size: 18px; color: hsl(var(--muted-foreground)); margin: 0 0 28px; }
 
 /* ---- prominent 12-month offer card ---- */
-.ap-offer-card { position: relative; background: #fff; border: 1px solid hsl(var(--border)); border-radius: calc(var(--radius) + 6px); box-shadow: 0 22px 60px -20px hsl(150 10% 10% / .12); overflow: hidden; }
-.ap-offer-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: var(--gradient-mesh); }
-.ap-offer-card::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: linear-gradient(180deg, hsl(var(--gold)), hsl(var(--gold-press))); }
-.ap-offer-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: hsl(var(--gold)); color: hsl(var(--gold-foreground)); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; padding: 6px 14px; border-radius: 999px; white-space: nowrap; z-index: 2; }
-.ap-offer-inner { position: relative; z-index: 1; padding: 44px 48px; }
+.ap-offer-card {
+  position: relative;
+  background: linear-gradient(135deg, #fff 0%, hsl(43 90% 97%) 100%);
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) + 6px);
+  box-shadow:
+    0 0 0 4px hsl(43 90% 54% / .14),
+    0 26px 75px -22px hsl(43 90% 54% / .32),
+    0 12px 34px -18px hsl(150 10% 10% / .12);
+  overflow: hidden;
+  transition: transform .25s ease;
+  animation: ap-offer-glow 3.5s ease-in-out infinite;
+}
+.ap-offer-card:hover { transform: translateY(-4px); }
+.ap-offer-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: var(--gradient-mesh); opacity: .85; }
+.ap-offer-card::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; background: linear-gradient(180deg, hsl(var(--gold)), hsl(var(--gold-press))); }
+.ap-offer-badge { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: hsl(var(--gold)); color: hsl(var(--gold-foreground)); font-weight: 800; font-size: 12.5px; letter-spacing: .09em; text-transform: uppercase; padding: 7px 18px; border-radius: 999px; white-space: nowrap; z-index: 2; box-shadow: 0 8px 24px -8px hsl(43 90% 54% / .55); }
+.ap-offer-inner { position: relative; z-index: 1; padding: 72px 48px 44px; }
 .ap-offer-main { max-width: 720px; margin-left: 0; text-align: left; }
 .ap-offer-price { display: flex; align-items: baseline; gap: 10px; margin-bottom: 20px; }
 .ap-offer-amount { font-weight: 800; font-size: clamp(48px, 6vw, 72px); letter-spacing: -.03em; line-height: 1; color: hsl(var(--gold-ink)); }
@@ -213,6 +226,25 @@
 .ap-offer-list li { display: flex; align-items: center; gap: 10px; font-size: 15px; color: hsl(150 6% 22%); font-weight: 500; }
 .ap-offer-tick { width: 20px; height: 20px; border-radius: 50%; background: hsl(var(--primary-soft)); color: hsl(var(--primary)); display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex: none; }
 .ap-offer-note { margin: 14px 0 0; font-size: 13px; color: hsl(var(--muted-foreground)); font-weight: 500; }
+
+@keyframes ap-offer-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 4px hsl(43 90% 54% / .14),
+      0 26px 75px -22px hsl(43 90% 54% / .32),
+      0 12px 34px -18px hsl(150 10% 10% / .12);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px hsl(43 90% 54% / .22),
+      0 34px 90px -22px hsl(43 90% 54% / .46),
+      0 12px 34px -18px hsl(150 10% 10% / .12);
+  }
+}
+
+.ap-offer-section { padding-top: 32px; padding-bottom: 64px; }
+
+
 
 
 
@@ -228,17 +260,23 @@
   .ap-mobile-menu { display: flex; flex-direction: column; gap: 4px; padding: 12px 20px 18px; border-top: 1px solid hsl(var(--border)); background: hsl(48 38% 98% / .98); }
   .ap-mobile-menu a { padding: 12px 8px; color: hsl(var(--foreground)); font-weight: 500; font-size: 16px; text-decoration: none; cursor: pointer; border-bottom: 1px solid hsl(var(--border) / .5); }
   .ap-mobile-menu .ap-btn { margin-top: 12px; }
-  .ap-hero { grid-template-columns: 1fr; gap: 18px; padding-top: 34px; padding-bottom: 26px; }
-  .ap-stage { height: 430px; }
-  .ap-ledger { right: auto; left: 50%; transform: translateX(-50%); top: 30px; width: 320px; animation: none; }
-  .ap-scan, .ap-chip-pen { display: none; }
-  .ap-chip-found { right: 6px; top: 0; } .ap-chip-owed { bottom: 6px; left: 0; }
+  .ap-hero { grid-template-columns: 1fr; gap: 18px; padding-top: 24px; padding-bottom: 10px; }
+  .ap-stage, .ap-scan, .ap-chip-pen, .ap-chip-found, .ap-chip-owed { display: none; }
+  .ap-h1 { font-size: 32px; margin-bottom: 16px; }
+  .ap-lede { font-size: 16px; line-height: 1.5; margin-bottom: 22px; }
+  .ap-pill { margin-bottom: 18px; }
+  .ap-cta-row { margin-bottom: 14px; }
+  .ap-trust { gap: 10px; font-size: 12.5px; }
+
+
   .ap-steps, .ap-stats { grid-template-columns: 1fr; }
   .ap-check-grid { grid-template-columns: 1fr; }
   .ap-stat { border-left: none; border-top: 1px solid hsl(var(--border)); padding-left: 0; }
   .ap-stat:first-child { border-top: none; }
   .ap-band { grid-template-columns: 1fr; }
-  .ap-offer-inner { padding: 34px 24px; }
+  .ap-offer-section { padding-top: 12px; padding-bottom: 36px; }
+  .ap-offer-inner { padding: 58px 20px 28px; }
+
   .ap-offer-list { grid-template-columns: 1fr; }
   .ap-offer-main { text-align: center; margin: 0 auto; }
   .ap-offer-price { justify-content: center; }
