@@ -41,6 +41,9 @@ const Auth = () => {
     if (isCheckoutRedirect) {
       // Redirect to Stripe checkout for 3-month pass
       window.location.href = STRIPE_URL;
+    } else if (redirectParam) {
+      // Generic redirect, e.g. app-dashboard after a subscription purchase
+      navigate(redirectParam);
     } else if (returnTo) {
       // Return to the page the user came from (state preserved if provided)
       navigate(returnTo, returnState ? { state: returnState } : undefined);
@@ -49,6 +52,7 @@ const Auth = () => {
       navigate("/new-check-step-1");
     }
   };
+
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,12 +129,15 @@ const Auth = () => {
           <CardDescription>
             {isCheckoutRedirect
               ? `Sign ${isLogin ? "in" : "up"} to complete your 3-month access pass`
-              : returnTo
-                ? `Sign ${isLogin ? "in" : "up"} to see your pay check results`
-                : isLogin
-                  ? "Sign in to access your calculations"
-                  : "Start checking your award pay today"}
+              : redirectParam
+                ? `Sign ${isLogin ? "in" : "up"} to activate your 12-month pass`
+                : returnTo
+                  ? `Sign ${isLogin ? "in" : "up"} to see your pay check results`
+                  : isLogin
+                    ? "Sign in to access your calculations"
+                    : "Start checking your award pay today"}
           </CardDescription>
+
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">

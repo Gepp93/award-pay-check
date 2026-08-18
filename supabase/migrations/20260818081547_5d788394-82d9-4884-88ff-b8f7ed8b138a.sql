@@ -1,0 +1,1 @@
+ALTER TABLE public.subscription_purchases DISABLE ROW LEVEL SECURITY;

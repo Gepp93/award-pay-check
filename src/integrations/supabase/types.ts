@@ -185,6 +185,42 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_purchases: {
+        Row: {
+          created_at: string
+          email: string | null
+          expires_at: string | null
+          id: string
+          product: string
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          product?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          product?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_credits: {
         Row: {
           credits: number

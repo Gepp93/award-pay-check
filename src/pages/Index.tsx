@@ -1,7 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import SEO from "@/components/SEO";
 import { ApNav } from "@/components/ApNav";
+import { supabase } from "@/integrations/supabase/client";
+import { startSubscriptionCheckout } from "@/lib/paymentLinks";
+import { toast } from "sonner";
+
 
 /* Animated "owed" figure — counts up on load, respects reduced motion */
 const OwedFigure = ({ target = 1542, suffix = "/yr" }: { target?: number; suffix?: string }) => {
@@ -138,9 +142,33 @@ const PayslipStage = () => (
 
 const Index = () => {
   const navigate = useNavigate();
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [checkingOut, setCheckingOut] = useState(false);
   const startCheck = () => navigate("/check");
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUser({ id: user.id, email: user.email });
+    });
+  }, []);
+
+  const handleYearlyCheckout = async () => {
+    if (checkingOut) return;
+    setCheckingOut(true);
+    try {
+      const url = await startSubscriptionCheckout("yearly_access", user?.email, user?.id);
+      if (url) {
+        window.location.href = url;
+      } else {
+        toast.error("Could not start checkout — please try again.");
+      }
+    } finally {
+      setCheckingOut(false);
+    }
+  };
+
   return (
+
     <div>
       <SEO
         title="Am I Being Underpaid? Free Award Pay Check | AwardPay"
@@ -226,9 +254,14 @@ const Index = () => {
                   <li><span className="ap-offer-tick">✓</span>One-time payment — no subscription</li>
                 </ul>
 
-                <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
-                  Get 12 months for $10 →
+                <button
+                  className="ap-btn ap-btn-gold ap-btn-lg"
+                  onClick={handleYearlyCheckout}
+                  disabled={checkingOut}
+                >
+                  {checkingOut ? "Opening checkout…" : "Get 12 months for $10 →"}
                 </button>
+
                 <p className="ap-offer-note">Launch price — locks in your rate for 12 months.</p>
               </div>
             </div>

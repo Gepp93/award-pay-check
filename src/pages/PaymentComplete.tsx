@@ -16,6 +16,8 @@ export default function PaymentComplete() {
   const { user, loading: authLoading } = useAuthUser();
   const [phase, setPhase] = useState<Phase>("resolving");
   const [reportId, setReportId] = useState<string | null>(null);
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
+  const [subscriptionPaid, setSubscriptionPaid] = useState(false);
   const cancelledRef = useRef(false);
 
   const sessionId = searchParams.get("session_id");
@@ -26,7 +28,36 @@ export default function PaymentComplete() {
     const run = async () => {
       setPhase("resolving");
 
-      // Resolve report id.
+      // 1) Check if this is a subscription purchase.
+      const pendingSubId = localStorage.getItem("pendingSubscriptionId");
+      if (pendingSubId) {
+        setSubscriptionId(pendingSubId);
+        setPhase("polling");
+
+        const started = Date.now();
+        while (!cancelledRef.current && Date.now() - started < 20_000) {
+          const { data } = await (supabase as any)
+            .from("subscription_purchases")
+            .select("status, user_id")
+            .eq("id", pendingSubId)
+            .maybeSingle();
+          if (data?.status === "paid") {
+            setSubscriptionPaid(true);
+            localStorage.removeItem("pendingSubscriptionId");
+            if (user) {
+              navigate("/app-dashboard");
+            } else {
+              setPhase("timeout");
+            }
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+        if (!cancelledRef.current) setPhase("timeout");
+        return;
+      }
+
+      // 2) Legacy report flow.
       let id = localStorage.getItem("pendingReportId");
       if (!id && sessionId) {
         const { data } = await (supabase as any)
@@ -81,7 +112,11 @@ export default function PaymentComplete() {
             <CardTitle>Payment received</CardTitle>
             <CardDescription>
               {phase === "timeout"
-                ? "Your full report is unlocking now and will appear under My Reports in a moment."
+                ? subscriptionId
+                  ? "Your 12-month pass is ready — create your account to start using it."
+                  : "Your full report is unlocking now and will appear under My Reports in a moment."
+                : subscriptionId
+                ? "Activating your 12-month pass…"
                 : "Unlocking your full report…"}
             </CardDescription>
           </CardHeader>
@@ -92,7 +127,11 @@ export default function PaymentComplete() {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                {reportId ? (
+                {subscriptionId && !user ? (
+                  <Button onClick={() => navigate(`/auth?redirect=app-dashboard&subscriptionId=${subscriptionId}`)}>
+                    Create account to activate pass
+                  </Button>
+                ) : reportId ? (
                   <Button onClick={() => navigate(`/report/${reportId}`)}>
                     Open my report
                   </Button>
