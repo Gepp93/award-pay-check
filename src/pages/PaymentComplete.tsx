@@ -16,6 +16,8 @@ export default function PaymentComplete() {
   const { user, loading: authLoading } = useAuthUser();
   const [phase, setPhase] = useState<Phase>("resolving");
   const [reportId, setReportId] = useState<string | null>(null);
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
+  const [subscriptionPaid, setSubscriptionPaid] = useState(false);
   const cancelledRef = useRef(false);
 
   const sessionId = searchParams.get("session_id");
@@ -26,7 +28,36 @@ export default function PaymentComplete() {
     const run = async () => {
       setPhase("resolving");
 
-      // Resolve report id.
+      // 1) Check if this is a subscription purchase.
+      const pendingSubId = localStorage.getItem("pendingSubscriptionId");
+      if (pendingSubId) {
+        setSubscriptionId(pendingSubId);
+        setPhase("polling");
+
+        const started = Date.now();
+        while (!cancelledRef.current && Date.now() - started < 20_000) {
+          const { data } = await (supabase as any)
+            .from("subscription_purchases")
+            .select("status, user_id")
+            .eq("id", pendingSubId)
+            .maybeSingle();
+          if (data?.status === "paid") {
+            setSubscriptionPaid(true);
+            localStorage.removeItem("pendingSubscriptionId");
+            if (user) {
+              navigate("/app-dashboard");
+            } else {
+              setPhase("timeout");
+            }
+            return;
+          }
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+        if (!cancelledRef.current) setPhase("timeout");
+        return;
+      }
+
+      // 2) Legacy report flow.
       let id = localStorage.getItem("pendingReportId");
       if (!id && sessionId) {
         const { data } = await (supabase as any)
@@ -70,6 +101,7 @@ export default function PaymentComplete() {
   }, [authLoading, user, sessionId]);
 
   return (
+
     <>
       {user ? <NavBar /> : <PublicNavBar />}
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
