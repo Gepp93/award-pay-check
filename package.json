@@ -4,8 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "npx tsx scripts/generate-sitemap.ts",
     "dev": "vite",
+    "prebuild": "npx tsx scripts/generate-sitemap.ts",
     "build": "vite build",
+    "postbuild": "npx tsx scripts/prerender-award-pages.ts",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
