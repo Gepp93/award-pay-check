@@ -255,7 +255,7 @@ async function main() {
       );
     } else {
       pageHtml = pageHtml.replace(
-        /<link rel="canonical" href="[^"]*">/,
+        /<link rel="canonical" href="[^"]*"\s*\/?>/,
         `<link rel="canonical" href="${pageUrl}">`,
       );
     }
