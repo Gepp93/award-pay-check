@@ -29,6 +29,7 @@ import CheckUpload from "./pages/CheckUpload";
 import Report from "./pages/Report";
 import MyReports from "./pages/MyReports";
 import PaymentComplete from "./pages/PaymentComplete";
+import UnderpaidAward from "./pages/UnderpaidAward";
 
 const queryClient = new QueryClient();
 
