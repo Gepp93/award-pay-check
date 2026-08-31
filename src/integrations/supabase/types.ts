@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      award_pages: {
+        Row: {
+          award_code: string
+          body_json: Json
+          created_at: string
+          generated_at: string | null
+          meta_description: string
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          award_code: string
+          body_json?: Json
+          created_at?: string
+          generated_at?: string | null
+          meta_description: string
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          award_code?: string
+          body_json?: Json
+          created_at?: string
+          generated_at?: string | null
+          meta_description?: string
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_pages_award_code_fkey"
+            columns: ["award_code"]
+            isOneToOne: false
+            referencedRelation: "awards"
+            referencedColumns: ["award_code"]
+          },
+        ]
+      }
+      awards: {
+        Row: {
+          award_code: string
+          created_at: string
+          effective_date: string | null
+          industry: string | null
+          name: string
+          rates_json: Json | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          award_code: string
+          created_at?: string
+          effective_date?: string | null
+          industry?: string | null
+          name: string
+          rates_json?: Json | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          award_code?: string
+          created_at?: string
+          effective_date?: string | null
+          industry?: string | null
+          name?: string
+          rates_json?: Json | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       calculations: {
         Row: {
           breakdown: Json
