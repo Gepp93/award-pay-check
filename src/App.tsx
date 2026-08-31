@@ -29,6 +29,7 @@ import CheckUpload from "./pages/CheckUpload";
 import Report from "./pages/Report";
 import MyReports from "./pages/MyReports";
 import PaymentComplete from "./pages/PaymentComplete";
+import UnderpaidAward from "./pages/UnderpaidAward";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/payment-complete" element={<PaymentComplete />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/thank-you" element={<ThankYou />} />
+          <Route path="/underpaid/:slug" element={<UnderpaidAward />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
