@@ -219,7 +219,8 @@ async function main() {
 
   let written = 0;
   for (const page of pages) {
-    const pageHtml = indexHtml
+    const pageUrl = `${BASE_URL}/underpaid/${page.slug}`;
+    let pageHtml = indexHtml
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(page.title)}</title>`)
       .replace(
         /<meta name="description" content="[^"]*">/,
@@ -235,12 +236,29 @@ async function main() {
       )
       .replace(
         /<meta property="og:url" content="[^"]*">/,
-        `<meta property="og:url" content="${BASE_URL}/underpaid/${page.slug}">`,
+        `<meta property="og:url" content="${pageUrl}">`,
       )
       .replace(
-        /<link rel="canonical" href="[^"]*">/,
-        `<link rel="canonical" href="${BASE_URL}/underpaid/${page.slug}">`,
+        /<meta name="twitter:title" content="[^"]*">/,
+        `<meta name="twitter:title" content="${escapeHtml(page.title)}">`,
+      )
+      .replace(
+        /<meta name="twitter:description" content="[^"]*">/,
+        `<meta name="twitter:description" content="${escapeHtml(page.meta_description)}">`,
       );
+
+    // Inject canonical if not present in the shell.
+    if (!pageHtml.includes('<link rel="canonical"')) {
+      pageHtml = pageHtml.replace(
+        "</head>",
+        `  <link rel="canonical" href="${pageUrl}">\n  </head>`,
+      );
+    } else {
+      pageHtml = pageHtml.replace(
+        /<link rel="canonical" href="[^"]*">/,
+        `<link rel="canonical" href="${pageUrl}">`,
+      );
+    }
 
     const finalHtml = renderStaticAwardPage(page, pageHtml);
     const outPath = resolve(process.cwd(), "dist", "underpaid", page.slug, "index.html");
