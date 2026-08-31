@@ -223,27 +223,27 @@ async function main() {
     let pageHtml = indexHtml
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(page.title)}</title>`)
       .replace(
-        /<meta name="description" content="[^"]*">/,
+        /<meta name="description" content="[^"]*"\s*\/?>/,
         `<meta name="description" content="${escapeHtml(page.meta_description)}">`,
       )
       .replace(
-        /<meta property="og:title" content="[^"]*">/,
+        /<meta property="og:title" content="[^"]*"\s*\/?>/,
         `<meta property="og:title" content="${escapeHtml(page.title)}">`,
       )
       .replace(
-        /<meta property="og:description" content="[^"]*">/,
+        /<meta property="og:description" content="[^"]*"\s*\/?>/,
         `<meta property="og:description" content="${escapeHtml(page.meta_description)}">`,
       )
       .replace(
-        /<meta property="og:url" content="[^"]*">/,
+        /<meta property="og:url" content="[^"]*"\s*\/?>/,
         `<meta property="og:url" content="${pageUrl}">`,
       )
       .replace(
-        /<meta name="twitter:title" content="[^"]*">/,
+        /<meta name="twitter:title" content="[^"]*"\s*\/?>/,
         `<meta name="twitter:title" content="${escapeHtml(page.title)}">`,
       )
       .replace(
-        /<meta name="twitter:description" content="[^"]*">/,
+        /<meta name="twitter:description" content="[^"]*"\s*\/?>/,
         `<meta name="twitter:description" content="${escapeHtml(page.meta_description)}">`,
       );
 
