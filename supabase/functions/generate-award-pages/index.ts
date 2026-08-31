@@ -55,13 +55,16 @@ async function isAdmin(req: Request): Promise<boolean> {
 }
 
 async function fetchUnprocessedAwards(supabase: ReturnType<typeof adminClient>): Promise<AwardRow[]> {
-  const { data, error } = await supabase
-    .from("awards")
-    .select("award_code,name,slug,industry,effective_date,rates_json")
-    .not("award_code", "in", supabase.from("award_pages").select("award_code"));
+  const [{ data: pages, error: pagesError }, { data: awards, error: awardsError }] = await Promise.all([
+    supabase.from("award_pages").select("award_code"),
+    supabase.from("awards").select("award_code,name,slug,industry,effective_date,rates_json"),
+  ]);
 
-  if (error) throw new Error(`Failed to fetch awards: ${error.message}`);
-  return (data as AwardRow[]) || [];
+  if (awardsError) throw new Error(`Failed to fetch awards: ${awardsError.message}`);
+  if (pagesError) throw new Error(`Failed to fetch award_pages: ${pagesError.message}`);
+
+  const processedCodes = new Set((pages || []).map((p) => p.award_code));
+  return ((awards || []) as AwardRow[]).filter((a) => !processedCodes.has(a.award_code));
 }
 
 function buildPrompt(awardName: string, ratesJson: Record<string, unknown>): string {
