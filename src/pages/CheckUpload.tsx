@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ApNav } from "@/components/ApNav";
 import SEO from "@/components/SEO";
 import { Loader2, Camera, AlertCircle } from "lucide-react";
+import { takePreloadedPayslip } from "@/lib/pendingPayslip";
 
 // Tiny scroll-reveal hook (same pattern used on Why / How / Pricing).
 function useReveal() {
@@ -150,6 +151,11 @@ export default function CheckUpload() {
     const f = e.target.files?.[0];
     if (f) handleFile(f);
   };
+
+  useEffect(() => {
+    const file = takePreloadedPayslip();
+    if (file) void handleFile(file);
+  }, []);
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();

@@ -21,7 +21,7 @@ export const ApNav = () => {
           <a onClick={() => go("/contact")} style={{ cursor: "pointer" }}>Contact</a>
         </nav>
         <div className="ap-nav-cta">
-          <a className="ap-ghost" onClick={() => go("/auth")} style={{ cursor: "pointer" }}>Sign in</a>
+          <a className="ap-sign-in" href="/auth" onClick={(event) => { event.preventDefault(); go("/auth"); }}>Sign in</a>
           <button className="ap-btn ap-btn-gold" onClick={() => go("/check")}>Check my payslip</button>
         </div>
         <button
