@@ -5,46 +5,12 @@ import { ApNav } from "@/components/ApNav";
 import { supabase } from "@/integrations/supabase/client";
 import { startSubscriptionCheckout } from "@/lib/paymentLinks";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
+import { UploadCloud, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { preloadPayslip } from "@/lib/pendingPayslip";
 
-
-/* Animated "owed" figure — counts up on load, respects reduced motion */
-const OwedFigure = ({ target = 1542, suffix = "/yr" }: { target?: number; suffix?: string }) => {
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      el.firstChild!.nodeValue = `$${target.toLocaleString()}`;
-      return;
-    }
-    let start: number | null = null;
-    const dur = 1200;
-    let raf = 0;
-    const step = (t: number) => {
-      if (start === null) start = t;
-      const p = Math.min((t - start) / dur, 1);
-      const eased = 1 - Math.pow(1 - p, 3);
-      el.firstChild!.nodeValue = `$${Math.round(eased * target).toLocaleString()}`;
-      if (p < 1) raf = requestAnimationFrame(step);
-    };
-    const timer = window.setTimeout(() => {
-      raf = requestAnimationFrame(step);
-    }, 600);
-    return () => {
-      window.clearTimeout(timer);
-      cancelAnimationFrame(raf);
-    };
-  }, [target]);
-  return (
-    <>
-      <span ref={ref}>$0</span>
-      <span style={{ fontSize: "0.55em", marginLeft: 2, color: "hsl(var(--muted-foreground))", fontWeight: 600 }}>
-        {" "}
-        {suffix}
-      </span>
-    </>
-  );
-};
 
 const PayslipStage = () => (
   <div className="ap-stage" aria-hidden="true">
@@ -109,9 +75,9 @@ const PayslipStage = () => (
         </div>
 
         <div className="ap-l-total">
-          <div className="tl">Owed / year</div>
+          <div className="tl">This week</div>
           <div className="tn">
-            <OwedFigure target={1542} suffix="" />
+            +$76.14
           </div>
         </div>
       </div>
@@ -121,16 +87,6 @@ const PayslipStage = () => (
     <div className="ap-chip ap-chip-found">
       <span className="c">✓</span>
       Underpayment found
-    </div>
-
-    <div className="ap-chip ap-chip-owed">
-      <div className="ic">💰</div>
-      <div>
-        <div className="t">You may be owed</div>
-        <div className="n">
-          <OwedFigure target={1542} suffix="" />
-        </div>
-      </div>
     </div>
 
     <div className="ap-chip ap-chip-pen">
@@ -145,6 +101,17 @@ const Index = () => {
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [checkingOut, setCheckingOut] = useState(false);
   const startCheck = () => navigate("/check");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const openFile = (file?: File) => {
+    if (!file) return;
+    if (!/\.(pdf|jpe?g|png|heic|heif)$/i.test(file.name) && !["application/pdf", "image/jpeg", "image/png", "image/heic", "image/heif"].includes(file.type)) {
+      toast.error("Please choose a PDF, JPG or PNG payslip.");
+      return;
+    }
+    preloadPayslip(file);
+    startCheck();
+  };
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -169,7 +136,7 @@ const Index = () => {
 
   return (
 
-    <div>
+    <div className="ap-home">
       <SEO
         title="Am I Being Underpaid? Free Award Pay Check | AwardPay"
         description="Check Australian award pay in 60 seconds. 1 in 5 workers lose $1,542/year on penalty rates, overtime and allowances."
@@ -205,10 +172,19 @@ const Index = () => {
             allowances — on average <strong>$1,542 a year</strong>. Snap a photo of your payslip
             and we'll check it against the official Fair Work rates in about a minute.
           </p>
+          <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif" className="hidden" aria-label="Upload your payslip" onChange={(event) => openFile(event.target.files?.[0])} />
+          <Button variant="outline" className={`ap-home-upload rounded-xl ${dragging ? "is-dragging" : ""}`}
+            onClick={() => inputRef.current?.click()}
+            onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(event) => { event.preventDefault(); setDragging(false); openFile(event.dataTransfer.files[0]); }}>
+            <UploadCloud aria-hidden="true" />
+            <span>Drop your payslip or take a photo<small>PDF / JPG / PNG</small></span>
+          </Button>
           <div className="ap-cta-row">
-            <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
+            <Button variant="ghost" className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
               Check my payslip — free
-            </button>
+            </Button>
             <a href="/how-it-works" className="ap-btn ap-btn-outline ap-btn-lg">
               See how it works
             </a>
@@ -228,47 +204,6 @@ const Index = () => {
         <PayslipStage />
       </header>
 
-      {/* Prominent 12-month offer card */}
-      <section className="ap-offer-section">
-        <div className="ap-wrap">
-          <div className="ap-offer-card">
-            <div className="ap-offer-badge">Best value</div>
-            <div className="ap-offer-inner">
-              <div className="ap-offer-main">
-                <h2 className="ap-h2" style={{ marginBottom: 10 }}>
-                  Check any payslip, anytime — for 12 months
-                </h2>
-                <p className="ap-sub" style={{ maxWidth: "none", marginBottom: 22 }}>
-                  Unlimited payslip checks + AI Payslip Checker. One payment, $10 for a full year.
-                </p>
-
-                <div className="ap-offer-price">
-                  <span className="ap-offer-amount">$10</span>
-                  <span className="ap-offer-term">/ 12 months unlimited</span>
-                </div>
-
-                <ul className="ap-offer-list">
-                  <li><span className="ap-offer-tick">✓</span>Unlimited checks</li>
-                  <li><span className="ap-offer-tick">✓</span>AI underpayment detection</li>
-                  <li><span className="ap-offer-tick">✓</span>Full 12-month access</li>
-                  <li><span className="ap-offer-tick">✓</span>One-time payment — no subscription</li>
-                </ul>
-
-                <button
-                  className="ap-btn ap-btn-gold ap-btn-lg"
-                  onClick={handleYearlyCheckout}
-                  disabled={checkingOut}
-                >
-                  {checkingOut ? "Opening checkout…" : "Get 12 months for $10 →"}
-                </button>
-
-                <p className="ap-offer-note">Launch price — locks in your rate for 12 months.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* How it works */}
 
       <section className="ap-wrap ap-section">
@@ -279,41 +214,20 @@ const Index = () => {
         </p>
         <div className="ap-steps">
           <div className="ap-step">
-            <div className="num">1</div>
+            <div className="ap-step-snippet"><UploadCloud className="h-7 w-7" /><span>payslip.pdf</span><CheckCircle2 className="h-4 w-4" /></div><div className="num">1</div>
             <h3>Snap your payslip</h3>
             <p>Take a photo or upload a PDF. Our reader pulls out your hours, rate, allowances and pay period.</p>
           </div>
           <div className="ap-step">
-            <div className="num">2</div>
+            <div className="ap-step-snippet"><span className="ap-award-chip"><CheckCircle2 className="h-4 w-4" /> General Retail Award</span></div><div className="num">2</div>
             <h3>We check the official rates</h3>
             <p>We match your role to the right modern award and compare your pay against live Fair Work Commission rates.</p>
           </div>
           <div className="ap-step">
-            <div className="num">3</div>
+            <div className="ap-step-snippet ap-result-snippet"><span>Saturday penalty</span><strong>+$41.13</strong></div><div className="num">3</div>
             <h3>See what you're owed</h3>
             <p>A clear, line-by-line breakdown of any missing penalties, overtime or allowances — ready to act on.</p>
           </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="ap-wrap ap-section">
-        <div className="ap-stats">
-          <div className="ap-stat">
-            <div className="n">$1.35B</div>
-            <div className="l">Recovered for underpaid workers by the Fair Work Ombudsman in a single year</div>
-          </div>
-          <div className="ap-stat">
-            <div className="n">1 in 5</div>
-            <div className="l">Young Australian workers report being paid below the lawful minimum</div>
-          </div>
-          <div className="ap-stat">
-            <div className="n">$1,542</div>
-            <div className="l">Average amount an underpaid worker loses across a year</div>
-          </div>
-        </div>
-        <div className="ap-note">
-          Figures are illustrative placeholders — replace each with a cited Fair Work Ombudsman / research source before publishing.
         </div>
       </section>
 
@@ -324,7 +238,7 @@ const Index = () => {
             <h2>Built on the official source of truth</h2>
             <p>
               Your pay is checked against live data from the Fair Work Commission — the same modern award rates,
-              penalties and allowances that legally apply to your job. Not estimates, not guesses.
+              penalties and allowances that legally apply to your job. Calculated from official Fair Work rates.
             </p>
           </div>
           <div className="creds">
@@ -341,13 +255,82 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Stats */}
+      <section className="ap-wrap ap-section">
+        <div className="ap-stats">
+          <div className="ap-stat">
+            <div className="n">$1.35B</div>
+            <div className="l">Recovered for underpaid workers by the Fair Work Ombudsman in a single year</div>
+            <a className="ap-stat-source" href="#">Source: Fair Work Ombudsman</a>
+          </div>
+          <div className="ap-stat">
+            <div className="n">1 in 5</div>
+            <div className="l">Young Australian workers report being paid below the lawful minimum</div>
+            <a className="ap-stat-source" href="#">Source: worker research</a>
+          </div>
+          <div className="ap-stat">
+            <div className="n">$1,542</div>
+            <div className="l">Average amount an underpaid worker loses across a year</div>
+            <a className="ap-stat-source" href="#">Source: underpayment research</a>
+          </div>
+        </div>
+      </section>
+
+      <section className="ap-wrap ap-section" aria-labelledby="home-pricing-title">
+        <div className="ap-home-pricing">
+          <div className="ap-eyebrow">Pricing</div>
+          <h2 id="home-pricing-title" className="ap-h2">A simple check. A clear price.</h2>
+          <div className="ap-home-pricing-grid">
+            <div className="ap-home-tier">
+              <h3><span>First check</span> — Free</h3>
+              <div className="ap-home-price">$0</div>
+              <p>Find out whether your payslip adds up.</p>
+              <ul><li>One payslip check</li><li>Official Fair Work rates</li><li>No account needed</li></ul>
+              <Button variant="outline" className="ap-btn ap-btn-outline" onClick={startCheck}>Check my payslip — free</Button>
+            </div>
+            <div className="ap-home-tier ap-home-tier-paid">
+              <span className="ap-home-best-value">BEST VALUE</span>
+              <h3><span>12 months unlimited</span> — $10</h3>
+              <div className="ap-home-price">$10<small> / 12 months</small></div>
+              <p>Check any payslip, anytime, for a full year.</p>
+              <ul><li>Unlimited payslip checks</li><li>AI underpayment detection</li><li>One payment — no subscription</li></ul>
+              <Button variant="ghost" className="ap-btn ap-btn-gold" onClick={handleYearlyCheckout} disabled={checkingOut}>
+                {checkingOut ? "Opening checkout…" : "Get 12 months for $10 →"}
+              </Button>
+              <p className="ap-home-price-note">Launch price. Prices in AUD.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="ap-wrap ap-section" aria-labelledby="home-faq-title">
+        <div className="ap-home-faq">
+          <div className="ap-eyebrow">FAQ</div>
+          <h2 id="home-faq-title" className="ap-h2">Your questions, answered.</h2>
+          <Accordion type="single" collapsible>
+            {[
+              ["Is this legal advice?", "No. AwardPay is a pay-checking and interpretation tool, not legal advice. Confirm your entitlements with the Fair Work Ombudsman, your union or a qualified adviser before making a claim."],
+              ["Which awards are covered?", "You can search for your modern award in the checker. Coverage depends on the award and classification data available. If you cannot find yours, confirm it with the Fair Work Ombudsman."],
+              ["What happens to my payslip?", "Your payslip is sent to an AI service to read your pay details, then discarded. The payslip file is not stored by AwardPay; extracted details may be included in your saved report."],
+              ["What if I'm underpaid?", "Review the breakdown and check that your role, hours and employment type are correct. Keep your payslips and speak to your employer. If you need more help, contact the Fair Work Ombudsman or your union."],
+              ["What does the $10 include?", "One payment gives you 12 months of unlimited payslip checks with the AI Payslip Checker and underpayment detection. It is not a recurring subscription."]
+            ].map(([question, answer], index) => (
+              <AccordionItem key={question} value={`faq-${index}`}>
+                <AccordionTrigger className="text-left gap-4">{question}</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground leading-relaxed">{answer}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="ap-wrap ap-final">
         <h2>Find out what you're owed</h2>
         <p>It takes about a minute and costs nothing. You might be surprised.</p>
-        <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
+        <Button variant="ghost" className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
           Check my payslip — free
-        </button>
+        </Button>
       </section>
 
       {/* Footer */}
@@ -357,7 +340,13 @@ const Index = () => {
             <span className="ap-mark" />
             AwardPay
           </div>
+          <nav className="ap-home-footer-links" aria-label="Footer">
+            <a href="#" onClick={(event) => { event.preventDefault(); toast.info("Privacy Policy is not available yet."); }}>Privacy Policy</a>
+            <a href="#" onClick={(event) => { event.preventDefault(); toast.info("Terms are not available yet."); }}>Terms</a>
+            <Link to="/contact">Contact</Link>
+          </nav>
           <div className="fine">
+            <div>ABN: pending confirmation</div>
             © 2026 AwardPay · Pay checks are estimates based on Fair Work Modern Award data. Confirm before lodging a claim.
           </div>
         </div>
