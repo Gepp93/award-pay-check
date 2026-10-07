@@ -322,3 +322,75 @@
 [data-reveal] { opacity: 0; transform: translateY(16px); transition: opacity .6s ease-out, transform .6s ease-out; }
 [data-reveal].is-visible { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { [data-reveal] { opacity: 1; transform: none; transition: none; } }
+
+/* Homepage-only refinements: preserve other pages' existing presentation. */
+.ap-home {
+  --gold-ink: 44 76.92% 30.59%;
+  --forest: 158 42% 13%;
+  --forest-foreground: 0 0% 100%;
+  --forest-muted: 150 14% 82%;
+  --forest-line: 150 14% 40%;
+}
+.ap-sign-in { color: hsl(var(--foreground)); font-size: 15px; font-weight: 400; text-decoration: none; }
+.ap-sign-in:hover { text-decoration: underline; }
+.ap-home .ap-section { padding-top: 42px; padding-bottom: 42px; }
+.ap-home .ap-hero { padding-top: 35px; padding-bottom: 43px; }
+.ap-home .ap-final { padding-top: 49px; padding-bottom: 49px; }
+.ap-home .ap-h1 { font-size: 56px; letter-spacing: 0; }
+.ap-home .ap-h2 { font-size: 34px; letter-spacing: 0; text-wrap: balance; }
+.ap-home .ap-lede { font-size: 17px; margin-bottom: 22px; }
+.ap-home .ap-btn { height: auto; white-space: normal; }
+.ap-home-upload { width: 100%; min-height: 100px; height: auto; margin-bottom: 18px; padding: 20px; border: 2px dashed hsl(var(--border)); background: hsl(var(--card)); text-align: left; justify-content: flex-start; gap: 14px; font-size: 15px; }
+.ap-home-upload svg { width: 28px; height: 28px; color: hsl(var(--primary)); }
+.ap-home-upload small { display: block; margin-top: 6px; color: hsl(var(--muted-foreground)); font-size: 12px; font-weight: 400; }
+.ap-home-upload:hover, .ap-home-upload.is-dragging { border-color: hsl(var(--primary)); background: hsl(var(--primary-soft)); }
+.ap-home .ap-stage { height: 520px; }
+.ap-home .ap-chip-pen { top: 466px; bottom: auto; right: 4px; }
+.ap-home .ap-l-total .tl { letter-spacing: 0; text-transform: none; font-size: 13px; }
+.ap-home .ap-l-total .tn { font-size: 28px; }
+.ap-home .ap-steps { margin-top: 26px; }
+.ap-home .ap-step { padding: 22px; }
+.ap-step-snippet { height: 66px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; border-bottom: 1px solid hsl(var(--border)); color: hsl(var(--primary)); font-size: 12px; }
+.ap-award-chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 6px; background: hsl(var(--primary-soft)); font-weight: 600; }
+.ap-result-snippet { justify-content: space-between; color: hsl(var(--foreground)); }
+.ap-result-snippet strong { color: hsl(var(--clay)); font-family: "IBM Plex Mono", monospace; }
+.ap-home .ap-band { background: hsl(var(--forest)); color: hsl(var(--forest-foreground)); padding: 30px; }
+.ap-home .ap-band p { color: hsl(var(--forest-muted)); opacity: 1; }
+.ap-home .ap-band h2 { letter-spacing: 0; }
+.ap-stat-source { display: inline-block; margin-top: 12px; font-size: 11px; color: hsl(var(--muted-foreground)); text-underline-offset: 3px; }
+.ap-home-pricing, .ap-home-faq { max-width: 720px; margin: 0 auto; }
+.ap-home-pricing > .ap-eyebrow, .ap-home-pricing > .ap-h2 { text-align: center; }
+.ap-home-pricing-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 26px; }
+.ap-home-tier { border: 1px solid hsl(var(--border)); border-radius: 8px; padding: 28px 22px; display: flex; flex-direction: column; background: hsl(var(--card)); }
+.ap-home-tier h3 { font-size: 17px; font-weight: 700; line-height: 1.6; margin-bottom: 16px; text-wrap: balance; }
+.ap-home-tier h3 span { white-space: nowrap; }
+.ap-home-tier p { font-size: 14px; line-height: 1.6; color: hsl(var(--muted-foreground)); }
+.ap-home-price { font-size: 42px; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+.ap-home-price small { font-size: 13px; font-weight: 400; }
+.ap-home-tier ul { list-style: none; padding: 0; margin: 18px 0 24px; flex: 1; font-size: 13px; line-height: 1.6; }
+.ap-home-tier li { margin-bottom: 9px; }
+.ap-home-tier li::before { content: "✓"; margin-right: 8px; color: hsl(var(--primary)); }
+.ap-home-tier-paid { background: hsl(var(--forest)); color: hsl(var(--forest-foreground)); border-color: hsl(var(--forest-line)); }
+.ap-home-tier-paid p, .ap-home-tier-paid li, .ap-home-tier-paid small { color: hsl(var(--forest-muted)); }
+.ap-home-tier-paid li::before { color: hsl(var(--forest-foreground)); }
+.ap-home-best-value { align-self: flex-start; font-size: 11px; font-weight: 800; border-bottom: 1px solid hsl(var(--forest-line)); padding-bottom: 8px; margin-bottom: 10px; }
+.ap-home-tier .ap-home-price-note { font-size: 11px; margin-top: 12px; margin-bottom: 0; }
+.ap-home-footer-links { display: flex; flex-wrap: wrap; gap: 20px; font-size: 13px; }
+.ap-home-footer-links a { color: hsl(var(--muted-foreground)); text-decoration: none; }
+.ap-home-footer-links a:hover { text-decoration: underline; }
+.ap-home .ap-footer .fine { width: 100%; line-height: 1.8; }
+@media (max-width: 920px) {
+  .ap-home .ap-hero { padding-top: 24px; padding-bottom: 28px; }
+  .ap-home .ap-h1 { font-size: 40px; }
+  .ap-home .ap-h2 { font-size: 28px; }
+  .ap-home .ap-lede { font-size: 16px; line-height: 1.5; }
+  .ap-home .ap-wrap { padding-left: 20px; padding-right: 20px; }
+  .ap-home .ap-section { padding-top: 30px; padding-bottom: 30px; }
+  .ap-home .ap-band { padding: 24px; }
+}
+@media (max-width: 600px) {
+  .ap-home-pricing-grid { grid-template-columns: 1fr; }
+  .ap-home-tier h3 { font-size: 18px; }
+  .ap-home .ap-h1 { font-size: 34px; }
+  .ap-home .ap-band h2 { font-size: 24px; }
+}
