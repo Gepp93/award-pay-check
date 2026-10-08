@@ -18,6 +18,27 @@ export function LockedTeaser({ result }: Props) {
   const reasonsCount = Array.isArray(result?.reasons) ? result.reasons.length : 0;
   const issueCount = allowances.length + reasonsCount;
 
+  return (
+    <section className="checker-findings">
+      <h3>What we found</h3>
+      {allowances.slice(0, 3).map((item) => (
+        <div key={item.id || item.name} className="checker-finding-row">
+          <div className="min-w-0"><span className="ledger-missing">MISSING</span><span>{item.name}</span></div>
+          <span className="checker-locked-detail"><Lock className="h-3.5 w-3.5" />In full report</span>
+        </div>
+      ))}
+      {reasonsCount > 0 && (
+        <div className="checker-finding-row">
+          <div className="min-w-0"><span className="ledger-missing">MISSING</span><span>{reasonsCount} pay item{reasonsCount === 1 ? "" : "s"} to explain</span></div>
+          <span className="checker-locked-detail"><Lock className="h-3.5 w-3.5" />In full report</span>
+        </div>
+      )}
+      {issueCount === 0 && <p className="text-sm text-muted-foreground">Your full report shows exactly where the money went missing.</p>}
+    </section>
+  );
+}
+
+export function ReportIncludes() {
   const includes = [
     "Your award, classification and the exact hourly rate you should be on",
     "A shift-by-shift breakdown of what you were paid vs what you were owed",
@@ -27,40 +48,10 @@ export function LockedTeaser({ result }: Props) {
   ];
 
   return (
-    <div
-      className="rounded-lg p-6 space-y-4 relative overflow-hidden text-left"
-      style={{
-        background: "hsl(var(--muted) / 0.4)",
-        border: "1px solid hsl(var(--border))",
-      }}
-    >
-      <div className="flex items-start gap-3">
-        <div
-          className="w-10 h-10 rounded-md flex items-center justify-center shrink-0"
-          style={{ background: "hsl(var(--primary) / 0.12)" }}
-        >
-          <Lock className="h-5 w-5 text-primary" />
-        </div>
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold">
-            Your full report shows exactly where the money went missing
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {issueCount > 0
-              ? `We found ${issueCount} item${issueCount === 1 ? "" : "s"} to explain. Here's what you get for $10:`
-              : "Here's what you get for $10:"}
-          </p>
-        </div>
-      </div>
-
-      <ul className="rounded-lg bg-background/60 border border-border/60 p-4 space-y-2">
-        {includes.map((item) => (
-          <li key={item} className="flex items-start gap-2 text-sm">
-            <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-            <span className="text-foreground">{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <ul className="checker-includes">
+      {includes.map((item) => (
+        <li key={item}><Check className="h-4 w-4 text-primary shrink-0" /><span>{item}</span></li>
+      ))}
+    </ul>
   );
 }

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { FullReport } from "@/components/report/FullReport";
-import { LockedTeaser } from "@/components/report/LockedTeaser";
+import { LockedTeaser, ReportIncludes } from "@/components/report/LockedTeaser";
 import { NavBar } from "@/components/NavBar";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { useUserCredits } from "@/hooks/useUserCredits";
@@ -165,35 +165,22 @@ export default function Report() {
   return (
     <>
       {user ? <NavBar /> : <PublicNavBar />}
-      <div className="min-h-screen flex items-start justify-center p-4 pt-24 bg-background">
-        <Card className="w-full max-w-3xl">
-          <CardHeader>
-            <CardTitle>Your pay check report</CardTitle>
-            <CardDescription>
+      <div className={`checker-page ${!user ? "checker-public" : ""}`}>
+        <main className="checker-report">
+          <header className="checker-heading">
+            <h1>Your pay check report</h1>
+            <p>
               {isPaid ? "Full report unlocked." : "Preview — unlock to see full detail."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+            </p>
+          </header>
+          <div className="space-y-6">
             {/* Headline */}
-            {isUnderpaid ? (
-              <div
-                className="text-center rounded-lg px-6 py-10"
-                style={{
-                  background: "hsl(var(--primary) / 0.06)",
-                  border: "1px solid hsl(var(--primary) / 0.18)",
-                }}
-              >
-                <div className="text-sm font-semibold uppercase tracking-wider text-primary mb-2">
+            {!isPaid && (isUnderpaid ? (
+              <div className="checker-sheet">
+                <div className="ledger-label mb-3">
                   {isUnsureMode ? "You may be owed up to" : "You may be owed"}
                 </div>
-                <div
-                  className="figure font-semibold tabular-nums"
-                  style={{
-                    color: "hsl(var(--foreground))",
-                    fontSize: 84,
-                    lineHeight: 1,
-                  }}
-                >
+                <div className="checker-owed figure">
                   {isUnsureMode ? "~" : ""}$
                   {owed.toLocaleString("en-AU", {
                     minimumFractionDigits: 2,
@@ -202,17 +189,11 @@ export default function Report() {
                 </div>
               </div>
             ) : (
-              <div
-                className="text-center rounded-lg px-6 py-10"
-                style={{
-                  background: "hsl(var(--primary) / 0.06)",
-                  border: "1px solid hsl(var(--primary) / 0.18)",
-                }}
-              >
+              <div className="checker-sheet">
                 <CheckCircle className="h-10 w-10 text-primary mx-auto mb-3" />
                 <h2 className="text-2xl font-semibold">Looks like you were paid correctly</h2>
               </div>
-            )}
+            ))}
 
             {isPaid ? (
               <>
@@ -254,10 +235,11 @@ export default function Report() {
                     credit{credits === 1 ? "" : "s"} left from your Back-Pay Pack.
                   </div>
                 )}
+                <aside className="checker-unlock"><h2>Get the full report</h2><ReportIncludes />
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <button
+                  <Button
                     type="button"
-                    className="ap-btn ap-btn-primary flex-1"
+                    className="w-full"
                     onClick={() => handleUnlock("full_report")}
                     disabled={redeeming}
                   >
@@ -266,16 +248,16 @@ export default function Report() {
                       : user && credits > 0
                       ? `Unlock with 1 credit (${credits} left)`
                       : "Unlock full report — $10"}
-                  </button>
+                  </Button>
                 </div>
                 <p className="text-[13px] text-center text-muted-foreground">
                   One-off $10 payment · no account needed · no subscription · refunded if the
                   report is wrong
-                </p>
+                </p></aside>
               </>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </main>
       </div>
     </>
   );

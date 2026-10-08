@@ -2,7 +2,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import { LockedTeaser } from "@/components/report/LockedTeaser";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LockedTeaser, ReportIncludes } from "@/components/report/LockedTeaser";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
@@ -174,41 +176,28 @@ export default function NewCheck_Step3_Result() {
   return (
     <>
       {user ? <NavBar /> : <PublicNavBar />}
-      <div className={`min-h-screen flex items-start justify-center p-4 bg-background ${!user ? "pt-24" : "pt-4"}`}>
-        <Card className="w-full max-w-3xl">
-          <CardHeader>
-            <div className="no-print">
-              <ProgressIndicator currentStep={3} />
+      <main className={`checker-page ${!user ? "checker-public" : ""}`}>
+        <header className="checker-heading">
+          <ProgressIndicator currentStep={3} />
+          <h1>Your pay check</h1>
+          <p>Based on official Fair Work modern award rates.</p>
+        </header>
+        <div className="checker-result-layout">
+          <article className="checker-sheet">
+            <div className="checker-sheet-header">
+              <span className="ledger-label">PAY CHECK</span>
+              {shiftDetails?.date && <span className="font-mono text-[13px] text-muted-foreground">{shiftDetails.date}</span>}
             </div>
-            <CardTitle>Your pay check</CardTitle>
-            <CardDescription>Based on official Fair Work modern award rates.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* FREE headline — always visible */}
             {isUnderpaid ? (
-              <div
-                className="text-center rounded-lg px-6 py-10"
-                style={{
-                  background: "hsl(var(--primary) / 0.06)",
-                  border: "1px solid hsl(var(--primary) / 0.18)",
-                }}
-              >
-                <div className="text-sm font-semibold uppercase tracking-wider text-primary mb-2">
+              <div className="checker-result-headline">
+                <div className="ledger-label mb-3">
                   {showRange
                     ? "Estimated range"
                     : isUnsureMode
                     ? "You may be owed up to"
                     : "You may be owed"}
                 </div>
-                <div
-                  className="figure font-semibold tabular-nums"
-                  style={{
-                    color: "hsl(var(--foreground))",
-                    fontSize: 84,
-                    lineHeight: 1,
-                    letterSpacing: "0",
-                  }}
-                >
+                <div className={`checker-owed figure ${showRange ? "checker-owed-range" : ""}`}>
                   {showRange
                     ? `${minUnsure.toLocaleString("en-AU", {
                         maximumFractionDigits: 2,
@@ -232,25 +221,14 @@ export default function NewCheck_Step3_Result() {
                     role. For an exact figure, go back and select your classification.
                   </div>
                 ) : (
-                  <div className="mt-4 text-base text-muted-foreground">
-                    We found{" "}
-                    <strong className="text-foreground">{issueCount || 1}</strong>{" "}
-                    issue{(issueCount || 1) === 1 ? "" : "s"} with your pay.
+                  <div className="mt-4 text-[17px] text-foreground">
+                    We found {issueCount || 1} problem{(issueCount || 1) === 1 ? "" : "s"} with this pay period.
                   </div>
                 )}
               </div>
             ) : (
-              <div
-                className="text-center rounded-lg px-6 py-10"
-                style={{
-                  background: "hsl(var(--primary) / 0.06)",
-                  border: "1px solid hsl(var(--primary) / 0.18)",
-                }}
-              >
-                <div
-                  className="mx-auto w-14 h-14 rounded-md flex items-center justify-center mb-4"
-                  style={{ background: "hsl(var(--primary) / 0.15)" }}
-                >
+              <div className="checker-result-headline">
+                <div className="mb-4">
                   <CheckCircle className="h-7 w-7 text-primary" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-semibold">Looks like you were paid correctly</h2>
@@ -261,10 +239,17 @@ export default function NewCheck_Step3_Result() {
             )}
 
 
-            {/* Free teaser — full detail lives at /report/:id behind the (upcoming) paywall. */}
-            {isUnderpaid && (
-              <>
-                <LockedTeaser result={result} />
+            <dl className="checker-result-meta">
+              <div><dt>Award</dt><dd>{result?.awardName || shiftDetails?.awardCode || "—"}</dd></div>
+              <div><dt>Classification</dt><dd>{result?.classification || shiftDetails?.classificationId || "—"}</dd></div>
+              <div><dt>Employment</dt><dd>{shiftDetails?.employmentType || "—"}</dd></div>
+            </dl>
+            {isUnderpaid && <LockedTeaser result={result} />}
+          </article>
+          {isUnderpaid && (
+            <aside className="checker-unlock no-print">
+              <h2>Get the full report</h2>
+              <ReportIncludes />
                 {user && credits > 0 && (
                   <div className="text-sm text-center text-muted-foreground">
                     You have <strong className="text-foreground">{credits}</strong> report
@@ -272,9 +257,9 @@ export default function NewCheck_Step3_Result() {
                   </div>
                 )}
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <button
+                  <Button
                     type="button"
-                    className="ap-btn ap-btn-primary flex-1"
+                    className="w-full"
                     onClick={() => handleUnlock("full_report")}
                     disabled={unlocking}
                   >
@@ -283,36 +268,41 @@ export default function NewCheck_Step3_Result() {
                       : credits > 0
                       ? `Unlock with 1 credit (${credits} left)`
                       : "Unlock full report — $10"}
-                  </button>
+                  </Button>
                 </div>
                 <p className="text-[13px] text-center text-muted-foreground">
                   One-off $10 payment · no account needed · no subscription · refunded if the
                   report is wrong
                 </p>
 
-                {!leadSent ? (
-                  <form
-                    onSubmit={handleEmailResult}
-                    className="flex flex-col sm:flex-row gap-2 pt-2"
-                  >
-                    <input
-                      type="email"
-                      required
-                      value={leadEmail}
-                      onChange={(e) => setLeadEmail(e.target.value)}
-                      placeholder="Not ready? Email me my result"
-                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                    />
-                    <Button type="submit" variant="outline" disabled={sendingLead}>
-                      {sendingLead ? "Sending…" : "Email it to me"}
-                    </Button>
-                  </form>
-                ) : (
-                  <p className="text-sm text-center text-muted-foreground pt-2">
-                    Thanks — we'll send your result to {leadEmail}.
-                  </p>
-                )}
-              </>
+            </aside>
+          )}
+        </div>
+        {isUnderpaid && (
+          <section className="checker-email no-print">
+            <h2>Not ready yet?</h2>
+            {!leadSent ? (
+              <form onSubmit={handleEmailResult}>
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="result-email">Email address</Label>
+                  <Input id="result-email" type="email" required value={leadEmail}
+                    onChange={(e) => setLeadEmail(e.target.value)} placeholder="Not ready? Email me my result" />
+                </div>
+                <Button type="submit" variant="secondary" disabled={sendingLead}>
+                  {sendingLead ? "Sending…" : "Email it to me"}
+                </Button>
+              </form>
+            ) : (
+              <p className="text-sm text-muted-foreground">Thanks — we'll send your result to {leadEmail}.</p>
+            )}
+          </section>
+        )}
+        <div className="no-print mt-6">
+          <Button variant="link" onClick={() => navigate("/check")} className="px-0">Check another payslip</Button>
+        </div>
+        <p className="text-[13px] text-muted-foreground mt-4">AwardPay is an interpretation tool, not legal advice.</p>
+      </main>
+    </>
             )}
 
             <div className="flex gap-3 no-print pt-2">
