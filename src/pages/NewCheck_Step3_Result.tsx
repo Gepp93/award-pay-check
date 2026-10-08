@@ -303,20 +303,5 @@ export default function NewCheck_Step3_Result() {
         <p className="text-[13px] text-muted-foreground mt-4">AwardPay is an interpretation tool, not legal advice.</p>
       </main>
     </>
-            )}
-
-            <div className="flex gap-3 no-print pt-2">
-              <Button
-                variant="outline"
-                onClick={() => navigate("/check")}
-                className="flex-1"
-              >
-                Check another payslip
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
   );
 }
