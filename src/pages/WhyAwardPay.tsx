@@ -116,7 +116,7 @@ const WhyAwardPay = () => {
           <div
             data-reveal
             style={{
-              fontFamily: ""IBM Plex Mono", monospace",
+              fontFamily: "IBM Plex Mono, monospace",
               fontWeight: 600,
               fontSize: 96,
               lineHeight: 1,
