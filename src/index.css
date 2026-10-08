@@ -14,7 +14,7 @@
   * { }
   h1, h2, h3, h4, h5, h6, strong, b { font-weight: 600; }
   h1, h2 { letter-spacing: -0.01em; }
-  body { font-family: "IBM Plex Sans", system-ui, sans-serif; background: hsl(var(--background)); font-size: 16px; line-height: 26px; min-height: 100vh; }
+  body { font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; background: hsl(var(--background)); font-size: 16px; line-height: 26px; min-height: 100vh; }
 }
 
 /* ============================================================
@@ -60,7 +60,7 @@
 .ap-tick { width: 16px; height: 16px; border-radius: 6px; background: hsl(var(--primary-soft)); color: hsl(var(--primary)); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex: none; }
 
 /* ---- layered product stage (the signature) ---- */
-.ap-stage { position: relative; height: 520px; }
+.ap-stage { position: relative; height: 580px; }
 .ap-float { position: absolute; background: hsl(var(--card)); border-radius: 6px; border: 1px solid hsl(var(--border)); }
 .ap-scan { width: 230px; top: 6px; left: 6px; transform: rotate(-5deg); padding: 14px; }
 .ap-scan .ph { height: 9px; border-radius: 6px; background: hsl(var(--surface-sunk)); margin: 7px 0; }
@@ -95,7 +95,7 @@
 .ap-chip-owed .ic { width: 34px; height: 34px; border-radius: 6px; background: hsl(var(--primary-soft)); display: flex; align-items: center; justify-content: center; font-size: 16px; }
 .ap-chip-owed .t { font-size: 13px; color: hsl(var(--muted-foreground)); font-weight: 600; line-height: 1.3; }
 .ap-chip-owed .n { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 19px; color: hsl(var(--foreground)); }
-.ap-chip-pen { right: 4px; font-size: 13px; font-weight: 600; top: 478px; bottom: auto; }
+.ap-chip-pen { right: 4px; font-size: 13px; font-weight: 600; top: 546px; bottom: auto; }
 .ap-chip-pen .pd { width: 8px; height: 8px; border-radius: 6px; background: hsl(var(--clay)); flex: none; }
 .ap-chip-pen .pa { font-family: "IBM Plex Mono", monospace; color: hsl(var(--clay)); font-weight: 600; }
 
@@ -221,5 +221,5 @@
 
 .ap-home-tier-paid .ap-btn-primary:hover { background: hsl(var(--primary-soft)); }
 
-.figure, .ap-stat .n, .ap-home-price { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
-[data-reveal] { transform: none !important; transition: opacity 200ms ease-out !important; }
+.figure, .ap-stat .n, .ap-home-price { font-family: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+[data-reveal] { transform: none !important; transition: opacity 200ms ease-out !important; transition-delay: 0ms !important; }

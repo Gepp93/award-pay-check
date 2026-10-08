@@ -22,10 +22,10 @@ export const MissingMoneyBreakdown = ({ calculation }: MissingMoneyBreakdownProp
             {calculation.missingMoney.map((issue: string, idx: number) => (
               <div
                 key={idx}
-                className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md"
+                className="flex items-start gap-3 p-3 bg-clay-soft bg-primary border border-rule-strong border-rule-strong rounded-md"
               >
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800 dark:text-amber-200">{issue}</p>
+                <AlertCircle className="w-5 h-5 text-clay text-clay flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-clay text-clay">{issue}</p>
               </div>
             ))}
           </div>

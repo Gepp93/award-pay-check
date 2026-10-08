@@ -138,7 +138,7 @@ const AppDashboard = () => {
                                   Underpaid
                                 </span>
                               ) : (
-                                <span className="flex items-center gap-1 text-[13px] text-green-600">
+                                <span className="flex items-center gap-1 text-[13px] text-primary">
                                   <CheckCircle className="h-3 w-3" />
                                   Correct
                                 </span>

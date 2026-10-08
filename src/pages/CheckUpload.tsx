@@ -199,7 +199,7 @@ export default function CheckUpload() {
             tabIndex={0}
             onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openPicker()}
             style={{
-              border: "1.5px dashed hsl(var(--border))",
+              border: "1px dashed hsl(var(--rule-strong))",
               borderRadius: 6,
               background: "hsl(var(--card))",
               padding: "44px 24px",

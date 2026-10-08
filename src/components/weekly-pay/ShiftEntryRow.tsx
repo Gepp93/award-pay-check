@@ -165,7 +165,7 @@ export const ShiftEntryRow = ({ shift, onUpdate, onRemove, calculation, allowanc
             </div>
             <div>
               <p className="text-muted-foreground">Difference</p>
-              <p className={`font-semibold text-lg ${calculation.difference > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`font-semibold text-lg ${calculation.difference > 0 ? 'text-primary' : 'text-destructive'}`}>
                 {calculation.difference >= 0 ? '+' : ''}${calculation.difference.toFixed(2)}
               </p>
             </div>

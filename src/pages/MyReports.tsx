@@ -111,7 +111,7 @@ export default function MyReports() {
                           {formatHeadline(r)}
                         </span>
                         {paid ? (
-                          <Badge className="bg-green-600 hover:bg-green-600 text-primary-foreground">Paid</Badge>
+                          <Badge className="bg-primary hover:bg-primary text-primary-foreground">Paid</Badge>
                         ) : (
                           <Badge variant="secondary">Locked</Badge>
                         )}

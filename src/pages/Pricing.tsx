@@ -119,7 +119,7 @@ const Pricing = () => {
                   position: "relative",
                   background: "hsl(var(--card))",
                   border: highlighted
-                    ? "2px solid hsl(var(--foreground))"
+                    ? "1px solid hsl(var(--primary))"
                     : "1px solid hsl(var(--border))",
                   borderRadius: "var(--radius)",
                   padding: "28px 24px",
@@ -137,7 +137,7 @@ const Pricing = () => {
                       top: -14,
                       left: "50%",
                       transform: "translateX(-50%)",
-                      background: "hsl(var(--foreground))",
+                      background: "hsl(var(--primary))",
                       color: "hsl(var(--primary-foreground))",
                       fontWeight: 600,
                       fontSize: 13,

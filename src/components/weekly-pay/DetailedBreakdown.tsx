@@ -175,7 +175,7 @@ export const DetailedBreakdown = ({
                 </div>
                 <div>
                   <p className="text-[13px] text-muted-foreground mb-1">Difference</p>
-                  <p className={`text-lg font-semibold ${calc.difference > 0 ? 'text-green-600' : calc.difference < 0 ? 'text-red-600' : ''}`}>
+                  <p className={`text-lg font-semibold ${calc.difference > 0 ? 'text-primary' : calc.difference < 0 ? 'text-destructive' : ''}`}>
                     {calc.difference >= 0 ? '+' : ''}${calc.difference.toFixed(2)}
                   </p>
                 </div>

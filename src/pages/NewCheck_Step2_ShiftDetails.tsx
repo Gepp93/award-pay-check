@@ -484,7 +484,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                     )}
                   </Button>
                   {shifts.length > 0 && shifts[0].date && (
-                    <p className="text-sm text-green-600">
+                    <p className="text-sm text-primary">
                       ✓ {shifts.length} shift(s) parsed - review in "Day by Day" tab
                     </p>
                   )}

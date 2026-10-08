@@ -29,9 +29,7 @@ export const NavBar = () => {
               onClick={() => handleNavigation("/")}
               className="flex items-center gap-2 font-semibold text-xl"
             >
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <Calculator className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <span className="ap-mark" />
               AwardPay
             </button>
             {/* Desktop Navigation */}

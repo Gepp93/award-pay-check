@@ -15,9 +15,7 @@ export const PublicNavBar = () => {
             onClick={() => navigate("/")}
             className="flex items-center gap-2 font-semibold text-xl cursor-pointer"
           >
-            <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-              <Calculator className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <span className="ap-mark" />
             <span className="text-foreground">AwardPay</span>
           </div>
           
