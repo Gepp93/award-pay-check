@@ -27,7 +27,7 @@ const employmentTypes = [
 
 export const EmploymentTypeSelection = ({ onSelect, onBack }: EmploymentTypeSelectionProps) => {
   return (
-    <Card className="bg-card/50 backdrop-blur-lg border-border shadow-card">
+    <Card className="bg-card border-border ">
       <CardHeader>
         <Button
           variant="ghost"

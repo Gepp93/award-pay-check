@@ -80,7 +80,7 @@ export const AwardRecommendation = ({
 
   if (loading) {
     return (
-      <Card className="bg-card/50 backdrop-blur-lg border-border shadow-card">
+      <Card className="bg-card border-border ">
         <CardContent className="py-8">
           <div className="text-center">Loading recommendation...</div>
         </CardContent>
@@ -89,7 +89,7 @@ export const AwardRecommendation = ({
   }
 
   return (
-    <Card className="bg-card/50 backdrop-blur-lg border-border shadow-card">
+    <Card className="bg-card border-border ">
       <CardHeader>
         <Button
           variant="ghost"

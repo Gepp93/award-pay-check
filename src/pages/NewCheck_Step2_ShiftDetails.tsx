@@ -464,7 +464,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                     onChange={(e) => setFreeTextShifts(e.target.value)}
                     className="min-h-[120px]"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[13px] text-muted-foreground">
                     Enter your shifts in plain English - AI will parse them for you
                   </p>
                   <Button 
@@ -569,7 +569,7 @@ export default function NewCheck_Step2_ShiftDetails() {
 
           <div className="space-y-4">
             <Label>Allowance-Triggering Conditions</Label>
-            <p className="text-xs text-muted-foreground">Check any that apply - these may entitle you to extra allowances</p>
+            <p className="text-[13px] text-muted-foreground">Check any that apply - these may entitle you to extra allowances</p>
             
             {/* General Conditions */}
             <Collapsible defaultOpen className="space-y-2">
@@ -706,13 +706,13 @@ export default function NewCheck_Step2_ShiftDetails() {
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 pt-4">
               {parsedPayslip && (
-                <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-primary">
+                <div className="rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-[13px] text-primary">
                   From your payslip — edit any field if it's wrong.
                 </div>
               )}
               <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-4">
                 <div className="space-y-2">
-                  <Label>Base hourly rate{prefilledFields.payslipBaseRate && <span className="ml-2 text-xs font-normal text-primary">(from payslip)</span>}</Label>
+                  <Label>Base hourly rate{prefilledFields.payslipBaseRate && <span className="ml-2 text-[13px] font-normal text-primary">(from payslip)</span>}</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2">$</span>
                     <Input
@@ -727,7 +727,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Hours at base rate{prefilledFields.hoursAtBase && <span className="ml-2 text-xs font-normal text-primary">(from payslip)</span>}</Label>
+                  <Label>Hours at base rate{prefilledFields.hoursAtBase && <span className="ml-2 text-[13px] font-normal text-primary">(from payslip)</span>}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -738,7 +738,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Hours at 1.5× (time and a half){prefilledFields.hoursAt150 && <span className="ml-2 text-xs font-normal text-primary">(from payslip)</span>}</Label>
+                  <Label>Hours at 1.5× (time and a half){prefilledFields.hoursAt150 && <span className="ml-2 text-[13px] font-normal text-primary">(from payslip)</span>}</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -749,7 +749,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Hours at 2× (double time){prefilledFields.hoursAt200 && <span className="ml-2 text-xs font-normal text-primary">(from payslip)</span>}</Label>
+                  <Label>Hours at 2× (double time){prefilledFields.hoursAt200 && <span className="ml-2 text-[13px] font-normal text-primary">(from payslip)</span>}</Label>
                   <Input
                     type="number"
                     step="0.01"

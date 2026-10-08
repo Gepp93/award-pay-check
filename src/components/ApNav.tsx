@@ -22,7 +22,7 @@ export const ApNav = () => {
         </nav>
         <div className="ap-nav-cta">
           <a className="ap-sign-in" href="/auth" onClick={(event) => { event.preventDefault(); go("/auth"); }}>Sign in</a>
-          <button className="ap-btn ap-btn-gold" onClick={() => go("/check")}>Check my payslip</button>
+          <button className="ap-btn ap-btn-primary" onClick={() => go("/check")}>Check my payslip</button>
         </div>
         <button
           type="button"
@@ -41,7 +41,7 @@ export const ApNav = () => {
           <a onClick={() => go("/pricing")}>Pricing</a>
           <a onClick={() => go("/contact")}>Contact</a>
           <a onClick={() => go("/auth")}>Sign in</a>
-          <button className="ap-btn ap-btn-gold" onClick={() => go("/check")}>
+          <button className="ap-btn ap-btn-primary" onClick={() => go("/check")}>
             Check my payslip
           </button>
         </div>

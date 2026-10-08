@@ -268,28 +268,28 @@ export const ClassificationList = ({
     const combined = `${classification.classification} ${classification.parent_classification_name}`.toLowerCase();
     
     if (combined.includes('level 1') || combined.includes('grade 1') || combined.includes('entry')) {
-      return <Badge variant="secondary" className="text-xs">Entry Level</Badge>;
+      return <Badge variant="secondary" className="text-[13px]">Entry Level</Badge>;
     }
     if (combined.includes('level 2') || combined.includes('grade 2')) {
-      return <Badge variant="secondary" className="text-xs">Level 2</Badge>;
+      return <Badge variant="secondary" className="text-[13px]">Level 2</Badge>;
     }
     if (combined.includes('level 3') || combined.includes('grade 3')) {
-      return <Badge variant="secondary" className="text-xs">Level 3</Badge>;
+      return <Badge variant="secondary" className="text-[13px]">Level 3</Badge>;
     }
     if (combined.includes('level 4') || combined.includes('grade 4')) {
-      return <Badge variant="secondary" className="text-xs">Level 4</Badge>;
+      return <Badge variant="secondary" className="text-[13px]">Level 4</Badge>;
     }
     if (combined.includes('supervisor') || combined.includes('foreman') || combined.includes('leading')) {
-      return <Badge variant="default" className="text-xs">Supervisor</Badge>;
+      return <Badge variant="default" className="text-[13px]">Supervisor</Badge>;
     }
     if (combined.includes('manager') || combined.includes('director')) {
-      return <Badge variant="default" className="text-xs">Management</Badge>;
+      return <Badge variant="default" className="text-[13px]">Management</Badge>;
     }
     if (combined.includes('tradesperson') || combined.includes('qualified')) {
-      return <Badge variant="secondary" className="text-xs">Qualified</Badge>;
+      return <Badge variant="secondary" className="text-[13px]">Qualified</Badge>;
     }
     if (combined.includes('apprentice') || combined.includes('trainee')) {
-      return <Badge variant="outline" className="text-xs">Apprentice</Badge>;
+      return <Badge variant="outline" className="text-[13px]">Apprentice</Badge>;
     }
     
     return null;
@@ -400,7 +400,7 @@ export const ClassificationList = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => setSearchTerm('')}
-                      className="text-xs h-7"
+                      className="text-[13px] h-7"
                     >
                       Clear search
                     </Button>
@@ -434,9 +434,9 @@ export const ClassificationList = ({
                               {rateInfo && (
                                 <div className="mt-1.5">
                                   {rateInfo.loading ? (
-                                    <span className="text-xs text-muted-foreground font-normal">Loading rate...</span>
+                                    <span className="text-[13px] text-muted-foreground font-normal">Loading rate...</span>
                                   ) : rateInfo.hourlyRate ? (
-                                    <span className="text-base font-bold text-primary">
+                                    <span className="text-base font-semibold text-primary">
                                       ${rateInfo.hourlyRate.toFixed(2)}/hr
                                     </span>
                                   ) : null}
@@ -447,7 +447,7 @@ export const ClassificationList = ({
                           </div>
                           
                           {classification.clause_description && (
-                            <div className="text-xs opacity-80 leading-relaxed break-words">
+                            <div className="text-[13px] opacity-80 leading-relaxed break-words">
                               {classification.clause_description}
                             </div>
                           )}
@@ -455,7 +455,7 @@ export const ClassificationList = ({
                           {keywords.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {keywords.map((keyword) => (
-                                <Badge key={keyword} variant="outline" className="text-xs capitalize">
+                                <Badge key={keyword} variant="outline" className="text-[13px] capitalize">
                                   {keyword}
                                 </Badge>
                               ))}

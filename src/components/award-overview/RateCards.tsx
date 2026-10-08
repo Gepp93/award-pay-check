@@ -176,7 +176,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
       <Card className="bg-primary/5">
         <CardContent className="pt-6">
           <div className="flex items-start gap-3">
-            <div className="bg-primary rounded-full p-2 flex-shrink-0">
+            <div className="bg-primary rounded-md p-2 flex-shrink-0">
               <DollarSign className="w-4 h-4 text-primary-foreground" />
             </div>
             <div className="flex-1 min-w-0">
@@ -204,7 +204,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
             <>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Your hourly rate</span>
-                <span className="text-lg font-bold">${displayRate.toFixed(2)}/hr</span>
+                <span className="text-lg font-semibold">${displayRate.toFixed(2)}/hr</span>
               </div>
               
               {employmentType === "Casual" && baseRate && (
@@ -222,7 +222,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
 
               {employmentType === "Part-time" && (
                 <div className="bg-purple-50 dark:bg-purple-950 border border-purple-200 dark:border-purple-800 rounded-md p-3">
-                  <p className="text-xs text-purple-800 dark:text-purple-200">
+                  <p className="text-[13px] text-purple-800 dark:text-purple-200">
                     As a part-time employee, you're entitled to pro-rata benefits and minimum engagement hours may apply.
                   </p>
                 </div>
@@ -245,7 +245,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
           {usingFallbackData.penalties && (
             <Alert className="mb-4">
               <AlertCircle className="w-4 h-4" />
-              <AlertDescription className="text-xs">
+              <AlertDescription className="text-[13px]">
                 Showing standard penalty rates for this award. Verify with current award documentation.
               </AlertDescription>
             </Alert>
@@ -259,10 +259,10 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
                       <div className="flex-1">
                         <span className="text-sm font-medium block">{penalty.penalty_description || penalty.description}</span>
                         {penalty.conditions && (
-                          <span className="text-xs text-muted-foreground block mt-1">{penalty.conditions}</span>
+                          <span className="text-[13px] text-muted-foreground block mt-1">{penalty.conditions}</span>
                         )}
                       </div>
-                      <span className="text-sm font-bold whitespace-nowrap">{penalty.penalty_rate || penalty.rate}</span>
+                      <span className="text-sm font-semibold whitespace-nowrap">{penalty.penalty_rate || penalty.rate}</span>
                     </div>
                   </div>
                 ))}
@@ -298,7 +298,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
           {usingFallbackData.allowances && (
             <Alert className="mb-4">
               <AlertCircle className="w-4 h-4" />
-              <AlertDescription className="text-xs">
+              <AlertDescription className="text-[13px]">
                 Showing common allowances for this award. Check with your employer which apply to you.
               </AlertDescription>
             </Alert>
@@ -311,7 +311,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
                     <div className="font-medium text-sm mb-1">
                       {allowance.allowance_type_description || allowance.name}
                     </div>
-                    <div className="text-xs text-muted-foreground space-y-1">
+                    <div className="text-[13px] text-muted-foreground space-y-1">
                       {(allowance.allowance_amount || allowance.amount) && (
                         <div className="font-semibold text-foreground">{allowance.allowance_amount || allowance.amount}</div>
                       )}
@@ -364,7 +364,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
               <span>7+ hours</span>
               <span className="font-medium">Additional 10-minute paid rest break</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-3">
+            <p className="text-[13px] text-muted-foreground mt-3">
               Note: Specific break entitlements may vary by award. Check your award for exact requirements.
             </p>
           </div>

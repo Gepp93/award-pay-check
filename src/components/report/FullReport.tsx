@@ -265,13 +265,13 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
 
   return (
     <article
-      className="rounded-2xl border bg-card p-6 md:p-8 space-y-8"
+      className="rounded-lg border bg-card shadow-sheet p-6 md:p-8 space-y-8"
       style={{ borderColor: "hsl(var(--border))" }}
     >
       {/* Header */}
       <header className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="text-primary font-extrabold text-2xl tracking-tight">
+          <div className="text-primary font-semibold text-2xl tracking-normal">
             AwardPay
           </div>
           <div className="text-lg font-semibold mt-1">Pay Check Report</div>
@@ -303,20 +303,20 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
       {/* Headline */}
       {isUnderpaid ? (
         <section
-          className="rounded-xl px-6 py-8 text-center"
+          className="rounded-lg px-6 py-8 text-center"
           style={{
-            background: "hsl(var(--gold) / 0.08)",
-            border: "1px solid hsl(var(--gold) / 0.3)",
+            background: "hsl(var(--foreground) / 0.08)",
+            border: "1px solid hsl(var(--foreground) / 0.3)",
           }}
         >
-          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">
             {headline.label}
           </div>
           <div
-            className="font-extrabold tabular-nums font-mono mt-2"
+            className="font-semibold tabular-nums font-mono mt-2"
             style={{
-              color: "hsl(var(--gold))",
-              fontSize: "clamp(40px, 7vw, 64px)",
+              color: "hsl(var(--foreground))",
+              fontSize: 64,
               lineHeight: 1,
             }}
           >
@@ -336,20 +336,20 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
         </section>
       ) : (
         <section
-          className="rounded-xl px-6 py-8 text-center"
+          className="rounded-lg px-6 py-8 text-center"
           style={{
             background: "hsl(var(--primary) / 0.06)",
             border: "1px solid hsl(var(--primary) / 0.2)",
           }}
         >
           <CheckCircle className="h-8 w-8 mx-auto text-primary mb-2" />
-          <div className="text-xl font-bold">Your pay looks correct for this period</div>
+          <div className="text-xl font-semibold">Your pay looks correct for this period</div>
         </section>
       )}
 
       {/* Your details */}
       <section>
-        <h3 className="text-base font-bold mb-3">Your details</h3>
+        <h3 className="text-base font-semibold mb-3">Your details</h3>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
           <Detail label="Award" value={result?.awardName || jobInfo.award_name || jobInfo.selected_award_code} />
           <Detail label="Classification" value={result?.classification || jobInfo.classification} />
@@ -374,7 +374,7 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
 
       {/* What's missing */}
       <section>
-        <h3 className="text-base font-bold mb-3">What's missing</h3>
+        <h3 className="text-base font-semibold mb-3">What's missing</h3>
         <div className="rounded-lg border overflow-hidden">
           <table className="w-full text-sm">
             <tbody>
@@ -445,9 +445,9 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
                     {a.icon ? `${a.icon} ` : ""}
                     {a.name}
                   </div>
-                  <div className="text-xs text-muted-foreground">{a.amount}</div>
+                  <div className="text-[13px] text-muted-foreground">{a.amount}</div>
                   {a.reason && (
-                    <div className="text-xs text-muted-foreground mt-1">
+                    <div className="text-[13px] text-muted-foreground mt-1">
                       <span className="font-medium text-foreground">Why: </span>
                       {a.reason}
                     </div>
@@ -455,8 +455,8 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
                 </div>
                 {a.estimatedValue > 0 && (
                   <div className="text-right">
-                    <div className="text-[10px] uppercase text-muted-foreground">Est.</div>
-                    <div className="font-mono tabular-nums font-bold text-primary">
+                    <div className="text-[13px] uppercase text-muted-foreground">Est.</div>
+                    <div className="font-mono tabular-nums font-semibold text-primary">
                       {fmt(Number(a.estimatedValue))}
                     </div>
                   </div>
@@ -469,12 +469,12 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
 
       {/* How to recover it */}
       <section>
-        <h3 className="text-base font-bold mb-3">How to recover it</h3>
+        <h3 className="text-base font-semibold mb-3">How to recover it</h3>
         <ol className="space-y-3 text-sm">
           {steps.map((step, i) => (
             <li key={i} className="flex gap-3">
               <span
-                className="flex-none w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center"
+                className="flex-none w-6 h-6 rounded-md bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center"
                 aria-hidden
               >
                 {i + 1}
@@ -483,13 +483,13 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
             </li>
           ))}
         </ol>
-        <p className="text-xs text-muted-foreground mt-4 flex items-start gap-2">
+        <p className="text-[13px] text-muted-foreground mt-4 flex items-start gap-2">
           <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-none" />
           AwardPay provides general information, not legal advice.
         </p>
       </section>
 
-      <footer className="text-[11px] text-muted-foreground border-t pt-4">
+      <footer className="text-[13px] text-muted-foreground border-t pt-4">
         awardpay.com.au · Generated {todayAU()}
       </footer>
     </article>
@@ -532,16 +532,16 @@ function Row({
       className="border-b last:border-0"
       style={
         highlight
-          ? { background: "hsl(var(--gold) / 0.08)" }
+          ? { background: "hsl(var(--foreground) / 0.08)" }
           : undefined
       }
     >
       <td className={`px-4 py-2 ${bold ? "font-semibold" : ""}`}>{label}</td>
       <td
         className={`px-4 py-2 text-right font-mono tabular-nums ${
-          bold ? "font-bold" : ""
+          bold ? "font-semibold" : ""
         }`}
-        style={highlight ? { color: "hsl(var(--gold))" } : undefined}
+        style={highlight ? { color: "hsl(var(--foreground))" } : undefined}
       >
         {value}
       </td>

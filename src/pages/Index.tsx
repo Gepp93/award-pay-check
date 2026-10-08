@@ -173,7 +173,7 @@ const Index = () => {
             and we'll check it against the official Fair Work rates in about a minute.
           </p>
           <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif" className="hidden" aria-label="Upload your payslip" onChange={(event) => openFile(event.target.files?.[0])} />
-          <Button variant="outline" className={`ap-home-upload rounded-xl ${dragging ? "is-dragging" : ""}`}
+          <Button variant="outline" className={`ap-home-upload rounded-lg ${dragging ? "is-dragging" : ""}`}
             onClick={() => inputRef.current?.click()}
             onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
             onDragLeave={() => setDragging(false)}
@@ -182,7 +182,7 @@ const Index = () => {
             <span>Drop your payslip or take a photo<small>PDF / JPG / PNG</small></span>
           </Button>
           <div className="ap-cta-row">
-            <Button variant="ghost" className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
+            <Button variant="ghost" className="ap-btn ap-btn-primary ap-btn-lg" onClick={startCheck}>
               Check my payslip — free
             </Button>
             <a href="/how-it-works" className="ap-btn ap-btn-outline ap-btn-lg">
@@ -294,7 +294,7 @@ const Index = () => {
               <div className="ap-home-price">$10<small> / 12 months</small></div>
               <p>Check any payslip, anytime, for a full year.</p>
               <ul><li>Unlimited payslip checks</li><li>AI underpayment detection</li><li>One payment — no subscription</li></ul>
-              <Button variant="ghost" className="ap-btn ap-btn-gold" onClick={handleYearlyCheckout} disabled={checkingOut}>
+              <Button variant="ghost" className="ap-btn ap-btn-primary" onClick={handleYearlyCheckout} disabled={checkingOut}>
                 {checkingOut ? "Opening checkout…" : "Get 12 months for $10 →"}
               </Button>
               <p className="ap-home-price-note">Launch price. Prices in AUD.</p>
@@ -328,7 +328,7 @@ const Index = () => {
       <section className="ap-wrap ap-final">
         <h2>Find out what you're owed</h2>
         <p>It takes about a minute and costs nothing. You might be surprised.</p>
-        <Button variant="ghost" className="ap-btn ap-btn-gold ap-btn-lg" onClick={startCheck}>
+        <Button variant="ghost" className="ap-btn ap-btn-primary ap-btn-lg" onClick={startCheck}>
           Check my payslip — free
         </Button>
       </section>

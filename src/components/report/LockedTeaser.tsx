@@ -28,7 +28,7 @@ export function LockedTeaser({ result }: Props) {
 
   return (
     <div
-      className="rounded-2xl p-6 space-y-4 relative overflow-hidden text-left"
+      className="rounded-lg p-6 space-y-4 relative overflow-hidden text-left"
       style={{
         background: "hsl(var(--muted) / 0.4)",
         border: "1px solid hsl(var(--border))",
@@ -36,13 +36,13 @@ export function LockedTeaser({ result }: Props) {
     >
       <div className="flex items-start gap-3">
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+          className="w-10 h-10 rounded-md flex items-center justify-center shrink-0"
           style={{ background: "hsl(var(--primary) / 0.12)" }}
         >
           <Lock className="h-5 w-5 text-primary" />
         </div>
         <div className="space-y-1">
-          <h3 className="text-lg font-bold">
+          <h3 className="text-lg font-semibold">
             Your full report shows exactly where the money went missing
           </h3>
           <p className="text-sm text-muted-foreground">

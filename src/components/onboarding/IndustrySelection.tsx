@@ -62,7 +62,7 @@ export const IndustrySelection = ({ onSelect }: IndustrySelectionProps) => {
   };
 
   return (
-    <Card className="bg-card/50 backdrop-blur-lg border-border shadow-card">
+    <Card className="bg-card border-border ">
       <CardHeader>
         <CardTitle>Step 1: Select Your Industry</CardTitle>
         <CardDescription>Choose the industry you work in</CardDescription>
@@ -81,7 +81,7 @@ export const IndustrySelection = ({ onSelect }: IndustrySelectionProps) => {
                   onClick={() => onSelect(industry.name)}
                 >
                   <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-xs text-center font-medium leading-tight">{industry.name}</span>
+                  <span className="text-[13px] text-center font-medium leading-tight">{industry.name}</span>
                 </Button>
               );
             })}
@@ -92,7 +92,7 @@ export const IndustrySelection = ({ onSelect }: IndustrySelectionProps) => {
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
+          <div className="relative flex justify-center text-[13px] uppercase">
             <span className="bg-card px-2 text-muted-foreground">Or</span>
           </div>
         </div>

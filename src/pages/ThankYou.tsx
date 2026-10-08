@@ -17,12 +17,12 @@ export default function ThankYou() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-background pt-24">
         <Card className="w-full max-w-md">
           <CardContent className="p-8 text-center space-y-6">
-            <div className="mx-auto w-16 h-16 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center">
+            <div className="mx-auto w-16 h-16 rounded-md bg-green-100 dark:bg-green-950 flex items-center justify-center">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold">Thank You!</h1>
+              <h1 className="text-2xl font-semibold">Thank You!</h1>
               {isReport ? (
                 <>
                   <div className="flex items-center justify-center gap-2 text-primary">

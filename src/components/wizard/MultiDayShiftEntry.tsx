@@ -62,7 +62,7 @@ export const MultiDayShiftEntry = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor={`date-${index}`} className="text-xs">
+              <Label htmlFor={`date-${index}`} className="text-[13px]">
                 Date
               </Label>
               <Input
@@ -79,7 +79,7 @@ export const MultiDayShiftEntry = ({
               />
             </div>
             <div>
-              <Label htmlFor={`break-${index}`} className="text-xs">
+              <Label htmlFor={`break-${index}`} className="text-[13px]">
                 Break (mins)
               </Label>
               <Input
@@ -99,7 +99,7 @@ export const MultiDayShiftEntry = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor={`start-${index}`} className="text-xs">
+              <Label htmlFor={`start-${index}`} className="text-[13px]">
                 Start Time
               </Label>
               <Input
@@ -112,7 +112,7 @@ export const MultiDayShiftEntry = ({
               />
             </div>
             <div>
-              <Label htmlFor={`finish-${index}`} className="text-xs">
+              <Label htmlFor={`finish-${index}`} className="text-[13px]">
                 Finish Time
               </Label>
               <Input

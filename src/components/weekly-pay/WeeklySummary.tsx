@@ -22,12 +22,12 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Total award pay</span>
-            <span className="text-xl font-bold">${calculation.totalShouldEarn.toFixed(2)}</span>
+            <span className="text-xl font-semibold">${calculation.totalShouldEarn.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Total you were paid</span>
-            <span className="text-xl font-bold">${calculation.totalActualPaid.toFixed(2)}</span>
+            <span className="text-xl font-semibold">${calculation.totalActualPaid.toFixed(2)}</span>
           </div>
 
           <div className="border-t pt-3">
@@ -39,7 +39,7 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
                 ) : (
                   <TrendingDown className="w-5 h-5 text-red-600" />
                 )}
-                <span className={`text-2xl font-bold ${isUnderpaid ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`text-2xl font-semibold ${isUnderpaid ? 'text-green-600' : 'text-red-600'}`}>
                   {isUnderpaid ? '+' : ''}${totalUnderpayment.toFixed(2)}
                 </span>
               </div>
@@ -54,8 +54,8 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
                 </p>
                 
                 <div className="space-y-2 mt-4">
-                  <p className="text-xs font-semibold text-green-900 dark:text-green-100">What to do next:</p>
-                  <ol className="list-decimal list-inside space-y-1 text-xs text-green-800 dark:text-green-200">
+                  <p className="text-[13px] font-semibold text-green-900 dark:text-green-100">What to do next:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-[13px] text-green-800 dark:text-green-200">
                     <li>Save or screenshot this calculation</li>
                     <li>Compare with your payslip line-by-line</li>
                     <li>Speak to your employer about the discrepancy</li>
@@ -84,7 +84,7 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
                   <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
                     Possible overpayment detected
                   </p>
-                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                  <p className="text-[13px] text-amber-700 dark:text-amber-300">
                     Double-check your inputs and award entitlements. If correct, your employer may have made an overpayment.
                   </p>
                 </div>

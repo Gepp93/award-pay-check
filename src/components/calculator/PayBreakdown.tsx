@@ -11,7 +11,7 @@ interface PayBreakdownProps {
 export const PayBreakdown = ({ breakdown, shiftData }: PayBreakdownProps) => {
   if (!breakdown || !shiftData) {
     return (
-      <Card className="bg-card/50 backdrop-blur-lg border-border shadow-card">
+      <Card className="bg-card border-border ">
         <CardContent className="py-16 text-center">
           <DollarSign className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">
@@ -53,7 +53,7 @@ export const PayBreakdown = ({ breakdown, shiftData }: PayBreakdownProps) => {
   ];
 
   return (
-    <Card className="bg-card/50 backdrop-blur-lg border-border shadow-card">
+    <Card className="bg-card border-border ">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-success" />
@@ -75,7 +75,7 @@ export const PayBreakdown = ({ breakdown, shiftData }: PayBreakdownProps) => {
                   <span className="font-medium">{item.label}</span>
                 </div>
                 <span
-                  className={`font-bold ${
+                  className={`font-semibold ${
                     item.highlight ? "text-accent" : ""
                   }`}
                 >
@@ -92,12 +92,12 @@ export const PayBreakdown = ({ breakdown, shiftData }: PayBreakdownProps) => {
 
         <Separator className="my-4" />
 
-        <div className="bg-gradient-primary rounded-lg p-4">
+        <div className="bg-primary rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-primary-foreground">
+            <span className="text-lg font-semibold text-primary-foreground">
               Total Pay
             </span>
-            <span className="text-2xl font-bold text-primary-foreground">
+            <span className="text-2xl font-semibold text-primary-foreground">
               ${breakdown.total.toFixed(2)}
             </span>
           </div>

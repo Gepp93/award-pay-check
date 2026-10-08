@@ -285,7 +285,7 @@ export default function NewCheck_Step1_WhoAreYou() {
               
               {/* Inner progress bar */}
               <div className="space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="flex justify-between text-[13px] text-muted-foreground">
                   <span>{stepsCompleted} of 3 answered</span>
                   <span>{Math.round(progressPercentage)}%</span>
                 </div>
@@ -307,9 +307,9 @@ export default function NewCheck_Step1_WhoAreYou() {
                     <button
                       key={industry.name}
                       onClick={() => handleIndustrySelect(industry.name)}
-                      className={`flex flex-col items-center justify-center p-5 md:p-4 rounded-xl border-2 transition-all min-h-[100px] md:min-h-[80px] active:scale-95 ${
+                      className={`flex flex-col items-center justify-center p-5 md:p-4 rounded-lg border-2 transition-all min-h-[100px] md:min-h-[80px]  ${
                         selectedIndustry === industry.name
-                          ? "border-primary bg-primary/10 text-primary shadow-md"
+                          ? "border-primary bg-primary/10 text-primary "
                           : "border-border hover:border-primary/50 hover:bg-muted/50 active:bg-muted"
                       }`}
                     >
@@ -367,14 +367,14 @@ export default function NewCheck_Step1_WhoAreYou() {
                               <button
                                 key={award.code}
                                 onClick={() => handleAwardSelect(award.code)}
-                                className={`w-full text-left p-4 md:p-3 rounded-xl md:rounded-lg border-2 transition-all active:scale-[0.98] ${
+                                className={`w-full text-left p-4 md:p-3 rounded-lg md:rounded-lg border-2 transition-all  ${
                                   selectedAward === award.code
-                                    ? "border-primary bg-primary/10 shadow-md"
+                                    ? "border-primary bg-primary/10 "
                                     : "border-border hover:border-primary/50 hover:bg-muted/50 active:bg-muted"
                                 }`}
                               >
                                 <div className="font-medium text-sm leading-tight">{award.name}</div>
-                                <div className="text-xs text-muted-foreground mt-1">{award.code}</div>
+                                <div className="text-[13px] text-muted-foreground mt-1">{award.code}</div>
                               </button>
                             ))}
                             
@@ -460,7 +460,7 @@ export default function NewCheck_Step1_WhoAreYou() {
                             <div className="flex flex-col">
                               <span>{cls.classification}</span>
                               {cls.parent_classification_name && (
-                                <span className="text-xs text-muted-foreground">{cls.parent_classification_name}</span>
+                                <span className="text-[13px] text-muted-foreground">{cls.parent_classification_name}</span>
                               )}
                             </div>
                           </SelectItem>
@@ -496,9 +496,9 @@ export default function NewCheck_Step1_WhoAreYou() {
                       <button
                         key={type}
                         onClick={() => setEmploymentType(type)}
-                        className={`py-4 md:py-3 px-3 rounded-xl md:rounded-lg border-2 font-medium text-sm transition-all active:scale-95 ${
+                        className={`py-4 md:py-3 px-3 rounded-lg md:rounded-lg border-2 font-medium text-sm transition-all  ${
                           employmentType === type
-                            ? "border-primary bg-primary/10 text-primary shadow-md"
+                            ? "border-primary bg-primary/10 text-primary "
                             : "border-border hover:border-primary/50 hover:bg-muted/50 active:bg-muted"
                         }`}
                       >
@@ -551,7 +551,7 @@ export default function NewCheck_Step1_WhoAreYou() {
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border md:hidden z-40">
           <Button 
             onClick={handleNext} 
-            className="w-full h-14 text-base font-semibold shadow-lg" 
+            className="w-full h-14 text-base font-semibold " 
             size="lg"
             disabled={!canProceed}
           >

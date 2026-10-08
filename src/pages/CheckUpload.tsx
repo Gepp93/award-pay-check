@@ -200,7 +200,7 @@ export default function CheckUpload() {
             onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openPicker()}
             style={{
               border: "1.5px dashed hsl(var(--border))",
-              borderRadius: 16,
+              borderRadius: 6,
               background: "hsl(var(--card))",
               padding: "44px 24px",
               textAlign: "center",
@@ -231,7 +231,7 @@ export default function CheckUpload() {
                 <div style={{ fontWeight: 600, fontSize: 17 }}>
                   {status === "preparing" ? "Preparing your file…" : "Reading your payslip…"}
                 </div>
-                <div style={{ color: "hsl(150 6% 40%)", fontSize: 14 }}>
+                <div style={{ color: "hsl(var(--muted-foreground))", fontSize: 14 }}>
                   This usually takes a few seconds.
                 </div>
               </div>
@@ -241,7 +241,7 @@ export default function CheckUpload() {
                   style={{
                     width: 56,
                     height: 56,
-                    borderRadius: "50%",
+                    borderRadius: 4,
                     background: "hsl(var(--primary-soft))",
                     display: "flex",
                     alignItems: "center",
@@ -251,13 +251,13 @@ export default function CheckUpload() {
                 >
                   <Camera className="h-6 w-6" />
                 </div>
-                <div style={{ fontWeight: 700, fontSize: 18 }}>Tap to take a photo or upload</div>
-                <div style={{ color: "hsl(150 6% 40%)", fontSize: 14, maxWidth: 360 }}>
+                <div style={{ fontWeight: 600, fontSize: 18 }}>Tap to take a photo or upload</div>
+                <div style={{ color: "hsl(var(--muted-foreground))", fontSize: 14, maxWidth: 360 }}>
                   PDF, JPG, PNG or HEIC.
                 </div>
                 <button
                   type="button"
-                  className="ap-btn ap-btn-gold"
+                  className="ap-btn ap-btn-primary"
                   onClick={(e) => {
                     e.stopPropagation();
                     openPicker();
@@ -277,19 +277,19 @@ export default function CheckUpload() {
                 marginTop: 16,
                 border: "1px solid hsl(var(--border))",
                 background: "hsl(var(--card))",
-                borderRadius: 12,
+                borderRadius: 6,
                 padding: "16px 18px",
                 display: "flex",
                 gap: 12,
                 alignItems: "flex-start",
               }}
             >
-              <AlertCircle className="h-5 w-5" style={{ color: "hsl(var(--gold))", flexShrink: 0, marginTop: 2 }} />
+              <AlertCircle className="h-5 w-5" style={{ color: "hsl(var(--foreground))", flexShrink: 0, marginTop: 2 }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, marginBottom: 4 }}>{errorMsg}</div>
                 <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
                   <button
-                    className="ap-btn ap-btn-gold"
+                    className="ap-btn ap-btn-primary"
                     onClick={() => {
                       setStatus("idle");
                       setErrorMsg("");
@@ -310,7 +310,7 @@ export default function CheckUpload() {
             style={{
               textAlign: "center",
               fontSize: 13,
-              color: "hsl(150 6% 42%)",
+              color: "hsl(var(--muted-foreground))",
               marginTop: 18,
             }}
           >
@@ -335,7 +335,7 @@ export default function CheckUpload() {
         </div>
       </section>
 
-      <footer style={{ borderTop: "1px solid hsl(var(--border))", padding: "24px 0", textAlign: "center", fontSize: 13, color: "hsl(150 6% 42%)" }}>
+      <footer style={{ borderTop: "1px solid hsl(var(--border))", padding: "24px 0", textAlign: "center", fontSize: 13, color: "hsl(var(--muted-foreground))" }}>
         AwardPay is an interpretation tool, not legal advice.
       </footer>
     </div>

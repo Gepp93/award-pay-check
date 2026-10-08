@@ -53,7 +53,7 @@ const Subscription = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-hero">
+      <div className="min-h-screen bg-background">
         <NavBar />
         <div className="container mx-auto px-4 py-16 text-center">
           <p className="text-xl">Loading plans...</p>
@@ -74,11 +74,11 @@ const Subscription = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-hero">
+    <div className="min-h-screen bg-background">
       <NavBar />
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Get AwardPay Pro</h1>
+          <h1 className="text-4xl font-semibold mb-4">Get AwardPay Pro</h1>
           <p className="text-xl text-muted-foreground">
             3 months of full access to protect your pay
           </p>
@@ -86,9 +86,9 @@ const Subscription = () => {
 
         <div className="max-w-md mx-auto">
           {/* 3 Month Pass */}
-          <Card className="bg-gradient-card backdrop-blur-lg border-accent shadow-glow relative flex flex-col">
+          <Card className="bg-card backdrop-blur-lg border-accent  relative flex flex-col">
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <div className="bg-accent text-accent-foreground px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+              <div className="bg-accent text-accent-foreground px-4 py-1 rounded-md text-sm font-medium flex items-center gap-1">
                 <Zap className="h-4 w-4" />
                 Full Access
               </div>
@@ -99,7 +99,7 @@ const Subscription = () => {
                 Full Pro access for 3 months
               </CardDescription>
               <div className="mt-4">
-                <span className="text-4xl font-bold">$30</span>
+                <span className="text-4xl font-semibold">$30</span>
                 <span className="text-muted-foreground"> for 3 months</span>
               </div>
               <p className="text-sm text-muted-foreground mt-2">

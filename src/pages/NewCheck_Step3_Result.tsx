@@ -187,7 +187,7 @@ export default function NewCheck_Step3_Result() {
             {/* FREE headline — always visible */}
             {isUnderpaid ? (
               <div
-                className="text-center rounded-2xl px-6 py-10"
+                className="text-center rounded-lg px-6 py-10"
                 style={{
                   background: "hsl(var(--primary) / 0.06)",
                   border: "1px solid hsl(var(--primary) / 0.18)",
@@ -201,12 +201,12 @@ export default function NewCheck_Step3_Result() {
                     : "You may be owed"}
                 </div>
                 <div
-                  className="font-extrabold tabular-nums"
+                  className="figure font-semibold tabular-nums"
                   style={{
-                    color: "hsl(var(--gold))",
-                    fontSize: "clamp(48px, 8vw, 84px)",
+                    color: "hsl(var(--foreground))",
+                    fontSize: 84,
                     lineHeight: 1,
-                    letterSpacing: "-0.02em",
+                    letterSpacing: "0",
                   }}
                 >
                   {showRange
@@ -241,19 +241,19 @@ export default function NewCheck_Step3_Result() {
               </div>
             ) : (
               <div
-                className="text-center rounded-2xl px-6 py-10"
+                className="text-center rounded-lg px-6 py-10"
                 style={{
                   background: "hsl(var(--primary) / 0.06)",
                   border: "1px solid hsl(var(--primary) / 0.18)",
                 }}
               >
                 <div
-                  className="mx-auto w-14 h-14 rounded-full flex items-center justify-center mb-4"
+                  className="mx-auto w-14 h-14 rounded-md flex items-center justify-center mb-4"
                   style={{ background: "hsl(var(--primary) / 0.15)" }}
                 >
                   <CheckCircle className="h-7 w-7 text-primary" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold">Looks like you were paid correctly</h2>
+                <h2 className="text-2xl md:text-3xl font-semibold">Looks like you were paid correctly</h2>
                 <p className="text-muted-foreground mt-2">
                   We didn't find any underpayment for this pay period.
                 </p>
@@ -274,7 +274,7 @@ export default function NewCheck_Step3_Result() {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
-                    className="ap-btn ap-btn-gold flex-1"
+                    className="ap-btn ap-btn-primary flex-1"
                     onClick={() => handleUnlock("full_report")}
                     disabled={unlocking}
                   >
@@ -285,7 +285,7 @@ export default function NewCheck_Step3_Result() {
                       : "Unlock full report — $10"}
                   </button>
                 </div>
-                <p className="text-xs text-center text-muted-foreground">
+                <p className="text-[13px] text-center text-muted-foreground">
                   One-off $10 payment · no account needed · no subscription · refunded if the
                   report is wrong
                 </p>

@@ -54,8 +54,8 @@ interface AwardPage {
 const bullet = "flex items-start gap-2";
 const checkIcon = <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "hsl(var(--primary))" }} />;
 const ulCls = "list-none pl-0 text-left space-y-2 mt-4";
-const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)" } as const;
-const h2Style = { fontSize: "clamp(22px, 2.6vw, 28px)" } as const;
+const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))" } as const;
+const h2Style = { fontSize: 28 } as const;
 
 const formatCurrency = (n?: number) =>
   typeof n === "number"
@@ -121,7 +121,7 @@ const UnderpaidAward = () => {
         <p className="ap-lede text-center" style={{ marginBottom: 24 }}>
           We couldn't find an award page for "{slug}". It may not be published yet.
         </p>
-        <button className="ap-btn ap-btn-gold" onClick={() => navigate("/")}>
+        <button className="ap-btn ap-btn-primary" onClick={() => navigate("/")}>
           Back to home
         </button>
       </div>
@@ -215,21 +215,21 @@ const UnderpaidAward = () => {
                   borderCollapse: "collapse",
                   fontSize: 15,
                   lineHeight: 1.5,
-                  background: "#fff",
-                  borderRadius: 12,
+                  background: "hsl(var(--card))",
+                  borderRadius: 6,
                   overflow: "hidden",
                   border: "1px solid hsl(var(--border))",
                 }}
               >
                 <thead>
                   <tr style={{ background: "hsl(var(--primary-soft))" }}>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "hsl(var(--primary))" }}>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 600, color: "hsl(var(--primary))" }}>
                       Classification
                     </th>
-                    <th style={{ padding: "12px 16px", textAlign: "right", fontWeight: 700, color: "hsl(var(--primary))" }}>
+                    <th style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600, color: "hsl(var(--primary))" }}>
                       Hourly
                     </th>
-                    <th style={{ padding: "12px 16px", textAlign: "right", fontWeight: 700, color: "hsl(var(--primary))" }}>
+                    <th style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600, color: "hsl(var(--primary))" }}>
                       Casual hourly
                     </th>
                   </tr>
@@ -237,7 +237,7 @@ const UnderpaidAward = () => {
                 <tbody>
                   {rates.map((row, i) => (
                     <tr key={i} style={{ borderTop: "1px solid hsl(var(--border))" }}>
-                      <td style={{ padding: "12px 16px", color: "hsl(150 6% 22%)" }}>{row.level || "—"}</td>
+                      <td style={{ padding: "12px 16px", color: "hsl(var(--ink-2))" }}>{row.level || "—"}</td>
                       <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600 }}>{formatCurrency(row.hourly)}</td>
                       <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600 }}>{formatCurrency(row.casual_hourly)}</td>
                     </tr>
@@ -258,7 +258,7 @@ const UnderpaidAward = () => {
               )}
             </div>
           ) : (
-            <p className="text-center" data-reveal style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)", margin: "16px 0 0" }}>
+            <p className="text-center" data-reveal style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))", margin: "16px 0 0" }}>
               No specific rates are available for this award yet. Check your own payslip to compare your hourly rate.
             </p>
           )}
@@ -288,16 +288,16 @@ const UnderpaidAward = () => {
                     key={i}
                     data-reveal
                     style={{
-                      background: "#fff",
+                      background: "hsl(var(--card))",
                       border: "1px solid hsl(var(--border))",
-                      borderRadius: 12,
+                      borderRadius: 6,
                       padding: "16px 18px",
                     }}
                   >
-                    <h3 style={{ fontSize: 16, fontWeight: 700, margin: "0 0 8px", color: "hsl(var(--foreground))" }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 600, margin: "0 0 8px", color: "hsl(var(--foreground))" }}>
                       {f.q}
                     </h3>
-                    <p style={{ fontSize: 15, lineHeight: 1.55, color: "hsl(150 6% 22%)", margin: 0 }}>
+                    <p style={{ fontSize: 15, lineHeight: 1.55, color: "hsl(var(--ink-2))", margin: 0 }}>
                       {f.a}
                     </p>
                   </div>
@@ -315,7 +315,7 @@ const UnderpaidAward = () => {
           </h2>
           <div data-reveal>
             <button
-              className="ap-btn ap-btn-gold ap-btn-lg"
+              className="ap-btn ap-btn-primary ap-btn-lg"
               onClick={handleCta}
               disabled={ctaLoading}
             >

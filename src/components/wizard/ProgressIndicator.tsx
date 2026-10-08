@@ -20,7 +20,7 @@ export const ProgressIndicator = ({ currentStep }: ProgressIndicatorProps) => {
             <div className="flex flex-col items-center flex-1">
               <div
                 className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all",
+                  "w-10 h-10 rounded-md flex items-center justify-center font-semibold transition-all",
                   currentStep > step.number
                     ? "bg-primary text-primary-foreground"
                     : currentStep === step.number
@@ -36,7 +36,7 @@ export const ProgressIndicator = ({ currentStep }: ProgressIndicatorProps) => {
               </div>
               <span
                 className={cn(
-                  "text-xs mt-2 font-medium",
+                  "text-[13px] mt-2 font-medium",
                   currentStep >= step.number
                     ? "text-foreground"
                     : "text-muted-foreground"

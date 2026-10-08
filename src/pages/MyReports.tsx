@@ -75,7 +75,7 @@ export default function MyReports() {
       <div className="min-h-screen bg-background p-4 pt-8">
         <div className="container mx-auto max-w-3xl">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold">My Reports</h1>
+            <h1 className="text-3xl font-semibold">My Reports</h1>
             <p className="text-muted-foreground mt-1">
               All your pay checks in one place — paid reports stay unlocked here.
             </p>
@@ -94,7 +94,7 @@ export default function MyReports() {
               </CardContent>
             </Card>
           ) : (
-            <div className="rounded-xl border border-border bg-card divide-y divide-border">
+            <div className="rounded-lg border border-border bg-card divide-y divide-border">
               {rows.map((r) => {
                 const paid = r.payment_status === "paid";
                 return (
@@ -111,7 +111,7 @@ export default function MyReports() {
                           {formatHeadline(r)}
                         </span>
                         {paid ? (
-                          <Badge className="bg-green-600 hover:bg-green-600 text-white">Paid</Badge>
+                          <Badge className="bg-green-600 hover:bg-green-600 text-primary-foreground">Paid</Badge>
                         ) : (
                           <Badge variant="secondary">Locked</Badge>
                         )}

@@ -20,8 +20,8 @@ function useReveal() {
 }
 
 const ulCls = "list-none pl-0 text-left space-y-2 mt-4";
-const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)" } as const;
-const h2Style = { fontSize: "clamp(22px, 2.6vw, 28px)" } as const;
+const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))" } as const;
+const h2Style = { fontSize: 28 } as const;
 
 const circle: React.CSSProperties = {
   display: "inline-flex",
@@ -29,7 +29,7 @@ const circle: React.CSSProperties = {
   justifyContent: "center",
   width: 44,
   height: 44,
-  borderRadius: 999,
+  borderRadius: 6,
   border: "1.5px solid hsl(var(--primary))",
   color: "hsl(var(--primary))",
   background: "hsl(var(--background))",
@@ -103,10 +103,10 @@ const HowItWorks = () => {
                 <span
                   className="inline-flex items-center justify-center shrink-0"
                   style={{
-                    width: 24, height: 24, borderRadius: 999,
+                    width: 24, height: 24, borderRadius: 6,
                     background: "hsl(var(--primary))",
                     color: "hsl(var(--primary-foreground))",
-                    fontSize: 12, fontWeight: 700, marginTop: 4,
+                    fontSize: 13, fontWeight: 600, marginTop: 4,
                   }}
                 >{i + 1}</span>
                 <span>{t}</span>
@@ -142,7 +142,7 @@ const HowItWorks = () => {
         <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
           <h2 className="ap-h2 text-center" data-reveal style={{ marginBottom: 18 }}>See what you're owed</h2>
           <div data-reveal>
-            <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={start}>
+            <button className="ap-btn ap-btn-primary ap-btn-lg" onClick={start}>
               Check my payslip — free
             </button>
           </div>

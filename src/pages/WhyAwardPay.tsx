@@ -53,8 +53,8 @@ function CountUp({ to, duration = 1200 }: { to: number; duration?: number }) {
 const bullet = "flex items-start gap-2";
 const checkIcon = <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "hsl(var(--primary))" }} />;
 const ulCls = "list-none pl-0 text-left space-y-2 mt-4";
-const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)" } as const;
-const h2Style = { fontSize: "clamp(22px, 2.6vw, 28px)" } as const;
+const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))" } as const;
+const h2Style = { fontSize: 28 } as const;
 
 const WhyAwardPay = () => {
   const navigate = useNavigate();
@@ -116,12 +116,12 @@ const WhyAwardPay = () => {
           <div
             data-reveal
             style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontWeight: 800,
-              fontSize: "clamp(56px, 9vw, 96px)",
+              fontFamily: ""IBM Plex Mono", monospace",
+              fontWeight: 600,
+              fontSize: 96,
               lineHeight: 1,
-              color: "hsl(var(--gold))",
-              letterSpacing: "-0.03em",
+              color: "hsl(var(--foreground))",
+              letterSpacing: "0",
             }}
           >
             <CountUp to={1542} />
@@ -148,7 +148,7 @@ const WhyAwardPay = () => {
       <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
         <div className="mx-auto" style={{ maxWidth: 760 }}>
           <h2 className="ap-h2 text-center" data-reveal style={h2Style}>Where our data comes from</h2>
-          <p className="text-center" data-reveal style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)", margin: 0 }}>
+          <p className="text-center" data-reveal style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))", margin: 0 }}>
             Built on the Fair Work Commission's official Modern Award data, updated as rates change.
             AwardPay is an interpretation tool, not legal advice.
           </p>
@@ -158,7 +158,7 @@ const WhyAwardPay = () => {
       <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 56 }}>
         <div className="mx-auto" style={{ maxWidth: 760 }}>
           <h2 className="ap-h2 text-center" data-reveal style={h2Style}>Who it's for</h2>
-          <p className="text-center" data-reveal style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(150 6% 22%)", margin: 0 }}>
+          <p className="text-center" data-reveal style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))", margin: 0 }}>
             Any role under a Modern Award — retail, hospitality, construction, health, trades,
             cleaning, support work and more.
           </p>
@@ -169,7 +169,7 @@ const WhyAwardPay = () => {
         <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
           <h2 className="ap-h2 text-center" data-reveal style={{ marginBottom: 18 }}>See what you're owed</h2>
           <div data-reveal>
-            <button className="ap-btn ap-btn-gold ap-btn-lg" onClick={start}>
+            <button className="ap-btn ap-btn-primary ap-btn-lg" onClick={start}>
               Check my payslip — free
             </button>
           </div>

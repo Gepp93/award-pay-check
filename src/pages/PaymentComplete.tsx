@@ -106,7 +106,7 @@ export default function PaymentComplete() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-14 h-14 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center mb-3">
+            <div className="mx-auto w-14 h-14 rounded-md bg-green-100 dark:bg-green-950 flex items-center justify-center mb-3">
               <CheckCircle className="h-7 w-7 text-green-600" />
             </div>
             <CardTitle>Payment received</CardTitle>
