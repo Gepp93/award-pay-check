@@ -14,24 +14,8 @@ import { preloadPayslip } from "@/lib/pendingPayslip";
 
 const PayslipStage = () => (
   <div className="ap-stage" aria-hidden="true">
-    {/* Scan card (top left, rotated) */}
-    <div className="ap-float ap-scan">
-      <div className="ap-scan-head">
-        <div className="ap-scan-ic">📄</div>
-        <div className="ap-scan-t">
-          payslip_june.jpg
-          <span>AI reading… done ✓</span>
-        </div>
-      </div>
-      <div className="ph m"></div>
-      <div className="ph s"></div>
-      <div className="ph m"></div>
-      <div className="ph s"></div>
-    </div>
-
     {/* Ledger card */}
-    <div className="ap-float ap-ledger">
-      <div className="ap-ledger-perf"></div>
+    <div className="ap-ledger">
       <div className="ap-ledger-in">
         <div className="ap-l-head">
           <div className="ap-l-title">Pay check</div>
@@ -83,16 +67,7 @@ const PayslipStage = () => (
       </div>
     </div>
 
-    {/* Floating chips */}
-    <div className="ap-chip ap-chip-found">
-      <span className="c">✓</span>
-      Underpayment found
-    </div>
-
-    <div className="ap-chip ap-chip-pen">
-      <span className="pd"></span>
-      Saturday penalty <span className="pa">+$41.13</span>
-    </div>
+    <p className="ap-ledger-caption">Example figures.</p>
   </div>
 );
 
@@ -160,8 +135,7 @@ const Index = () => {
       {/* Hero */}
       <header className="ap-wrap ap-hero">
         <div>
-          <div className="ap-pill">
-            <span className="d" />
+          <div className="ap-eyebrow">
             Free award pay check
           </div>
           <h1 className="ap-h1">
@@ -182,7 +156,7 @@ const Index = () => {
             <span>Drop your payslip or take a photo<small>PDF / JPG / PNG</small></span>
           </Button>
           <div className="ap-cta-row">
-            <Button variant="ghost" className="ap-btn ap-btn-primary ap-btn-lg" onClick={startCheck}>
+            <Button variant="default" className="ap-btn ap-btn-primary ap-btn-lg" onClick={startCheck}>
               Check my payslip — free
             </Button>
             <a href="/how-it-works" className="ap-btn ap-btn-outline ap-btn-lg">
@@ -206,7 +180,7 @@ const Index = () => {
 
       {/* How it works */}
 
-      <section className="ap-wrap ap-section">
+      <section className="ap-home-section"><div className="ap-wrap">
         <div className="ap-eyebrow">How it works</div>
         <h2 className="ap-h2">Three steps. About a minute.</h2>
         <p className="ap-sub">
@@ -214,27 +188,28 @@ const Index = () => {
         </p>
         <div className="ap-steps">
           <div className="ap-step">
-            <div className="ap-step-snippet"><UploadCloud className="h-7 w-7" /><span>payslip.pdf</span><CheckCircle2 className="h-4 w-4" /></div><div className="num">1</div>
+            <div className="ap-step-snippet"><UploadCloud className="h-7 w-7" /><span>payslip.pdf</span><CheckCircle2 className="h-4 w-4" /></div><div className="num">01</div>
             <h3>Snap your payslip</h3>
             <p>Take a photo or upload a PDF. Our reader pulls out your hours, rate, allowances and pay period.</p>
           </div>
           <div className="ap-step">
-            <div className="ap-step-snippet"><span className="ap-award-chip"><CheckCircle2 className="h-4 w-4" /> General Retail Award</span></div><div className="num">2</div>
+            <div className="ap-step-snippet"><span className="ap-award-chip"><CheckCircle2 className="h-4 w-4" /> General Retail Award</span></div><div className="num">02</div>
             <h3>We check the official rates</h3>
             <p>We match your role to the right modern award and compare your pay against live Fair Work Commission rates.</p>
           </div>
           <div className="ap-step">
-            <div className="ap-step-snippet ap-result-snippet"><span>Saturday penalty</span><strong>+$41.13</strong></div><div className="num">3</div>
+            <div className="ap-step-snippet ap-result-snippet"><span>Saturday penalty</span><strong>+$41.13</strong></div><div className="num">03</div>
             <h3>See what you're owed</h3>
             <p>A clear, line-by-line breakdown of any missing penalties, overtime or allowances — ready to act on.</p>
           </div>
         </div>
-      </section>
+      </div></section>
 
       {/* Credibility band */}
-      <section className="ap-wrap ap-section">
+      <section className="ap-home-section ap-trust-section"><div className="ap-wrap">
         <div className="ap-band">
           <div>
+            <div className="ap-eyebrow">Official award data</div>
             <h2>Built on the official source of truth</h2>
             <p>
               Your pay is checked against live data from the Fair Work Commission — the same modern award rates,
@@ -253,10 +228,10 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </section>
+      </div></section>
 
       {/* Stats */}
-      <section className="ap-wrap ap-section">
+      <section className="ap-home-section"><div className="ap-wrap">
         <div className="ap-stats">
           <div className="ap-stat">
             <div className="n">$1.35B</div>
@@ -274,9 +249,9 @@ const Index = () => {
             <a className="ap-stat-source" href="#">Source: underpayment research</a>
           </div>
         </div>
-      </section>
+      </div></section>
 
-      <section className="ap-wrap ap-section" aria-labelledby="home-pricing-title">
+      <section className="ap-home-section" aria-labelledby="home-pricing-title"><div className="ap-wrap">
         <div className="ap-home-pricing">
           <div className="ap-eyebrow">Pricing</div>
           <h2 id="home-pricing-title" className="ap-h2">A simple check. A clear price.</h2>
@@ -294,16 +269,16 @@ const Index = () => {
               <div className="ap-home-price">$10<small> / 12 months</small></div>
               <p>Check any payslip, anytime, for a full year.</p>
               <ul><li>Unlimited payslip checks</li><li>AI underpayment detection</li><li>One payment — no subscription</li></ul>
-              <Button variant="ghost" className="ap-btn ap-btn-primary" onClick={handleYearlyCheckout} disabled={checkingOut}>
+              <Button variant="default" className="ap-btn ap-btn-primary" onClick={handleYearlyCheckout} disabled={checkingOut}>
                 {checkingOut ? "Opening checkout…" : "Get 12 months for $10 →"}
               </Button>
               <p className="ap-home-price-note">Launch price. Prices in AUD.</p>
             </div>
           </div>
         </div>
-      </section>
+      </div></section>
 
-      <section className="ap-wrap ap-section" aria-labelledby="home-faq-title">
+      <section className="ap-home-section" aria-labelledby="home-faq-title"><div className="ap-wrap">
         <div className="ap-home-faq">
           <div className="ap-eyebrow">FAQ</div>
           <h2 id="home-faq-title" className="ap-h2">Your questions, answered.</h2>
@@ -316,22 +291,22 @@ const Index = () => {
               ["What does the $10 include?", "One payment gives you 12 months of unlimited payslip checks with the AI Payslip Checker and underpayment detection. It is not a recurring subscription."]
             ].map(([question, answer], index) => (
               <AccordionItem key={question} value={`faq-${index}`}>
-                <AccordionTrigger className="text-left gap-4">{question}</AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">{answer}</AccordionContent>
+                <AccordionTrigger className="ap-faq-trigger text-left gap-4">{question}</AccordionTrigger>
+                <AccordionContent className="ap-faq-answer">{answer}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
         </div>
-      </section>
+      </div></section>
 
       {/* Final CTA */}
-      <section className="ap-wrap ap-final">
-        <h2>Find out what you're owed</h2>
-        <p>It takes about a minute and costs nothing. You might be surprised.</p>
-        <Button variant="ghost" className="ap-btn ap-btn-primary ap-btn-lg" onClick={startCheck}>
+      <section className="ap-home-section"><div className="ap-wrap ap-final">
+        <div><h2>Find out what you're owed</h2>
+        <p>It takes about a minute and costs nothing. You might be surprised.</p></div>
+        <Button variant="default" className="ap-btn ap-btn-primary ap-btn-lg" onClick={startCheck}>
           Check my payslip — free
         </Button>
-      </section>
+      </div></section>
 
       {/* Footer */}
       <footer className="ap-footer">
