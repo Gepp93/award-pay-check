@@ -21,17 +21,15 @@ export const NavBar = () => {
   };
 
   return (
-    <nav className="border-b border-border bg-card/50 backdrop-blur-lg relative z-50">
+    <nav className="border-b border-border bg-card relative z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
             <button
               onClick={() => handleNavigation("/")}
-              className="flex items-center gap-2 font-bold text-xl"
+              className="flex items-center gap-2 font-semibold text-xl"
             >
-              <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <Calculator className="h-5 w-5 text-primary-foreground" />
-              </div>
+              <span className="ap-mark" />
               AwardPay
             </button>
             {/* Desktop Navigation */}
@@ -88,7 +86,7 @@ export const NavBar = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden absolute left-0 right-0 top-16 bg-card border-b border-border shadow-lg z-50">
+          <div className="md:hidden absolute left-0 right-0 top-16 bg-card border-b border-border  z-50">
             <div className="flex flex-col p-4 gap-2">
               <Button
                 variant="ghost"

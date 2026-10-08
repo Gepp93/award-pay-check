@@ -62,15 +62,15 @@ const AppDashboard = () => {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">
           <div className="text-center space-y-2">
-            <h1 className="text-4xl font-bold">Welcome to AwardPay</h1>
+            <h1 className="text-4xl font-semibold">Welcome to AwardPay</h1>
             <p className="text-muted-foreground text-lg">
               Let's check if you're being paid correctly
             </p>
           </div>
 
-          <Card className="border-2 border-primary/20 shadow-lg">
+          <Card className="border-2 border-primary/20 ">
             <CardHeader className="text-center pb-4">
-              <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-16 h-16 bg-primary rounded-md flex items-center justify-center mb-4">
                 <Calculator className="h-8 w-8 text-primary-foreground" />
               </div>
               <CardTitle className="text-2xl">Check My Pay</CardTitle>
@@ -82,7 +82,7 @@ const AppDashboard = () => {
               <Button
                 size="lg"
                 onClick={() => navigate("/check")}
-                className="bg-gradient-primary text-primary-foreground hover:opacity-90 text-lg px-8 py-6 h-14 font-semibold"
+                className="bg-primary text-primary-foreground hover:opacity-90 text-lg px-8 py-6 h-14 font-semibold"
               >
                 Start Pay Check
               </Button>
@@ -90,7 +90,7 @@ const AppDashboard = () => {
           </Card>
 
           <div className="grid md:grid-cols-2 gap-4">
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className=" transition-shadow">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <FileText className="h-5 w-5 text-primary" />
@@ -116,7 +116,7 @@ const AppDashboard = () => {
                       return (
                         <div
                           key={calc.id}
-                          className="relative group border rounded-lg p-3 pr-10 space-y-1 hover:bg-accent hover:shadow-md transition-all"
+                          className="relative group border rounded-lg p-3 pr-10 space-y-1 hover:bg-accent  transition-all"
                         >
                           <button
                             onClick={() => navigate('/new-check-step-3', { 
@@ -129,16 +129,16 @@ const AppDashboard = () => {
                             className="w-full text-left"
                           >
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-[13px] text-muted-foreground">
                                 {format(new Date(calc.created_at), 'MMM dd, yyyy')}
                               </span>
                               {isUnderpaid ? (
-                                <span className="flex items-center gap-1 text-xs text-destructive">
+                                <span className="flex items-center gap-1 text-[13px] text-destructive">
                                   <TrendingDown className="h-3 w-3" />
                                   Underpaid
                                 </span>
                               ) : (
-                                <span className="flex items-center gap-1 text-xs text-green-600">
+                                <span className="flex items-center gap-1 text-[13px] text-primary">
                                   <CheckCircle className="h-3 w-3" />
                                   Correct
                                 </span>
@@ -165,7 +165,7 @@ const AppDashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-md transition-shadow">
+            <Card className=" transition-shadow">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Calculator className="h-5 w-5 text-primary" />
@@ -183,12 +183,12 @@ const AppDashboard = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Total Checks</span>
-                      <span className="text-2xl font-bold">{calculations.length}</span>
+                      <span className="text-2xl font-semibold">{calculations.length}</span>
                     </div>
                     {totalUnderpayment > 0 && (
                       <div className="pt-3 border-t">
-                        <div className="text-xs text-muted-foreground mb-1">Total Potential Underpayment</div>
-                        <div className="text-2xl font-bold text-destructive">
+                        <div className="text-[13px] text-muted-foreground mb-1">Total Potential Underpayment</div>
+                        <div className="text-2xl font-semibold text-destructive">
                           ${totalUnderpayment.toFixed(2)}
                         </div>
                       </div>

@@ -93,7 +93,7 @@ export const ShiftEntryRow = ({ shift, onUpdate, onRemove, calculation, allowanc
         </div>
 
         <div className="space-y-3 mt-4">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">
             Shift Conditions
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -139,7 +139,7 @@ export const ShiftEntryRow = ({ shift, onUpdate, onRemove, calculation, allowanc
 
           {allowances?.results?.length > 0 && (
             <>
-              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mt-4">
+              <div className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider mt-4">
                 Allowances
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -157,15 +157,15 @@ export const ShiftEntryRow = ({ shift, onUpdate, onRemove, calculation, allowanc
           <div className="mt-4 pt-4 border-t grid grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Should earn</p>
-              <p className="font-bold text-lg">${calculation.shouldEarn.toFixed(2)}</p>
+              <p className="font-semibold text-lg">${calculation.shouldEarn.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">You were paid</p>
-              <p className="font-bold text-lg">${shift.actualPaid.toFixed(2)}</p>
+              <p className="font-semibold text-lg">${shift.actualPaid.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Difference</p>
-              <p className={`font-bold text-lg ${calculation.difference > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`font-semibold text-lg ${calculation.difference > 0 ? 'text-primary' : 'text-destructive'}`}>
                 {calculation.difference >= 0 ? '+' : ''}${calculation.difference.toFixed(2)}
               </p>
             </div>

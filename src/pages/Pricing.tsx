@@ -119,16 +119,14 @@ const Pricing = () => {
                   position: "relative",
                   background: "hsl(var(--card))",
                   border: highlighted
-                    ? "2px solid hsl(var(--gold))"
+                    ? "1px solid hsl(var(--primary))"
                     : "1px solid hsl(var(--border))",
                   borderRadius: "var(--radius)",
                   padding: "28px 24px",
                   display: "flex",
                   flexDirection: "column",
                   transform: highlighted ? "translateY(-8px)" : "none",
-                  boxShadow: highlighted
-                    ? "0 24px 60px -24px hsl(43 90% 30% / .35)"
-                    : "0 10px 30px -18px hsl(150 10% 10% / .15)",
+                  
                   transitionDelay: `${i * 80}ms`,
                 }}
               >
@@ -139,14 +137,14 @@ const Pricing = () => {
                       top: -14,
                       left: "50%",
                       transform: "translateX(-50%)",
-                      background: "hsl(var(--gold))",
-                      color: "hsl(var(--gold-foreground))",
-                      fontWeight: 700,
-                      fontSize: 12,
+                      background: "hsl(var(--primary))",
+                      color: "hsl(var(--primary-foreground))",
+                      fontWeight: 600,
+                      fontSize: 13,
                       letterSpacing: ".08em",
                       textTransform: "uppercase",
                       padding: "6px 12px",
-                      borderRadius: 999,
+                      borderRadius: 6,
                       whiteSpace: "nowrap",
                     }}
                   >
@@ -154,12 +152,12 @@ const Pricing = () => {
                   </div>
                 )}
 
-                <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: ".1em", textTransform: "uppercase", color: "hsl(var(--primary))" }}>
+                <div style={{ fontWeight: 600, fontSize: 14, letterSpacing: ".1em", textTransform: "uppercase", color: "hsl(var(--primary))" }}>
                   {t.name}
                 </div>
 
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 10 }}>
-                  <span style={{ fontWeight: 800, fontSize: 44, letterSpacing: "-.02em", lineHeight: 1 }}>
+                  <span style={{ fontWeight: 600, fontSize: 44, letterSpacing: "0", lineHeight: 1 }}>
                     {t.price}
                   </span>
                   {t.priceSuffix && (
@@ -173,7 +171,7 @@ const Pricing = () => {
                   {t.who}
                 </p>
 
-                <ul className="list-none pl-0 text-left" style={{ margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10, flex: 1, fontSize: 15, lineHeight: 1.5, color: "hsl(150 6% 22%)" }}>
+                <ul className="list-none pl-0 text-left" style={{ margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10, flex: 1, fontSize: 15, lineHeight: 1.5, color: "hsl(var(--ink-2))" }}>
                   {t.features.map((f, j) => (
                     <li key={j} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
                       <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "hsl(var(--primary))" }} />
@@ -183,7 +181,7 @@ const Pricing = () => {
                 </ul>
 
                 <button
-                  className={`ap-btn ${highlighted ? "ap-btn-gold" : "ap-btn-outline"}`}
+                  className={`ap-btn ${highlighted ? "ap-btn-primary" : "ap-btn-outline"}`}
                   onClick={start}
                   style={{ marginTop: 22, width: "100%" }}
                 >

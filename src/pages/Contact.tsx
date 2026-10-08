@@ -42,12 +42,12 @@ const Contact = () => {
           href="mailto:support@awardpay.com.au"
           style={{
             display: "inline-block",
-            fontWeight: 800,
-            fontSize: "clamp(24px, 3.6vw, 34px)",
+            fontWeight: 600,
+            fontSize: 34,
             color: "hsl(var(--primary))",
             textDecoration: "none",
             wordBreak: "break-all",
-            letterSpacing: "-0.01em",
+            letterSpacing: "0",
           }}
         >
           support@awardpay.com.au

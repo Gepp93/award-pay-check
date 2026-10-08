@@ -177,7 +177,7 @@ export default function Report() {
             {/* Headline */}
             {isUnderpaid ? (
               <div
-                className="text-center rounded-2xl px-6 py-10"
+                className="text-center rounded-lg px-6 py-10"
                 style={{
                   background: "hsl(var(--primary) / 0.06)",
                   border: "1px solid hsl(var(--primary) / 0.18)",
@@ -187,10 +187,10 @@ export default function Report() {
                   {isUnsureMode ? "You may be owed up to" : "You may be owed"}
                 </div>
                 <div
-                  className="font-extrabold tabular-nums"
+                  className="figure font-semibold tabular-nums"
                   style={{
-                    color: "hsl(var(--gold))",
-                    fontSize: "clamp(48px, 8vw, 84px)",
+                    color: "hsl(var(--foreground))",
+                    fontSize: 84,
                     lineHeight: 1,
                   }}
                 >
@@ -203,14 +203,14 @@ export default function Report() {
               </div>
             ) : (
               <div
-                className="text-center rounded-2xl px-6 py-10"
+                className="text-center rounded-lg px-6 py-10"
                 style={{
                   background: "hsl(var(--primary) / 0.06)",
                   border: "1px solid hsl(var(--primary) / 0.18)",
                 }}
               >
                 <CheckCircle className="h-10 w-10 text-primary mx-auto mb-3" />
-                <h2 className="text-2xl font-bold">Looks like you were paid correctly</h2>
+                <h2 className="text-2xl font-semibold">Looks like you were paid correctly</h2>
               </div>
             )}
 
@@ -257,7 +257,7 @@ export default function Report() {
                 <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
-                    className="ap-btn ap-btn-gold flex-1"
+                    className="ap-btn ap-btn-primary flex-1"
                     onClick={() => handleUnlock("full_report")}
                     disabled={redeeming}
                   >
@@ -268,7 +268,7 @@ export default function Report() {
                       : "Unlock full report — $10"}
                   </button>
                 </div>
-                <p className="text-xs text-center text-muted-foreground">
+                <p className="text-[13px] text-center text-muted-foreground">
                   One-off $10 payment · no account needed · no subscription · refunded if the
                   report is wrong
                 </p>

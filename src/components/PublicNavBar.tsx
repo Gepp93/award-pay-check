@@ -8,16 +8,14 @@ export const PublicNavBar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border/50">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border/50">
       <div className="container mx-auto px-6">
         <div className="flex justify-between items-center h-20">
           <div 
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 font-bold text-xl cursor-pointer"
+            className="flex items-center gap-2 font-semibold text-xl cursor-pointer"
           >
-            <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <Calculator className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <span className="ap-mark" />
             <span className="text-foreground">AwardPay</span>
           </div>
           
@@ -36,7 +34,7 @@ export const PublicNavBar = () => {
             </Button>
             <Button
               onClick={() => navigate("/auth")}
-              className="bg-gradient-primary text-primary-foreground hover:opacity-90 px-6"
+              className="bg-primary text-primary-foreground hover:opacity-90 px-6"
             >
               Get Started
             </Button>
@@ -97,7 +95,7 @@ export const PublicNavBar = () => {
                 <Button
                   size="sm"
                   onClick={() => { navigate("/auth"); setMobileMenuOpen(false); }}
-                  className="bg-gradient-primary text-primary-foreground hover:opacity-90"
+                  className="bg-primary text-primary-foreground hover:opacity-90"
                 >
                   Get Started
                 </Button>

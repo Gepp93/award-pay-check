@@ -52,7 +52,7 @@ const Profile = () => {
       <NavBar />
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="flex items-center gap-3 mb-8">
-          <h1 className="text-3xl font-bold">Profile</h1>
+          <h1 className="text-3xl font-semibold">Profile</h1>
           {isAdmin && (
             <Badge variant="secondary" className="flex items-center gap-1">
               <Shield className="h-3 w-3" />

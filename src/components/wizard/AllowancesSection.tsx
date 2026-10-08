@@ -45,7 +45,7 @@ export const AllowancesSection = ({
             </div>
             {allowance.received && (
               <div>
-                <Label htmlFor={`amount-${index}`} className="text-xs">
+                <Label htmlFor={`amount-${index}`} className="text-[13px]">
                   Amount per pay period ($)
                 </Label>
                 <Input

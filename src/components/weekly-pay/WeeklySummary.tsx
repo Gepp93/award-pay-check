@@ -22,12 +22,12 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Total award pay</span>
-            <span className="text-xl font-bold">${calculation.totalShouldEarn.toFixed(2)}</span>
+            <span className="text-xl font-semibold">${calculation.totalShouldEarn.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Total you were paid</span>
-            <span className="text-xl font-bold">${calculation.totalActualPaid.toFixed(2)}</span>
+            <span className="text-xl font-semibold">${calculation.totalActualPaid.toFixed(2)}</span>
           </div>
 
           <div className="border-t pt-3">
@@ -35,11 +35,11 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
               <span className="font-medium">Possible {isUnderpaid ? 'underpayment' : 'overpayment'}</span>
               <div className="flex items-center gap-2">
                 {isUnderpaid ? (
-                  <TrendingUp className="w-5 h-5 text-green-600" />
+                  <TrendingUp className="w-5 h-5 text-clay" />
                 ) : (
-                  <TrendingDown className="w-5 h-5 text-red-600" />
+                  <TrendingDown className="w-5 h-5 text-ink-2" />
                 )}
-                <span className={`text-2xl font-bold ${isUnderpaid ? 'text-green-600' : 'text-red-600'}`}>
+                <span className={`text-2xl font-semibold ${isUnderpaid ? 'text-clay' : 'text-ink-2'}`}>
                   {isUnderpaid ? '+' : ''}${totalUnderpayment.toFixed(2)}
                 </span>
               </div>
@@ -48,14 +48,14 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
 
           {isUnderpaid && totalUnderpayment > 0 && (
             <>
-              <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md p-4 mt-4">
-                <p className="text-sm text-green-800 dark:text-green-200 font-medium mb-3">
+              <div className="bg-primary-soft border border-rule-strong rounded-md p-4 mt-4">
+                <p className="text-sm text-primary font-medium mb-3">
                   You may be owed ${totalUnderpayment.toFixed(2)} this week!
                 </p>
                 
                 <div className="space-y-2 mt-4">
-                  <p className="text-xs font-semibold text-green-900 dark:text-green-100">What to do next:</p>
-                  <ol className="list-decimal list-inside space-y-1 text-xs text-green-800 dark:text-green-200">
+                  <p className="text-[13px] font-semibold text-primary">What to do next:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-[13px] text-primary">
                     <li>Save or screenshot this calculation</li>
                     <li>Compare with your payslip line-by-line</li>
                     <li>Speak to your employer about the discrepancy</li>
@@ -77,14 +77,14 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
           )}
 
           {!isUnderpaid && totalUnderpayment < -10 && (
-            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md p-4 mt-4">
+            <div className="bg-primary-soft border border-rule-strong rounded-md p-4 mt-4">
               <div className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-ink-2 flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="text-sm text-amber-800 dark:text-amber-200 font-medium">
+                  <p className="text-sm text-ink-2 font-medium">
                     Possible overpayment detected
                   </p>
-                  <p className="text-xs text-amber-700 dark:text-amber-300">
+                  <p className="text-[13px] text-ink-2">
                     Double-check your inputs and award entitlements. If correct, your employer may have made an overpayment.
                   </p>
                 </div>
