@@ -273,14 +273,14 @@ export default function NewCheck_Step1_WhoAreYou() {
     <TooltipProvider>
       {user ? <NavBar /> : <PublicNavBar />}
       {/* Add top padding to account for fixed PublicNavBar (h-20 = 80px) when not logged in */}
-      <div className={`min-h-screen bg-background pb-24 md:pb-8 ${!user ? 'pt-24' : ''}`}>
-        <div className="flex items-start justify-center p-4 pt-8">
-          <Card className="w-full max-w-2xl">
-            <CardHeader className="space-y-4 px-4 md:px-6">
+      <div className={`checker-page checker-form ${!user ? "checker-public" : ""}`}>
+        <div>
+          <main>
+            <header className="checker-heading space-y-4">
               <ProgressIndicator currentStep={1} />
               <div>
-                <CardTitle className="text-xl md:text-2xl">Tell us about your job</CardTitle>
-                <CardDescription>We'll find the right award rates for you</CardDescription>
+                <h1>Tell us about your job</h1>
+                <p>We'll find the right award rates for you</p>
               </div>
               
               {/* Inner progress bar */}
@@ -291,9 +291,9 @@ export default function NewCheck_Step1_WhoAreYou() {
                 </div>
                 <Progress value={progressPercentage} className="h-2" />
               </div>
-            </CardHeader>
+            </header>
             
-            <CardContent className="space-y-6 px-4 md:px-6">
+            <div className="space-y-6">
               {parsedPayslip && (
                 <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary">
                   Pulled from your payslip — please confirm.
@@ -302,34 +302,34 @@ export default function NewCheck_Step1_WhoAreYou() {
               {/* Step 1: Industry Selection - Visual Cards with larger touch targets */}
               <div className="space-y-3">
                 <Label className="text-base font-medium">What industry do you work in?</Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 gap-2">
                   {industryCards.map((industry) => (
-                    <button
-                      key={industry.name}
+                    <Button
+                      variant="outline" key={industry.name}
                       onClick={() => handleIndustrySelect(industry.name)}
-                      className={`flex flex-col items-center justify-center p-5 md:p-4 rounded-lg border-2 transition-all min-h-[100px] md:min-h-[80px]  ${
+                      className={`checker-choice  ${
                         selectedIndustry === industry.name
-                          ? "border-primary bg-primary/10 text-primary "
-                          : "border-border hover:border-primary/50 hover:bg-muted/50 active:bg-muted"
+                          ? "is-selected border-primary bg-primary-soft text-primary "
+                          : "border-input hover:border-primary"
                       }`}
                     >
-                      {industry.icon}
-                      <span className="mt-2 text-sm font-medium text-center">{industry.name}</span>
-                    </button>
+                      <span className="choice-radio" aria-hidden="true" />
+                      <span className="text-base font-medium text-left">{industry.name}</span>
+                    </Button>
                   ))}
                 </div>
               </div>
 
               {/* Step 2: Award Selection with Search */}
               {selectedIndustry && (
-                <div className="space-y-3 animate-fade-in">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Label className="text-base font-medium">Select your Award</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <button className="touch-manipulation p-1">
+                        <Button variant="ghost" size="icon" className="touch-manipulation p-1">
                           <HelpCircle className="w-5 h-5 md:w-4 md:h-4 text-muted-foreground" />
-                        </button>
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-[280px] bg-popover text-popover-foreground">
                         <p>An Award is a legal document that sets minimum pay rates and conditions for your job. Check your payslip or employment contract to find yours.</p>
@@ -351,7 +351,7 @@ export default function NewCheck_Step1_WhoAreYou() {
                           placeholder="Search awards..."
                           value={awardSearch}
                           onChange={(e) => setAwardSearch(e.target.value)}
-                          className="pl-10 h-12 md:h-10 text-base"
+                          className="pl-10 h-12 text-base"
                         />
                       </div>
                       
@@ -364,18 +364,18 @@ export default function NewCheck_Step1_WhoAreYou() {
                         ) : (
                           <>
                             {displayedAwards.map((award) => (
-                              <button
-                                key={award.code}
+                              <Button
+                                variant="outline" key={award.code}
                                 onClick={() => handleAwardSelect(award.code)}
-                                className={`w-full text-left p-4 md:p-3 rounded-lg md:rounded-lg border-2 transition-all  ${
+                                className={`checker-choice  ${
                                   selectedAward === award.code
-                                    ? "border-primary bg-primary/10 "
-                                    : "border-border hover:border-primary/50 hover:bg-muted/50 active:bg-muted"
+                                    ? "is-selected border-primary bg-primary-soft "
+                                    : "border-input hover:border-primary"
                                 }`}
                               >
-                                <div className="font-medium text-sm leading-tight">{award.name}</div>
-                                <div className="text-[13px] text-muted-foreground mt-1">{award.code}</div>
-                              </button>
+                                <span className="choice-radio" aria-hidden="true" /><div className="min-w-0"><div className="font-medium text-base leading-snug">{award.name}</div>
+                                <div className="text-[13px] text-muted-foreground mt-1">{award.code}</div></div>
+                              </Button>
                             ))}
                             
                             {filteredAwards.length > 8 && !showAllAwards && (
@@ -383,7 +383,7 @@ export default function NewCheck_Step1_WhoAreYou() {
                                 variant="ghost"
                                 size="lg"
                                 onClick={() => setShowAllAwards(true)}
-                                className="w-full h-12 md:h-10"
+                                className="w-full h-12"
                               >
                                 <ChevronDown className="w-5 h-5 mr-2" />
                                 Show {filteredAwards.length - 8} more awards
@@ -395,7 +395,7 @@ export default function NewCheck_Step1_WhoAreYou() {
                                 variant="ghost"
                                 size="lg"
                                 onClick={() => setShowAllAwards(false)}
-                                className="w-full h-12 md:h-10"
+                                className="w-full h-12"
                               >
                                 <ChevronUp className="w-5 h-5 mr-2" />
                                 Show less
@@ -411,7 +411,7 @@ export default function NewCheck_Step1_WhoAreYou() {
 
               {/* Work Area (if available) */}
               {selectedAward && workAreas.length > 0 && (
-                <div className="space-y-2 animate-fade-in">
+                <div className="space-y-2">
                   <Label>Work Area / Category</Label>
                   {loadingClassifications ? (
                     <div className="flex items-center justify-center py-4">
@@ -423,7 +423,7 @@ export default function NewCheck_Step1_WhoAreYou() {
                       setSelectedWorkArea(value);
                       setSelectedClassification("");
                     }}>
-                      <SelectTrigger className="bg-background h-12 md:h-10 text-base">
+                      <SelectTrigger className="bg-background h-12 text-base">
                         <SelectValue placeholder="Select work area" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border border-border max-h-[300px] z-50">
@@ -440,18 +440,18 @@ export default function NewCheck_Step1_WhoAreYou() {
 
               {/* Optional: Classification picker (collapsed by default) */}
               {selectedAward && selectedWorkArea && (
-                <div className="space-y-2 animate-fade-in">
-                  <button
-                    onClick={() => setShowClassificationPicker(!showClassificationPicker)}
+                <div className="space-y-2">
+                  <Button
+                    variant="link" onClick={() => setShowClassificationPicker(!showClassificationPicker)}
                     className="text-sm text-primary hover:underline flex items-center gap-1 py-2 touch-manipulation"
                   >
                     {showClassificationPicker ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     {showClassificationPicker ? "Skip classification selection" : "I know my exact classification (optional)"}
-                  </button>
+                  </Button>
                   
                   {showClassificationPicker && filteredClassifications.length > 0 && (
                     <Select value={selectedClassification} onValueChange={setSelectedClassification}>
-                      <SelectTrigger className="bg-background h-12 md:h-10 text-base">
+                      <SelectTrigger className="bg-background h-12 text-base">
                         <SelectValue placeholder="Select your classification" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border border-border max-h-[300px] z-50">
@@ -473,14 +473,14 @@ export default function NewCheck_Step1_WhoAreYou() {
 
               {/* Step 3: Employment Type with larger touch targets */}
               {selectedAward && (
-                <div className="space-y-3 animate-fade-in">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Label className="text-base font-medium">Employment Type</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <button className="touch-manipulation p-1">
+                        <Button variant="ghost" size="icon" className="touch-manipulation p-1">
                           <HelpCircle className="w-5 h-5 md:w-4 md:h-4 text-muted-foreground" />
-                        </button>
+                        </Button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-[280px] bg-popover text-popover-foreground">
                         <p><strong>Full-time:</strong> Regular hours, usually 38/week<br/>
@@ -491,19 +491,19 @@ export default function NewCheck_Step1_WhoAreYou() {
                   </div>
                   
                   {/* Employment type as larger buttons for mobile */}
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 gap-2">
                     {["Full-time", "Part-time", "Casual"].map((type) => (
-                      <button
-                        key={type}
+                      <Button
+                        variant="outline" key={type}
                         onClick={() => setEmploymentType(type)}
-                        className={`py-4 md:py-3 px-3 rounded-lg md:rounded-lg border-2 font-medium text-sm transition-all  ${
+                        className={`checker-choice  ${
                           employmentType === type
-                            ? "border-primary bg-primary/10 text-primary "
-                            : "border-border hover:border-primary/50 hover:bg-muted/50 active:bg-muted"
+                            ? "is-selected border-primary bg-primary-soft text-primary "
+                            : "border-input hover:border-primary"
                         }`}
                       >
-                        {type}
-                      </button>
+                        <span className="choice-radio" aria-hidden="true" />{type}
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -511,10 +511,10 @@ export default function NewCheck_Step1_WhoAreYou() {
 
               {/* State (optional, collapsed) */}
               {selectedAward && (
-                <div className="space-y-2 animate-fade-in">
+                <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">State (optional)</Label>
                   <Select value={state} onValueChange={setState}>
-                    <SelectTrigger className="bg-background h-12 md:h-10 text-base">
+                    <SelectTrigger className="bg-background h-12 text-base">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-background border border-border">
@@ -532,10 +532,10 @@ export default function NewCheck_Step1_WhoAreYou() {
               <div className="h-4 md:h-0" />
               
               {/* Next Button - Desktop only (sticky button below for mobile) */}
-              <div className="hidden md:block pt-2">
+              <div className="checker-actions hidden md:flex pt-2">
                 <Button 
                   onClick={handleNext} 
-                  className="w-full" 
+                  className="md:w-auto" 
                   size="lg"
                   disabled={!canProceed}
                 >
@@ -543,12 +543,12 @@ export default function NewCheck_Step1_WhoAreYou() {
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </main>
         </div>
         
         {/* Sticky Next Button - Mobile only */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border md:hidden z-40">
+        <div className="checker-actions md:hidden">
           <Button 
             onClick={handleNext} 
             className="w-full h-14 text-base font-semibold " 

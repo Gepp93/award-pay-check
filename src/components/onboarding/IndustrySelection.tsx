@@ -62,26 +62,26 @@ export const IndustrySelection = ({ onSelect }: IndustrySelectionProps) => {
   };
 
   return (
-    <Card className="bg-card border-border ">
-      <CardHeader>
-        <CardTitle>Step 1: Select Your Industry</CardTitle>
-        <CardDescription>Choose the industry you work in</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <section className="checker-onboarding checker-form">
+      <header className="checker-heading">
+        <h1>Step 1: Select Your Industry</h1>
+        <p>Choose the industry you work in</p>
+      </header>
+      <div className="space-y-6">
         <div>
           <Label className="text-base font-semibold mb-3 block">Common Industries</Label>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-2">
             {commonIndustries.map((industry) => {
               const Icon = industry.icon;
               return (
                 <Button
                   key={industry.name}
                   variant="outline"
-                  className="h-28 flex flex-col items-center justify-center gap-2 hover:bg-accent/20 hover:border-accent hover:text-foreground transition-all p-3"
+                  className="checker-choice"
                   onClick={() => onSelect(industry.name)}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-[13px] text-center font-medium leading-tight">{industry.name}</span>
+                  <span className="choice-radio" aria-hidden="true" />
+                  <span className="text-base text-left font-medium leading-snug">{industry.name}</span>
                 </Button>
               );
             })}
@@ -112,7 +112,7 @@ export const IndustrySelection = ({ onSelect }: IndustrySelectionProps) => {
             </SelectContent>
           </Select>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

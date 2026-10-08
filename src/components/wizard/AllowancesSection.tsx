@@ -21,7 +21,7 @@ export const AllowancesSection = ({
         {allowances.map((allowance, index) => (
           <div
             key={index}
-            className="border border-border rounded-lg p-4 space-y-3 bg-secondary/5"
+            className="checker-form border-t border-border py-4 space-y-3"
           >
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -45,12 +45,12 @@ export const AllowancesSection = ({
             </div>
             {allowance.received && (
               <div>
-                <Label htmlFor={`amount-${index}`} className="text-[13px]">
+                <Label htmlFor={`amount-${index}`} className="text-sm font-semibold">
                   Amount per pay period ($)
                 </Label>
-                <Input
+                <div className="checker-affix checker-affix-money"><span>$</span><Input
                   id={`amount-${index}`}
-                  type="number"
+                  className="font-mono text-right" type="number"
                   step="0.01"
                   placeholder="0.00"
                   value={allowance.amount_per_period || ""}
@@ -60,7 +60,7 @@ export const AllowancesSection = ({
                       amount_per_period: parseFloat(e.target.value) || 0,
                     })
                   }
-                />
+                /></div>
               </div>
             )}
           </div>

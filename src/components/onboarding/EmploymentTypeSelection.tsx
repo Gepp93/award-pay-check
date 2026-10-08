@@ -27,8 +27,8 @@ const employmentTypes = [
 
 export const EmploymentTypeSelection = ({ onSelect, onBack }: EmploymentTypeSelectionProps) => {
   return (
-    <Card className="bg-card border-border ">
-      <CardHeader>
+    <section className="checker-onboarding checker-form">
+      <header className="checker-heading">
         <Button
           variant="ghost"
           size="sm"
@@ -38,27 +38,26 @@ export const EmploymentTypeSelection = ({ onSelect, onBack }: EmploymentTypeSele
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <CardTitle>Step 3: Employment Type</CardTitle>
-        <CardDescription>How are you employed?</CardDescription>
-      </CardHeader>
-      <CardContent>
+        <h1>Step 3: Employment Type</h1>
+        <p>How are you employed?</p>
+      </header>
+      <div>
         <div className="grid gap-4">
           {employmentTypes.map(({ type, icon: Icon, description }) => (
             <Button
               key={type}
               variant="outline"
-              className="h-auto py-4 flex flex-col items-start hover:bg-accent/20 hover:border-accent transition-all"
+              className="checker-choice items-start"
               onClick={() => onSelect(type)}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <Icon className="w-5 h-5" />
+              <span className="choice-radio" aria-hidden="true" /><div className="min-w-0"><div className="font-semibold">
                 <span className="font-semibold">{type}</span>
               </div>
-              <span className="text-sm text-muted-foreground">{description}</span>
+              <span className="text-sm text-muted-foreground">{description}</span></div>
             </Button>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };
