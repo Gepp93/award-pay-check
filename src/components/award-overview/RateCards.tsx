@@ -208,21 +208,21 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
               </div>
               
               {employmentType === "Casual" && baseRate && (
-                <div className="bg-primary-soft bg-primary border border-rule-strong border-rule-strong rounded-md p-3">
+                <div className="bg-primary-soft border border-rule-strong rounded-md p-3">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-ink-2 text-ink-2">Base rate:</span>
-                    <span className="font-medium text-ink-2 text-ink-2">${baseRate.toFixed(2)}/hr</span>
+                    <span className="text-ink-2">Base rate:</span>
+                    <span className="font-medium text-ink-2">${baseRate.toFixed(2)}/hr</span>
                   </div>
                   <div className="flex justify-between items-center text-sm mt-1">
-                    <span className="text-ink-2 text-ink-2">Casual loading (25%):</span>
-                    <span className="font-medium text-ink-2 text-ink-2">+${(baseRate * 0.25).toFixed(2)}/hr</span>
+                    <span className="text-ink-2">Casual loading (25%):</span>
+                    <span className="font-medium text-ink-2">+${(baseRate * 0.25).toFixed(2)}/hr</span>
                   </div>
                 </div>
               )}
 
               {employmentType === "Part-time" && (
-                <div className="bg-primary-soft bg-primary border border-rule-strong border-rule-strong rounded-md p-3">
-                  <p className="text-[13px] text-ink-2 text-ink-2">
+                <div className="bg-primary-soft border border-rule-strong rounded-md p-3">
+                  <p className="text-[13px] text-ink-2">
                     As a part-time employee, you're entitled to pro-rata benefits and minimum engagement hours may apply.
                   </p>
                 </div>

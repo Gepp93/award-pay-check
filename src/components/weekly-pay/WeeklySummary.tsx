@@ -35,11 +35,11 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
               <span className="font-medium">Possible {isUnderpaid ? 'underpayment' : 'overpayment'}</span>
               <div className="flex items-center gap-2">
                 {isUnderpaid ? (
-                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <TrendingUp className="w-5 h-5 text-clay" />
                 ) : (
-                  <TrendingDown className="w-5 h-5 text-destructive" />
+                  <TrendingDown className="w-5 h-5 text-ink-2" />
                 )}
-                <span className={`text-2xl font-semibold ${isUnderpaid ? 'text-primary' : 'text-destructive'}`}>
+                <span className={`text-2xl font-semibold ${isUnderpaid ? 'text-clay' : 'text-ink-2'}`}>
                   {isUnderpaid ? '+' : ''}${totalUnderpayment.toFixed(2)}
                 </span>
               </div>
@@ -48,14 +48,14 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
 
           {isUnderpaid && totalUnderpayment > 0 && (
             <>
-              <div className="bg-primary-soft bg-primary border border-rule-strong border-rule-strong rounded-md p-4 mt-4">
-                <p className="text-sm text-primary text-primary font-medium mb-3">
+              <div className="bg-primary-soft border border-rule-strong rounded-md p-4 mt-4">
+                <p className="text-sm text-primary font-medium mb-3">
                   You may be owed ${totalUnderpayment.toFixed(2)} this week!
                 </p>
                 
                 <div className="space-y-2 mt-4">
-                  <p className="text-[13px] font-semibold text-primary text-primary">What to do next:</p>
-                  <ol className="list-decimal list-inside space-y-1 text-[13px] text-primary text-primary">
+                  <p className="text-[13px] font-semibold text-primary">What to do next:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-[13px] text-primary">
                     <li>Save or screenshot this calculation</li>
                     <li>Compare with your payslip line-by-line</li>
                     <li>Speak to your employer about the discrepancy</li>
@@ -77,14 +77,14 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
           )}
 
           {!isUnderpaid && totalUnderpayment < -10 && (
-            <div className="bg-primary-soft bg-primary border border-rule-strong border-rule-strong rounded-md p-4 mt-4">
+            <div className="bg-primary-soft border border-rule-strong rounded-md p-4 mt-4">
               <div className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-ink-2 text-ink-2 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-ink-2 flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
-                  <p className="text-sm text-ink-2 text-ink-2 font-medium">
+                  <p className="text-sm text-ink-2 font-medium">
                     Possible overpayment detected
                   </p>
-                  <p className="text-[13px] text-ink-2 text-ink-2">
+                  <p className="text-[13px] text-ink-2">
                     Double-check your inputs and award entitlements. If correct, your employer may have made an overpayment.
                   </p>
                 </div>
