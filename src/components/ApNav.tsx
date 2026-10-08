@@ -25,7 +25,7 @@ export const ApNav = () => {
         </div>
         <Button variant="ghost" size="icon"
           type="button"
-          className="ap-burger"
+          className="ap-burger [&_svg]:size-6"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen(v => !v)}
