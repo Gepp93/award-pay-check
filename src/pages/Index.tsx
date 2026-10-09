@@ -10,6 +10,9 @@ import { UploadCloud, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { preloadPayslip } from "@/lib/pendingPayslip";
+import { THREE_MONTH_PASS } from "@/lib/plans";
+import { PAYSLIP_ACCEPT } from "@/lib/payslipReader";
+import { PassOffer } from "@/components/PassOffer";
 
 
 const PayslipStage = () => (
@@ -98,7 +101,7 @@ const Index = () => {
     if (checkingOut) return;
     setCheckingOut(true);
     try {
-      const url = await startSubscriptionCheckout("yearly_access", user?.email, user?.id);
+      const url = await startSubscriptionCheckout("three_month_pass", user?.email, user?.id);
       if (url) {
         window.location.href = url;
       } else {
@@ -113,7 +116,7 @@ const Index = () => {
 
     <div className="ap-home">
       <SEO
-        title="Am I Being Underpaid? Free Award Pay Check | AwardPay"
+        title="Am I Being Underpaid? Award Pay Check | AwardPay"
         description="Check Australian award pay in 60 seconds. 1 in 5 workers lose $1,542/year on penalty rates, overtime and allowances."
         path="/"
         jsonLd={{
@@ -124,8 +127,8 @@ const Index = () => {
           operatingSystem: "Web",
           url: "https://www.awardpay.com.au/",
           description:
-            "Free Australian award pay checker that reads your payslip and compares it to Fair Work Modern Awards.",
-          offers: { "@type": "Offer", price: "0", priceCurrency: "AUD" },
+            "Australian award pay checker that reads your payslip and compares it to Fair Work Modern Awards.",
+          offers: { "@type": "Offer", price: String(THREE_MONTH_PASS.amountCents / 100), priceCurrency: "AUD" },
         }}
       />
 
@@ -136,7 +139,7 @@ const Index = () => {
       <header className="ap-wrap ap-hero">
         <div>
           <div className="ap-eyebrow">
-            Free award pay check
+            Award pay check
           </div>
           <h1 className="ap-h1">
             Are you being <span className="ap-hl">underpaid?</span>
@@ -146,7 +149,7 @@ const Index = () => {
             allowances — on average <strong>$1,542 a year</strong>. Snap a photo of your payslip
             and we'll check it against the official Fair Work rates in about a minute.
           </p>
-          <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.heif" className="hidden" aria-label="Upload your payslip" onChange={(event) => openFile(event.target.files?.[0])} />
+          <input ref={inputRef} type="file" accept={PAYSLIP_ACCEPT} className="hidden" aria-label="Upload your payslip" onChange={(event) => openFile(event.target.files?.[0])} />
           <Button variant="outline" className={`ap-home-upload rounded-lg ${dragging ? "is-dragging" : ""}`}
             onClick={() => inputRef.current?.click()}
             onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
@@ -157,7 +160,7 @@ const Index = () => {
           </Button>
           <div className="ap-cta-row">
             <Button variant="default" className="ap-btn ap-btn-primary ap-btn-lg" onClick={startCheck}>
-              Check my payslip — free
+              Check my payslip
             </Button>
             <a href="/how-it-works" className="ap-btn ap-btn-outline ap-btn-lg">
               See how it works
@@ -224,7 +227,7 @@ const Index = () => {
               <span className="cb">✓</span>Your payslip is read, then discarded
             </div>
             <div className="cred">
-              <span className="cb">✓</span>Free to check — no account required
+              <span className="cb">✓</span>Headline results — no account required
             </div>
           </div>
         </div>
@@ -255,26 +258,7 @@ const Index = () => {
         <div className="ap-home-pricing">
           <div className="ap-eyebrow">Pricing</div>
           <h2 id="home-pricing-title" className="ap-h2">A simple check. A clear price.</h2>
-          <div className="ap-home-pricing-grid">
-            <div className="ap-home-tier">
-              <h3><span>First check</span> — Free</h3>
-              <div className="ap-home-price">$0</div>
-              <p>Find out whether your payslip adds up.</p>
-              <ul><li>One payslip check</li><li>Official Fair Work rates</li><li>No account needed</li></ul>
-              <Button variant="outline" className="ap-btn ap-btn-outline" onClick={startCheck}>Check my payslip — free</Button>
-            </div>
-            <div className="ap-home-tier ap-home-tier-paid">
-              <span className="ap-home-best-value">BEST VALUE</span>
-              <h3><span>12 months unlimited</span> — $10</h3>
-              <div className="ap-home-price">$10<small> / 12 months</small></div>
-              <p>Check any payslip, anytime, for a full year.</p>
-              <ul><li>Unlimited payslip checks</li><li>AI underpayment detection</li><li>One payment — no subscription</li></ul>
-              <Button variant="default" className="ap-btn ap-btn-primary" onClick={handleYearlyCheckout} disabled={checkingOut}>
-                {checkingOut ? "Opening checkout…" : "Get 12 months for $10 →"}
-              </Button>
-              <p className="ap-home-price-note">Launch price. Prices in AUD.</p>
-            </div>
-          </div>
+          <PassOffer onCheckout={handleYearlyCheckout} busy={checkingOut} />
         </div>
       </div></section>
 
@@ -288,7 +272,7 @@ const Index = () => {
               ["Which awards are covered?", "You can search for your modern award in the checker. Coverage depends on the award and classification data available. If you cannot find yours, confirm it with the Fair Work Ombudsman."],
               ["What happens to my payslip?", "Your payslip is sent to an AI service to read your pay details, then discarded. The payslip file is not stored by AwardPay; extracted details may be included in your saved report."],
               ["What if I'm underpaid?", "Review the breakdown and check that your role, hours and employment type are correct. Keep your payslips and speak to your employer. If you need more help, contact the Fair Work Ombudsman or your union."],
-              ["What does the $10 include?", "One payment gives you 12 months of unlimited payslip checks with the AI Payslip Checker and underpayment detection. It is not a recurring subscription."]
+              [`What does the ${THREE_MONTH_PASS.name} include?`, `One ${THREE_MONTH_PASS.priceLabel} payment gives you ${THREE_MONTH_PASS.durationDays} days of unlimited payslip checks, full reports and downloadable PDFs. It is not a recurring subscription.`]
             ].map(([question, answer], index) => (
               <AccordionItem key={question} value={`faq-${index}`}>
                 <AccordionTrigger className="ap-faq-trigger text-left gap-4">{question}</AccordionTrigger>
@@ -302,9 +286,9 @@ const Index = () => {
       {/* Final CTA */}
       <section className="ap-home-section"><div className="ap-wrap ap-final">
         <div><h2>Find out what you're owed</h2>
-        <p>It takes about a minute and costs nothing. You might be surprised.</p></div>
+        <p>It takes about a minute. See how your pay compares to official rates.</p></div>
         <Button variant="default" className="ap-btn ap-btn-primary ap-btn-lg" onClick={startCheck}>
-          Check my payslip — free
+          Check my payslip
         </Button>
       </div></section>
 

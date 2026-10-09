@@ -5,6 +5,7 @@ import { Check, AlertCircle } from "lucide-react";
 import SEO from "@/components/SEO";
 import { ApNav } from "@/components/ApNav";
 import { supabase } from "@/integrations/supabase/client";
+import { THREE_MONTH_PASS } from "@/lib/plans";
 import { startSubscriptionCheckout } from "@/lib/paymentLinks";
 
 function useReveal() {
@@ -95,7 +96,7 @@ const UnderpaidAward = () => {
 
   const handleCta = async () => {
     setCtaLoading(true);
-    const url = await startSubscriptionCheckout("yearly_access");
+    const url = await startSubscriptionCheckout("three_month_pass");
     if (url) {
       window.location.href = url;
     } else {

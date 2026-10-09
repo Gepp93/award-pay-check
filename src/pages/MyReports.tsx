@@ -5,6 +5,8 @@ import { useAuthUser } from "@/hooks/useAuthUser";
 import { NavBar } from "@/components/NavBar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useSubscription } from "@/hooks/useSubscription";
+import { THREE_MONTH_PASS } from "@/lib/plans";
 import { Loader2, FileText, ChevronRight } from "lucide-react";
 
 interface Row {
@@ -18,6 +20,7 @@ interface Row {
 export default function MyReports() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuthUser();
+  const pass = useSubscription();
   const [rows, setRows] = useState<Row[] | null>(null);
 
   useEffect(() => {
@@ -78,13 +81,13 @@ export default function MyReports() {
           <p>All your pay checks in one place — paid reports stay unlocked here.</p>
         </header>
         <div className="ap-final border-t border-rule py-6 mb-6">
-          <p className="text-ink-2">Paid reports stay unlocked.</p>
+          <p className="text-ink-2">{pass.isPremium && pass.expiresAt ? `${pass.subscriptionStatus === "three_month" ? THREE_MONTH_PASS.name : "Pass"} · expires ${new Date(pass.expiresAt).toLocaleDateString("en-AU")}` : "Paid reports stay unlocked."}</p>
           <Button onClick={() => navigate("/check")}>Check a payslip</Button>
         </div>
         {rows.length === 0 ? (
           <div className="space-y-5 border-t border-rule pt-6">
-            <p>No reports yet — run a free check to get started.</p>
-            <Button onClick={() => navigate("/check")}>Start a free pay check</Button>
+            <p>No reports yet — check a payslip to get started.</p>
+            <Button onClick={() => navigate("/check")}>Check my payslip</Button>
           </div>
         ) : (
           <table className="ledger-table ledger-mobile-rows">
