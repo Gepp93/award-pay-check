@@ -10,4 +10,5 @@
 - Finalize pass payments through a service-role-only transactional function with purchase locking and report linking; this makes extension and report unlock idempotent.
 - Guard billing columns with invoker triggers and restrict purchase inserts to pending rows; clients cannot mint paid entitlements or change report payment status.
 - Create checkout references client-side without reading pending purchase rows; expose only minimal status RPCs so guest checkout does not reveal purchase emails.
+- Fulfil verified paid AUD pass sessions from the stored purchase product, warning on price differences; promo/tax variations must not strand paid customers or trigger endless retries.
 - Keep adapter and verified webhook routing tests in `tests/` using in-memory clients; this checks compatibility without live database rows or charges.
