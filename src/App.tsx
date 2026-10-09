@@ -47,7 +47,7 @@ const App = () => (
           <Route path="/award-finder" element={<AwardFinder />} />
           <Route path="/award-overview" element={<AwardOverview />} />
           <Route path="/weekly-pay-check" element={<WeeklyPayCheck />} />
-          <Route path="/debug-classifications" element={<DebugClassifications />} />
+          {import.meta.env.DEV && <Route path="/debug-classifications" element={<DebugClassifications />} />}
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/app-dashboard" element={<AppDashboard />} />

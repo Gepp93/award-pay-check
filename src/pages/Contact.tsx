@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import SEO from "@/components/SEO";
 import { ApNav } from "@/components/ApNav";
@@ -6,7 +7,7 @@ const Contact = () => {
   const navigate = useNavigate();
 
   return (
-    <div>
+    <div className="ap-marketing">
       <SEO
         title="Contact AwardPay"
         description="A question about your pay or our checks? Email support@awardpay.com.au — a real person reads every message."
@@ -16,43 +17,30 @@ const Contact = () => {
       <ApNav />
 
       {/* Hero */}
-      <section className="ap-wrap ap-section" style={{ paddingBottom: 28 }}>
-        <div className="mx-auto" style={{ maxWidth: 760 }}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <div className="ledger-label mb-4">Contact</div>
           <h1
-            className="ap-h1 text-center"
-            style={{
-              color: "hsl(var(--foreground))",
-              background: "none",
-              WebkitTextFillColor: "currentColor",
-              backgroundClip: "border-box",
-              WebkitBackgroundClip: "border-box",
-            }}
+            className="ap-h1"
+            
           >
             Get in touch
           </h1>
-          <p className="ap-lede text-center" style={{ marginBottom: 0, maxWidth: "none" }}>
+          <p className="ap-lede" >
             A question about your pay, our checks, or something not working? Email us — a real person reads every message.
           </p>
         </div>
       </section>
 
       {/* Email */}
-      <section className="ap-wrap" style={{ paddingTop: 32, paddingBottom: 100, textAlign: "center" }}>
+      <section className="ap-wrap ap-home-section" >
         <a
-          href="mailto:support@awardpay.com.au"
-          style={{
-            display: "inline-block",
-            fontWeight: 600,
-            fontSize: 34,
-            color: "hsl(var(--primary))",
-            textDecoration: "none",
-            wordBreak: "break-all",
-            letterSpacing: "0",
-          }}
+          href="mailto:support@awardpay.com.au" className="text-primary text-xl md:text-3xl font-semibold underline break-all"
+          
         >
           support@awardpay.com.au
         </a>
-        <p style={{ marginTop: 14, fontSize: 14, color: "hsl(var(--muted-foreground))" }}>
+        <p >
           We usually reply within 24–48 hours.
         </p>
       </section>
