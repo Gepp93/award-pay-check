@@ -1,3 +1,9 @@
+# Phase 7 payment security and reader diagnosis
+- [ ] Harden paid-access policies, triggers and function privileges; verify using rolled-back role-based SQL.
+- [ ] Diagnose one deployed synthetic reader call and check published version.
+- [ ] Handle discounted/taxed pass checkouts and legacy yearly purchases; rerun webhook tests.
+- [ ] Rerun stubbed guided/checkout/claim/reports checks at 1280px/390px and check build diagnostics.
+
 # Phase 6 guided checker and single pass
 - [x] Investigate available reader logs; deploy bounded parsing/retry/fallback and verify PDF worker conversion. No logs returned, so the original live failure is unconfirmed.
 - [x] Build the one-route guided checker while preserving official calculation contracts and saved results.
