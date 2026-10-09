@@ -8,6 +8,13 @@
       "when": 1791528164949,
       "tag": "0000_three_month_pass_report_link",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791528557823,
+      "tag": "0001_pass_existing_account_and_legacy_access",
+      "breakpoints": true
     }
   ]
 }
