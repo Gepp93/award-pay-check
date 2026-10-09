@@ -53,15 +53,16 @@ export default function PaymentComplete() {
 
         const started = Date.now();
         while (!cancelledRef.current && Date.now() - started < 20_000) {
-          const { data, error } = await (supabase as any)
-            .rpc("resolve_pass_purchase", { p_purchase_id: pendingSubId })
+          const { data, error } = await supabase
+            .rpc("get_purchase_status", { p_id: pendingSubId })
             .maybeSingle();
           if (error) {
-            console.error("get_subscription_status error:", error);
+            console.error("get_purchase_status error:", error);
           } else if (data?.status === "paid") {
             setSubscriptionPaid(true);
             localStorage.removeItem("pendingSubscriptionId");
-            const linkedReport = data.report_id || localStorage.getItem("pendingReportId");
+            const { data: resolved } = await supabase.rpc("resolve_pass_purchase", { p_purchase_id: pendingSubId }).maybeSingle();
+            const linkedReport = resolved?.report_id || localStorage.getItem("pendingReportId");
             if (linkedReport) {
               localStorage.removeItem("pendingReportId");
               navigate(`/report/${linkedReport}`);

@@ -15,6 +15,13 @@
       "when": 1791528557823,
       "tag": "0001_pass_existing_account_and_legacy_access",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791529525827,
+      "tag": "0002_harden_paid_access",
+      "breakpoints": true
     }
   ]
 }

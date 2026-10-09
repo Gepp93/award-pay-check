@@ -8,4 +8,7 @@
 - Send printed hour buckets only in payslip-hours mode and next-day finish hours above 24 for overnight rosters; this preserves the engine's overtime logic and clock subtraction without altering it.
 - Define the current pass in `src/lib/plans.ts` and render shared offers; this prevents price, duration and link drift across pages.
 - Finalize pass payments through a service-role-only transactional function with purchase locking and report linking; this makes extension and report unlock idempotent.
+- Guard billing columns with invoker triggers and restrict purchase inserts to pending rows; clients cannot mint paid entitlements or change report payment status.
+- Create checkout references client-side without reading pending purchase rows; expose only minimal status RPCs so guest checkout does not reveal purchase emails.
+- Fulfil verified paid AUD pass sessions from the stored purchase product, warning on price differences; promo/tax variations must not strand paid customers or trigger endless retries.
 - Keep adapter and verified webhook routing tests in `tests/` using in-memory clients; this checks compatibility without live database rows or charges.

@@ -359,6 +359,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_purchase_status: {
+        Args: { p_id: string }
+        Returns: {
+          expires_at: string
+          product: string
+          status: string
+        }[]
+      }
       get_subscription_status: {
         Args: { purchase_id: string }
         Returns: {

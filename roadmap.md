@@ -1,3 +1,11 @@
+# Phase 7 payment security and reader diagnosis
+- [x] Harden paid-access policies, triggers and function privileges; role-based SQL checks passed and all fixtures rolled back.
+- [x] Diagnose one deployed synthetic reader call: HTTP 429 reader_unavailable, logs confirm OpenAI returned 429; origin guard passed. Published bundle lacks Phase 6 markers.
+- [x] Handle discounted/taxed pass checkouts and legacy yearly purchases; 12 webhook and 4 calculation tests passed.
+- [x] Rerun 8 stubbed guided/checkout/polling flows at 1280px/390px, plus signed-in claim/My Reports/resume/Back; no overflow or page errors. Preview build OK.
+- [ ] Restore OpenAI availability: owner must check quota/billing and update OPENAI_API_KEY if needed; one-call response did not distinguish quota from transient rate limiting.
+- [ ] Publish latest frontend: public site serves an older build; publishing requires the owner's request.
+
 # Phase 6 guided checker and single pass
 - [x] Investigate available reader logs; deploy bounded parsing/retry/fallback and verify PDF worker conversion. No logs returned, so the original live failure is unconfirmed.
 - [x] Build the one-route guided checker while preserving official calculation contracts and saved results.
