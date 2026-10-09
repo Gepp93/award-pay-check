@@ -59,6 +59,7 @@ export async function calculateAnswers(a: Answers, stage: (value: number) => voi
   // Aggregate returned official results only. Never average or invent official rates.
   const first = responses[0];
   const result = { ...first, awardName: a.awardName, classification: a.classificationName, actualPaid,
+    comparisonScope: monthlyWeek ? "typical-week" : "period",
     shiftResults: responses.map((r, i) => ({ ...r, shift: shifts[i] })),
   };
   const sum = (key: string) => responses.reduce((v, r) => v + (Number(r[key]) || 0), 0);

@@ -99,7 +99,9 @@ export function payslipRoster(p: ParsedPayslip, start: string): RosterShift[] {
   }
   const ordinaryLine = (p.line_items ?? []).find(l => /ordinary|weekday|base/i.test(l.description) && !/saturday|sunday|public\s*holiday|evening|night/i.test(l.description) && (l.hours ?? 0) > 0);
   const ordinary = ordinaryLine?.hours ?? p.ordinary_hours ?? 0;
-  add(ordinary, dates.filter(date => ![0, 6].includes(new Date(`${date}T12:00:00`).getDay()) && !roster.some(s => s.date === date)), 9);
+  const weekdays = dates.filter(date => ![0, 6].includes(new Date(`${date}T12:00:00`).getDay()));
+  const unused = weekdays.filter(date => !roster.some(s => s.date === date));
+  add(ordinary, unused.length ? unused : weekdays.length ? weekdays : dates, 9);
   return roster.sort((a, b) => a.date.localeCompare(b.date));
 }
 

@@ -181,7 +181,7 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
         <header className="checker-heading">
           <ProgressIndicator currentStep={3} />
           <h1>Your pay check</h1>
-          <p>Based on official Fair Work modern award rates.</p>
+          <p>{result.comparisonScope === "typical-week" ? "One typical week, compared with 1/4.33 of your monthly gross pay." : "Based on official Fair Work modern award rates."}</p>
         </header>
         <div className="checker-result-layout">
           <article className="checker-sheet">
