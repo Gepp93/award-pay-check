@@ -2,6 +2,8 @@ import { guardPublicFunction } from "../_shared/guard.ts";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { z } from "npm:zod@3";
 
+const PAYSLIP_MODEL = "gpt-4o-mini";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -23,7 +25,10 @@ Deno.serve(async (req) => {
     const { image } = parsed.data;
 
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
+    if (!OPENAI_API_KEY) {
+      console.error("Payslip provider configuration missing", { reason: "missing_api_key" });
+      throw new Error("OPENAI_API_KEY not configured");
+    }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -33,7 +38,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: PAYSLIP_MODEL,
         max_tokens: 1800,
         messages: [
           {
@@ -111,8 +116,11 @@ Deno.serve(async (req) => {
     });
 
     if (!response.ok) {
-      await response.text();
-      console.error("Payslip provider failure", { status: response.status });
+      // Log only allow-listed provider codes, never a body containing payslip data.
+      const providerError = await response.json().catch(() => null);
+      const codes = ["insufficient_quota", "rate_limit_exceeded", "invalid_api_key", "model_not_found", "billing_hard_limit_reached"];
+      const reason = codes.includes(providerError?.error?.code) ? providerError.error.code : "provider_rejected";
+      console.error("Payslip provider failure", { status: response.status, reason, model: PAYSLIP_MODEL });
       return new Response(JSON.stringify({ error: "reader_unavailable" }), {
         status: response.status === 429 ? 429 : 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
