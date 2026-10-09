@@ -10,7 +10,7 @@ interface Props {
 }
 
 /**
- * Free teaser shown on Step 3 and on /report/:id when payment_status !== 'paid'.
+ * Locked teaser shown on Step 3 and on /report/:id when payment_status !== 'paid'.
  * Reveals only count + 2-3 category names. No dollar amounts, no reasons.
  */
 export function LockedTeaser({ result }: Props) {
