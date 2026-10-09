@@ -1,3 +1,8 @@
+# Phase 8 guided-flow polish
+- [x] Fast reader-outage fallback (429/unavailable: one request), keyword award matching and tagged printed penalty-hour roster defaults.
+- [x] Casual/part-time shortcuts, monthly typical-week paid-share comparison and mobile sticky actions with safe-area padding.
+- [x] Exact paywall copy verified; no advertised free wording (internal unpaid-status values retained). Nine stubbed guided/reader paths and 28 unit tests passed; 390px chips/inputs/actions verified; preview build OK. No live writes or charges.
+
 # Phase 7 payment security and reader diagnosis
 - [x] Harden paid-access policies, triggers and function privileges; role-based SQL checks passed and all fixtures rolled back.
 - [x] Diagnose one deployed synthetic reader call: HTTP 429 reader_unavailable, logs confirm OpenAI returned 429; origin guard passed. Published bundle lacks Phase 6 markers.

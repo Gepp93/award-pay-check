@@ -243,7 +243,7 @@
 .checker-heading h1 { font-size: 36px; line-height: 44px; font-weight: 600; margin: 12px 0; }
 .checker-heading p { font-size: 16px; line-height: 26px; color: hsl(var(--ink-2)); }
 .checker-form label { font-size: 14px; font-weight: 600; color: hsl(var(--foreground)); }
-.checker-form input, .checker-form [role="combobox"] { min-height: 48px; }
+.checker-form input, .checker-form textarea, .checker-form [role="combobox"] { min-height: 48px; font-size: 16px; }
 .checker-form input[type="number"] { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; text-align: right; }
 .checker-form input[type="date"], .checker-form input[type="time"] { min-width: 0; width: 100%; }
 .checker-form [role="radiogroup"] > div { min-height: 56px; padding: 12px 16px; border: 1px solid hsl(var(--rule-strong)); border-radius: 4px; }
@@ -349,6 +349,14 @@
 .checker-form select { width: 100%; min-height: 48px; background: hsl(var(--card)); font-size: 16px; border-color: hsl(var(--rule-strong)); border-radius: 4px; }
 .checker-page > .checker-form h1 { font-size: 28px; line-height: 34px; }
 .checker-form .checker-choice { color: hsl(var(--foreground)); }
+.checker-day-chips { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.checker-day-chips button { min-width: 0; padding: 0; white-space: nowrap; }
+.checker-primary { margin-top: 24px; }
+@media (max-width: 767px) {
+  .checker-has-primary { padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
+  .checker-primary { position: fixed; inset: auto 0 0; z-index: 40; margin: 0; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: hsl(var(--background)); border-top: 1px solid hsl(var(--rule)); }
+  .checker-primary button { display: flex; max-width: 728px; margin: 0 auto; }
+}
 .ledger-mobile-rows { table-layout: fixed; }
 .ledger-mobile-rows td { overflow-wrap: anywhere; }
 .ledger-mobile-rows td:last-child { white-space: normal; }

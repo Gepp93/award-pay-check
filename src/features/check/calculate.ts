@@ -19,7 +19,10 @@ export async function calculateAnswers(a: Answers, stage: (value: number) => voi
   const rosterHours = a.shifts.reduce((total, s) => total + shiftHours(s), 0);
   const hours = a.usePayslipHours ? Number(a.hours) + a.hours150 + a.hours200 : rosterHours;
   if (!(hours > 0)) throw new Error("Add your hours before checking your pay.");
-  const actualPaid = a.gross !== "" ? Number(a.gross) : Number(a.rate) * hours;
+  // Compare one typical week for monthly manual rosters, not 4.33 repeated
+  // shifts. Scale only the worker's monthly paid total; official math is intact.
+  const monthlyWeek = a.frequency === "monthly" && !a.usePayslipHours && a.rosterScope !== "period";
+  const actualPaid = a.gross !== "" ? Number(a.gross) / (monthlyWeek ? 4.33 : 1) : Number(a.rate) * hours;
   const effectiveRate = a.rate !== "" ? Number(a.rate) : actualPaid / hours;
   const shifts: RosterShift[] = a.usePayslipHours
     ? [{ date: a.weekStart, day_of_week: new Date(`${a.weekStart}T12:00:00`).toLocaleDateString("en-AU", { weekday: "long" }), start: "09:00", finish: "17:00", break_minutes: 30 }]
@@ -56,6 +59,7 @@ export async function calculateAnswers(a: Answers, stage: (value: number) => voi
   // Aggregate returned official results only. Never average or invent official rates.
   const first = responses[0];
   const result = { ...first, awardName: a.awardName, classification: a.classificationName, actualPaid,
+    comparisonScope: monthlyWeek ? "typical-week" : "period",
     shiftResults: responses.map((r, i) => ({ ...r, shift: shifts[i] })),
   };
   const sum = (key: string) => responses.reduce((v, r) => v + (Number(r[key]) || 0), 0);
@@ -79,5 +83,5 @@ export async function calculateAnswers(a: Answers, stage: (value: number) => voi
   result.reasons = [...new Set(responses.flatMap(r => r.reasons ?? []))];
   result.potentialAllowances = [...new Map(responses.flatMap(r => r.potentialAllowances ?? []).map(x => [x.id ?? x.name, x])).values()];
   const advancedPayslip = { payslipBaseRate: effectiveRate, hoursAtBase: a.usePayslipHours ? Number(a.hours) : hours, hoursAt150: a.hours150, hoursAt200: a.hours200, paidAllowances: "no", allowanceDetails: null };
-  return { result, shiftDetails: { awardCode: a.awardCode, classificationId: a.classificationId, employmentType: a.employmentType, date: a.weekStart, startTime: shifts[0]?.start, finishTime: shifts[0]?.finish, breakMinutes: shifts[0]?.break_minutes, actualPaid: actualPaid.toFixed(2), hours_worked: a.usePayslipHours ? [] : shifts, payPeriodType: a.frequency, hoursOnly: a.usePayslipHours, state: a.state, age: a.age }, advancedPayslip };
+  return { result, shiftDetails: { awardCode: a.awardCode, classificationId: a.classificationId, employmentType: a.employmentType, date: a.weekStart, startTime: shifts[0]?.start, finishTime: shifts[0]?.finish, breakMinutes: shifts[0]?.break_minutes, actualPaid: actualPaid.toFixed(2), hours_worked: a.usePayslipHours ? [] : shifts, payPeriodType: monthlyWeek ? "weekly" : a.frequency, hoursOnly: a.usePayslipHours, state: a.state, age: a.age }, advancedPayslip };
 }

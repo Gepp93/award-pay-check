@@ -12,3 +12,7 @@
 - Create checkout references client-side without reading pending purchase rows; expose only minimal status RPCs so guest checkout does not reveal purchase emails.
 - Fulfil verified paid AUD pass sessions from the stored purchase product, warning on price differences; promo/tax variations must not strand paid customers or trigger endless retries.
 - Keep adapter and verified webhook routing tests in `tests/` using in-memory clients; this checks compatibility without live database rows or charges.
+- Rank guided award suggestions using curated roles and industry keywords, then require confirmation; generic classification titles must not select unrelated awards.
+- Convert day-specific printed payslip hours into tagged, editable roster shifts; keep printed multiplier buckets exclusive to hours-only engine requests to avoid counting them twice.
+- Compare monthly manual rosters as a typical week and divide monthly gross by 4.33 only in the adapter; label the result weekly so engine overtime and annualization semantics remain unchanged.
+- Retry payslip reads only for transport errors or timeouts; provider rejection must immediately fall back to guided questions.
