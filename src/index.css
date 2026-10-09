@@ -281,7 +281,7 @@
 .checker-owed-range { font-size: 40px; }
 .checker-result-headline { margin-bottom: 32px; }
 .checker-result-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; border-top: 2px solid hsl(var(--foreground)); padding-top: 20px; margin: 32px 0; }
-.checker-result-meta dt { font-size: 12px; line-height: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--ink-2)); margin-bottom: 8px; }
+.checker-result-meta dt { font-size: 12px; line-height: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--ink-2)); margin-bottom: 8px; overflow-wrap: anywhere; }
 .checker-result-meta dd { font-size: 14px; line-height: 22px; overflow-wrap: anywhere; }
 .checker-findings h3 { font-size: 19px; line-height: 26px; margin-bottom: 12px; }
 .checker-finding-row { display: flex; justify-content: space-between; align-items: start; gap: 12px; padding: 16px 0; border-bottom: 1px solid hsl(var(--rule)); font-size: 14px; line-height: 22px; }
