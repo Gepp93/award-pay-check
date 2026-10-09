@@ -79,7 +79,7 @@ const Auth = () => {
         toast.success("Welcome back!");
         handlePostAuthRedirect();
       } else {
-        const redirectUrl = `${window.location.origin}/new-check-step-1`;
+        const redirectUrl = `${window.location.origin}${typeof returnTo === "string" ? returnTo : "/new-check-step-1"}`;
         const { error } = await supabase.auth.signUp({
           email,
           password,

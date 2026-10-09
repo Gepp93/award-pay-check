@@ -21,6 +21,7 @@ export default function PaymentComplete() {
   const cancelledRef = useRef(false);
 
   const sessionId = searchParams.get("session_id");
+  const [passEmail] = useState(() => localStorage.getItem("pendingPassEmail") || "");
 
   useEffect(() => {
     if (authLoading) return;
@@ -36,9 +37,9 @@ export default function PaymentComplete() {
           const { data: resolved } = await supabase.rpc("resolve_pass_purchase", { p_session_id: sessionId }).maybeSingle();
           if (resolved?.status === "paid") {
             localStorage.removeItem("pendingReportId");
-            if (resolved.report_id) navigate(`/report/${resolved.report_id}`);
-            else if (user) navigate("/app-dashboard");
-            else { setSubscriptionId(sessionId); setSubscriptionPaid(true); setPhase("timeout"); }
+            if (!user) { setSubscriptionId(sessionId); setSubscriptionPaid(true); setReportId(resolved.report_id ?? null); setPhase("timeout"); }
+            else if (resolved.report_id) navigate(`/report/${resolved.report_id}`);
+            else navigate("/app-dashboard");
             return;
           }
           // The legacy report fallback may resolve before a purchase row exists.
@@ -63,13 +64,14 @@ export default function PaymentComplete() {
             localStorage.removeItem("pendingSubscriptionId");
             const { data: resolved } = await supabase.rpc("resolve_pass_purchase", { p_purchase_id: pendingSubId }).maybeSingle();
             const linkedReport = resolved?.report_id || localStorage.getItem("pendingReportId");
-            if (linkedReport) {
-              localStorage.removeItem("pendingReportId");
-              navigate(`/report/${linkedReport}`);
-            } else if (user) {
-              navigate("/app-dashboard");
-            } else {
+            if (linkedReport) localStorage.removeItem("pendingReportId");
+            if (!user) {
+              setReportId(linkedReport || null);
               setPhase("timeout");
+            } else if (linkedReport) {
+              navigate(`/report/${linkedReport}`);
+            } else {
+              navigate("/app-dashboard");
             }
             return;
           }
@@ -135,7 +137,7 @@ export default function PaymentComplete() {
             <p className="text-ink-2 mb-6">
               {phase === "timeout"
                 ? subscriptionId
-                   ? subscriptionPaid ? "Your pass is ready — create your account to keep checking your pay." : "We're still confirming your payment. Refresh in a moment."
+                   ? subscriptionPaid ? (reportId ? "Your full report is unlocked." : "Your pass is ready.") : "We're still confirming your payment. Refresh in a moment."
                   : "Your full report is unlocking now and will appear under My Reports in a moment."
                 : subscriptionId
                  ? `Activating your ${THREE_MONTH_PASS.name}…`
@@ -149,10 +151,26 @@ export default function PaymentComplete() {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                {subscriptionId && !user ? (
-                  <Button onClick={() => navigate(`/auth?redirect=app-dashboard&subscriptionId=${subscriptionId}`)}>
-                    Create account to activate pass
-                  </Button>
+                {subscriptionId && subscriptionPaid && !user ? (
+                  <>
+                    <div className="rounded-[4px] border border-border bg-card p-4 text-left mb-2" role="status">
+                      <p className="font-semibold text-ink-1 mb-1">Save your pass to an account</p>
+                      <p className="text-ink-2 text-[15px]">
+                        Sign up with {passEmail ? <strong className="text-ink-1">{passEmail}</strong> : "the email you paid with"} to use your {THREE_MONTH_PASS.name} on future payslips. Confirm your email and the pass links automatically.
+                      </p>
+                    </div>
+                    <Button onClick={() => {
+                      const back = reportId ? `/report/${reportId}` : "/app-dashboard";
+                      const q = new URLSearchParams({ mode: "signup", returnTo: back });
+                      if (passEmail) q.set("email", passEmail);
+                      navigate(`/auth?${q.toString()}`);
+                    }}>
+                      Save my pass to an account
+                    </Button>
+                    {reportId && (
+                      <Button variant="outline" onClick={() => navigate(`/report/${reportId}`)}>Open my report</Button>
+                    )}
+                  </>
                 ) : reportId ? (
                   <Button onClick={() => navigate(`/report/${reportId}`)}>
                     Open my report
