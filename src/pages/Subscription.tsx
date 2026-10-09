@@ -55,7 +55,7 @@ const Subscription = () => {
     return (
       <div className="min-h-screen bg-background">
         <NavBar />
-        <div className="container mx-auto px-4 py-16 text-center">
+        <div className="checker-page text-center">
           <p className="text-xl">Loading plans...</p>
         </div>
       </div>
@@ -76,8 +76,8 @@ const Subscription = () => {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
+      <div className="checker-page">
+        <div className="checker-heading">
           <h1 className="text-4xl font-semibold mb-4">Get AwardPay Pro</h1>
           <p className="text-xl text-muted-foreground">
             3 months of full access to protect your pay
@@ -86,44 +86,44 @@ const Subscription = () => {
 
         <div className="max-w-md mx-auto">
           {/* 3 Month Pass */}
-          <Card className="bg-card backdrop-blur-lg border-accent  relative flex flex-col">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <div className="bg-accent text-accent-foreground px-4 py-1 rounded-md text-sm font-medium flex items-center gap-1">
+          <section className="ap-home-tier ap-home-tier-paid">
+            <div className="ap-home-best-value">
+              <div className="flex items-center gap-1">
                 <Zap className="h-4 w-4" />
                 Full Access
               </div>
             </div>
-            <CardHeader className="pt-8">
-              <CardTitle className="text-2xl">3 Month Access Pass</CardTitle>
-              <CardDescription className="text-lg">
+            <header className="pt-8">
+              <h2 className="text-2xl">3 Month Access Pass</h2>
+              <p className="text-lg">
                 Full Pro access for 3 months
-              </CardDescription>
+              </p>
               <div className="mt-4">
-                <span className="text-4xl font-semibold">$30</span>
+                <span className="ap-home-price">$30</span>
                 <span className="text-muted-foreground"> for 3 months</span>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
                 Just $10/month — one-time payment
               </p>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col">
+            </header>
+            <div className="flex-1 flex flex-col">
               <ul className="space-y-3 mb-6 flex-1">
                 {features.map((feature, index) => (
                   <li key={index} className="flex items-center gap-2">
-                    <Check className="h-5 w-5 text-accent" />
+                    <Check className="h-5 w-5 text-primary" />
                     <span>{feature}</span>
                   </li>
                 ))}
               </ul>
               <Button
                 onClick={handleUpgrade}
-                className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                className="w-full"
                 disabled={subscriptionStatus === "active" || subscriptionStatus === "3month"}
               >
                 {subscriptionStatus === "active" || subscriptionStatus === "3month" ? "Current Plan" : "Get 3 Month Access"}
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </div>
       </div>
     </div>

@@ -90,9 +90,9 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Fixed Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border/50">
-        <div className="container mx-auto px-6">
-          <div className="flex justify-between items-center h-20">
+      <header className="ap-nav">
+        <div className="ap-wrap">
+          <div className="flex justify-between items-center h-16">
             <div 
               onClick={() => navigate("/")}
               className="flex items-center gap-2 font-semibold text-xl cursor-pointer"
@@ -113,18 +113,13 @@ const Auth = () => {
       </header>
 
       {/* Auth Card */}
-      <div className="pt-20 min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-card border-border ">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center">
-              <Calculator className="h-6 w-6 text-primary-foreground" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl">
+      <div className="checker-page flex items-center justify-center">
+        <section className="w-full max-w-[400px] checker-form">
+        <header className="checker-heading">
+          <h1 className="text-[28px] leading-[34px]">
             {isLogin ? "Welcome back" : "Create account"}
-          </CardTitle>
-          <CardDescription>
+          </h1>
+          <p>
             {isCheckoutRedirect
               ? `Sign ${isLogin ? "in" : "up"} to complete your 3-month access pass`
               : redirectParam
@@ -134,10 +129,10 @@ const Auth = () => {
                   : isLogin
                     ? "Sign in to access your calculations"
                     : "Start checking your award pay today"}
-          </CardDescription>
+          </p>
 
-        </CardHeader>
-        <CardContent>
+        </header>
+        <div>
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -148,7 +143,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-secondary/50"
+                className="bg-card"
               />
             </div>
             <div className="space-y-2">
@@ -160,30 +155,30 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-secondary/50"
+                className="bg-card"
               />
             </div>
             <Button
               type="submit"
-              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+              className="w-full"
               disabled={loading}
             >
               {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            <button
+            <Button variant="link"
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-accent hover:underline"
+              className="text-primary underline whitespace-normal h-auto"
             >
               {isLogin
                 ? "Don't have an account? Sign up"
                 : "Already have an account? Sign in"}
-            </button>
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
       </div>
     </div>
   );

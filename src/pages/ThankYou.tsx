@@ -14,10 +14,10 @@ export default function ThankYou() {
   return (
     <>
       <PublicNavBar />
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background pt-24">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-8 text-center space-y-6">
-            <div className="mx-auto w-16 h-16 rounded-md bg-primary-soft flex items-center justify-center">
+      <div className="checker-page flex items-center justify-center">
+        <section className="w-full max-w-[560px] text-center">
+          <div className="p-8 text-center space-y-6">
+            <div className="mx-auto flex items-center justify-center">
               <CheckCircle className="h-8 w-8 text-primary" />
             </div>
 
@@ -46,11 +46,11 @@ export default function ThankYou() {
               )}
             </div>
 
-            <Button onClick={() => navigate("/")} variant="outline" className="w-full">
+            <Button onClick={() => navigate("/")} className="w-full">
               Back to Home
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     </>
   );
