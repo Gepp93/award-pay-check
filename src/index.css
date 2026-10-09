@@ -7,7 +7,7 @@
    All colours HSL channels (shadcn convention). Edit values here.
    ============================================================ */
 @layer base {
-  :root { --background: 60.00000 23.07692% 97.45098%; --foreground: 150.00000 23.07692% 10.19608%; --card: 0.00000 0.00000% 100.00000%; --card-foreground: 150.00000 23.07692% 10.19608%; --popover: 0.00000 0.00000% 100.00000%; --popover-foreground: 150.00000 23.07692% 10.19608%; --primary: 157.37705 50.41322% 23.72549%; --primary-foreground: 0.00000 0.00000% 100.00000%; --primary-press: 158.29787 51.64835% 17.84314%; --primary-soft: 142.50000 21.05263% 92.54902%; --secondary: 75.00000 14.28571% 94.50980%; --secondary-foreground: 150.00000 23.07692% 10.19608%; --muted: 75.00000 14.28571% 94.50980%; --muted-foreground: 150.00000 6.12245% 38.43137%; --ink-2: 147.69231 9.62963% 26.47059%; --ink-3: 150.00000 6.12245% 38.43137%; --rule: 90.00000 10.00000% 88.23529%; --rule-strong: 138.00000 4.54545% 56.86275%; --surface-sunk: 75.00000 14.28571% 94.50980%; --accent: 142.50000 21.05263% 92.54902%; --accent-foreground: 158.29787 51.64835% 17.84314%; --clay: 11.53846 64.35644% 39.60784%; --clay-soft: 15.00000 55.55556% 92.94118%; --destructive: 11.53846 64.35644% 39.60784%; --destructive-foreground: 0.00000 0.00000% 100.00000%; --success: 157.37705 50.41322% 23.72549%; --border: 90.00000 10.00000% 88.23529%; --input: 138.00000 4.54545% 56.86275%; --ring: 157.37705 50.41322% 23.72549%; --radius: 0.25rem; --shadow-sheet: 0 1px 2px hsl(var(--foreground) / 0.06), 0 12px 32px -16px hsl(var(--foreground) / 0.22); }
+  :root { --background: 60.00000 23.07692% 97.45098%; --foreground: 150.00000 23.07692% 10.19608%; --card: 0.00000 0.00000% 100.00000%; --card-foreground: 150.00000 23.07692% 10.19608%; --popover: 0.00000 0.00000% 100.00000%; --popover-foreground: 150.00000 23.07692% 10.19608%; --primary: 157.37705 50.41322% 23.72549%; --primary-foreground: 0.00000 0.00000% 100.00000%; --primary-press: 158.29787 51.64835% 17.84314%; --primary-soft: 142.50000 21.05263% 92.54902%; --secondary: 75.00000 14.28571% 94.50980%; --secondary-foreground: 150.00000 23.07692% 10.19608%; --muted: 75.00000 14.28571% 94.50980%; --muted-foreground: 150.00000 6.12245% 38.43137%; --ink-2: 147.69231 9.62963% 26.47059%; --ink-3: 150.00000 6.12245% 38.43137%; --rule: 90.00000 10.00000% 88.23529%; --rule-strong: 138.00000 4.54545% 56.86275%; --surface-sunk: 75.00000 14.28571% 94.50980%; --accent: 142.50000 21.05263% 92.54902%; --accent-foreground: 158.29787 51.64835% 17.84314%; --clay: 11.53846 64.35644% 39.60784%; --clay-soft: 15.00000 55.55556% 92.94118%; --destructive: 11.53846 64.35644% 39.60784%; --destructive-foreground: 0.00000 0.00000% 100.00000%; --success: 157.37705 50.41322% 23.72549%; --border: 90.00000 10.00000% 88.23529%; --input: 138.00000 4.54545% 56.86275%; --ring: 157.37705 50.41322% 23.72549%; --print-ink: 0 0% 0%; --radius: 0.25rem; --shadow-sheet: 0 1px 2px hsl(var(--foreground) / 0.06), 0 12px 32px -16px hsl(var(--foreground) / 0.22); }
 }
 
 @layer base {
@@ -64,7 +64,7 @@
 
 /* ---- generic sections ---- */
 .ap-section { padding-top: 42px; padding-bottom: 42px; }
-.ap-eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: hsl(var(--primary)); margin: 0 0 12px; }
+.ap-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: hsl(var(--primary)); margin: 0 0 12px; }
 .ap-h2 { font-size: 34px; margin: 0 0 14px; text-wrap: balance; font-weight: 600; letter-spacing: -0.01em; }
 .ap-sub { font-size: 18px; color: hsl(var(--muted-foreground)); max-width: 38em; }
 
@@ -101,7 +101,7 @@
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
 
 /* Scroll reveal */
-[data-reveal] { opacity: 0; transition: opacity 200ms ease-out; }
+[data-reveal] { opacity: 1 !important; transition: opacity 200ms ease-out; }
 [data-reveal].is-visible { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { [data-reveal] { opacity: 1; transition: none; } }
 
@@ -152,7 +152,7 @@
 .ap-lrow .sub { display: block; font-size: 13px; color: hsl(var(--ink-3)); }
 .ap-lrow .miss { display: inline-block; font-size: 11px; line-height: 17px; font-weight: 600; letter-spacing: 0.08em; border-radius: 2px; padding: 2px 5px; background: hsl(var(--clay-soft)); color: hsl(var(--clay)); margin-bottom: 5px; }
 .ap-lamt { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; font-size: 15px; white-space: nowrap; }
-.ap-lamt.ok { font-size: 12px; font-weight: 600; color: hsl(var(--primary)); }
+.ap-lamt.ok { font-size: 13px; font-weight: 600; color: hsl(var(--primary)); }
 .ap-lamt.add { color: hsl(var(--clay)); }
 .ap-l-total { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: center; border-top: 2px solid hsl(var(--foreground)); padding-top: 24px; margin-top: 8px; }
 .ap-l-total .tl { text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; font-weight: 600; color: hsl(var(--ink-2)); }
@@ -196,7 +196,7 @@
 .ap-home-tier li { position: relative; padding-left: 22px; margin-bottom: 12px; }
 .ap-home-tier li::before { content: "✓"; position: absolute; left: 0; color: hsl(var(--primary)); }
 .ap-home-tier .ap-btn { width: 100%; padding-left: 12px; padding-right: 12px; }
-.ap-home-best-value { align-self: flex-start; background: hsl(var(--primary-soft)); color: hsl(var(--primary)); font-size: 12px; line-height: 18px; font-weight: 600; letter-spacing: 0.08em; padding: 4px 8px; border-radius: 2px; margin-bottom: 16px; }
+.ap-home-best-value { text-transform: uppercase; align-self: flex-start; background: hsl(var(--primary-soft)); color: hsl(var(--primary)); font-size: 12px; line-height: 18px; font-weight: 600; letter-spacing: 0.08em; padding: 4px 8px; border-radius: 2px; margin-bottom: 16px; }
 .ap-home-tier .ap-home-price-note { font-size: 13px; line-height: 20px; color: hsl(var(--ink-3)); margin-top: 16px; }
 .ap-faq-trigger { font-size: 17px; line-height: 26px; font-weight: 600; padding-top: 22px; padding-bottom: 22px; }
 .ap-faq-trigger svg { color: hsl(var(--ink-3)); }
@@ -238,7 +238,7 @@
 
 /* Ledger checker and report presentation, using the shared foundation. */
 .checker-page { max-width: 824px; margin: 0 auto; padding: 48px 32px 64px; min-height: calc(100vh - 64px); }
-.checker-public { padding-top: 128px; }
+.checker-public { padding-top: 48px; }
 .checker-heading { margin-bottom: 32px; }
 .checker-heading h1 { font-size: 36px; line-height: 44px; font-weight: 600; margin: 12px 0; }
 .checker-heading p { font-size: 16px; line-height: 26px; color: hsl(var(--ink-2)); }
@@ -305,7 +305,7 @@
 .ledger-report dd { overflow-wrap: anywhere; }
 @media (max-width: 767px) {
   .checker-page { padding: 48px 16px 48px; }
-  .checker-public { padding-top: 128px; }
+  .checker-public { padding-top: 48px; }
   .checker-heading h1 { font-size: 28px; line-height: 34px; }
   .checker-progress li { font-size: 13px; gap: 4px; }
   .checker-progress-bar { display: grid; }
@@ -325,7 +325,7 @@
   .no-print, nav, .ap-nav { display: none !important; }
   .checker-page { max-width: none; padding: 0; }
   .checker-sheet { box-shadow: none; border: 0; padding: 0; }
-  .checker-sheet, .checker-sheet * { color: black !important; background: transparent !important; }
+  .checker-sheet, .checker-sheet * { color: hsl(var(--print-ink)) !important; background: transparent !important; }
   .ledger-table tr { break-inside: avoid; }
 }
 
@@ -362,3 +362,13 @@
   .ledger-mobile-rows td { display: flex; justify-content: space-between; align-items: center; gap: 16px; height: auto; min-height: 44px; padding: 8px 0; text-align: right; }
   .ledger-mobile-rows td::before { content: attr(data-label); font-family: "IBM Plex Sans", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; color: hsl(var(--ink-2)); text-align: left; flex-shrink: 0; }
 }
+
+/* Keyboard focus applies equally to native links and shared controls. */
+:where(a, button, input, textarea, select, [tabindex], [role="button"]):focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+.ap-nav-row > .ap-brand { padding: 0; background: transparent; height: 40px; }
+.ap-nav .ap-links { height: auto; }
+.ap-nav .ap-links a { opacity: 1; }
+.ap-nav .ap-nav-cta button { height: 40px; }
+.ap-home-tier li:has(svg)::before { content: none; }
+.ap-home-tier li:has(svg) { padding-left: 0; display: flex; gap: 8px; }
+@media print { [data-reveal] { opacity: 1 !important; transform: none !important; } }

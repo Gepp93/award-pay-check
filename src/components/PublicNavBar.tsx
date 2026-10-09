@@ -11,13 +11,13 @@ export const PublicNavBar = () => {
     <header className="ap-nav">
       <div className="ap-wrap">
         <div className="flex justify-between items-center h-16">
-          <div 
+          <Button variant="ghost" size="sm"
             onClick={() => navigate("/")}
             className="flex items-center gap-2 font-semibold text-xl cursor-pointer"
           >
             <span className="ap-mark" />
             <span className="text-foreground">AwardPay</span>
-          </div>
+          </Button>
           
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center gap-4">

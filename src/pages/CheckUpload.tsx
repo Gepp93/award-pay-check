@@ -208,21 +208,12 @@ export default function CheckUpload() {
           {status === "error" && (
             <div
               role="alert"
-              style={{
-                marginTop: 16,
-                border: "1px solid hsl(var(--border))",
-                background: "hsl(var(--card))",
-                borderRadius: 6,
-                padding: "16px 18px",
-                display: "flex",
-                gap: 12,
-                alignItems: "flex-start",
-              }}
+              className="mt-4 border border-rule bg-card rounded-lg px-4 py-4 flex gap-3 items-start"
             >
-              <AlertCircle className="h-5 w-5" style={{ color: "hsl(var(--foreground))", flexShrink: 0, marginTop: 2 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, marginBottom: 4 }}>{errorMsg}</div>
-                <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
+              <AlertCircle className="h-5 w-5 text-clay shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="font-semibold mb-1">{errorMsg}</div>
+                <div className="flex gap-3 mt-3 flex-wrap">
                   <Button
                     
                     onClick={() => {
@@ -233,7 +224,7 @@ export default function CheckUpload() {
                   >
                     Try a sharper photo
                   </Button>
-                  <Button variant="link" onClick={goManual} style={{ cursor: "pointer" }}>
+                  <Button variant="link" onClick={goManual}>
                     Enter manually
                   </Button>
                 </div>
@@ -241,36 +232,19 @@ export default function CheckUpload() {
             </div>
           )}
 
-          <p
-            style={{
-              textAlign: "center",
-              fontSize: 14,
-              color: "hsl(var(--muted-foreground))",
-              marginTop: 18,
-            }}
-          >
+          <p className="text-center text-sm text-ink-2 mt-5">
             Your payslip is read, then discarded. Free. No account needed.
           </p>
 
-          <div style={{ textAlign: "center", marginTop: 22 }}>
-            <a
-              onClick={goManual}
-              style={{
-                cursor: "pointer",
-                color: "hsl(var(--primary))",
-                fontWeight: 600,
-                fontSize: 15,
-                textDecoration: "underline",
-                textUnderlineOffset: 4,
-              }}
-            >
+          <div className="text-center mt-6">
+            <Button variant="link" onClick={goManual} className="whitespace-normal">
               No payslip handy? Enter your details manually
-            </a>
+            </Button>
           </div>
         </div>
       </main>
 
-      <footer style={{ borderTop: "1px solid hsl(var(--border))", padding: "24px 0", textAlign: "center", fontSize: 13, color: "hsl(var(--muted-foreground))" }}>
+      <footer className="ap-footer py-6 text-center text-[13px] text-ink-3">
         AwardPay is an interpretation tool, not legal advice.
       </footer>
     </div>
