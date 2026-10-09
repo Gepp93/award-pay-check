@@ -22,6 +22,13 @@
       "when": 1791529525827,
       "tag": "0002_harden_paid_access",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791531059970,
+      "tag": "0003_claim_my_passes",
+      "breakpoints": true
     }
   ]
 }
