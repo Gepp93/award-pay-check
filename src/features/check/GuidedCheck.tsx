@@ -131,9 +131,9 @@ export default function GuidedCheck() {
     setResume(undefined); setReading(true); setFallback(false); setReadCount(0);
     const move = setTimeout(() => { if (mounted.current && activeStep.current === "start") go("job"); }, 6000);
     try {
-      const p = await readPayslip(file, current.signal);
+        const p = await readPayslip(file, current.signal);
       if (!mounted.current || current.signal.aborted) return;
-      setParsed(p); setReadCount(Object.keys(p).filter(k => k !== "unreadable" && k !== "line_items").length);
+      setParsed(p); setReadCount(Object.entries(p).filter(([k, value]) => k !== "unreadable" && k !== "line_items" && value !== null && value !== undefined).length);
       if (p.unreadable) setFallback(true);
       if (activeStep.current === "start") go("job");
     } catch {

@@ -35,13 +35,19 @@ export async function calculateAnswers(a: Answers, stage: (value: number) => voi
       allowanceDetails: a.allowances.filter(x => x.received).map(x => `${x.type}: ${x.amount_per_period}`).join(", ") || null,
     };
     const weekend = [0, 6].includes(new Date(`${shift.date}T12:00:00`).getDay());
+    // The existing engine subtracts clock hours directly. Represent next-day
+    // finish hours above 24 without changing its input fields or rate math.
+    const [startHour, startMinute] = shift.start.split(":").map(Number);
+    const [finishHour, finishMinute] = shift.finish.split(":").map(Number);
+    const finishTime = finishHour * 60 + finishMinute <= startHour * 60 + startMinute
+      ? `${finishHour + 24}:${String(finishMinute).padStart(2, "0")}` : shift.finish;
     const { data, error } = await supabase.functions.invoke("calculate-shift-pay", {
       body: {
         awardCode: a.awardCode, classificationId: a.classificationId, employmentType: a.employmentType,
-        workArea: a.workArea || undefined, date: shift.date, startTime: shift.start, finishTime: shift.finish,
+        workArea: a.workArea || undefined, date: shift.date, startTime: shift.start, finishTime,
         breakMinutes: shift.break_minutes, workedWeekend: weekend, workedPublicHoliday: Boolean(shift.publicHoliday),
         droveOwnCar: Boolean(a.conditions.droveOwnCar), workedOver10Hours: shiftHours(shift) > 10,
-        actualPaid: actualPaid * share, advancedPayslip, allowanceConditions: a.conditions,
+        actualPaid: actualPaid * share, advancedPayslip: a.usePayslipHours ? advancedPayslip : null, allowanceConditions: a.conditions,
       },
     });
     if (error || !data || data.error) throw new Error("We couldn't finish checking every shift. Your answers are saved; please try again.");

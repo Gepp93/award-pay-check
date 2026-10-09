@@ -5,5 +5,6 @@
 - Register the classifications debug route only in development builds so diagnostic access is absent in production.
 - Keep guided checker questions in one `/check` route with hash history and a versioned answers-only draft; this preserves Back/resume without storing the payslip image.
 - Adapt guided answers to the existing official single-shift calculation contract and aggregate returned results; never change or duplicate award rate math in the flow.
+- Send printed hour buckets only in payslip-hours mode and next-day finish hours above 24 for overnight rosters; this preserves the engine's overtime logic and clock subtraction without altering it.
 - Define the current pass in `src/lib/plans.ts` and render shared offers; this prevents price, duration and link drift across pages.
 - Finalize pass payments through a service-role-only transactional function with purchase locking and report linking; this makes extension and report unlock idempotent.
