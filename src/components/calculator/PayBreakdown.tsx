@@ -74,7 +74,7 @@ export const PayBreakdown = ({ breakdown, shiftData }: PayBreakdownProps) => {
                   <span className="font-medium">{item.label}</span>
                 </div>
                 <span
-                  className={`font-semibold ${
+                  className={`font-mono tabular-nums text-right font-medium ${
                     item.highlight ? "text-primary" : ""
                   }`}
                 >

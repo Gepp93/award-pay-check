@@ -162,7 +162,6 @@ const UnderpaidAward = () => {
       />
 
       <ApNav />
-      <div className="ap-wrap pt-8"><Button onClick={() => navigate("/check")}>Check my payslip</Button></div>
 
       <section className="ap-wrap ap-home-section" >
         <div className="mx-auto" >
@@ -180,6 +179,7 @@ const UnderpaidAward = () => {
               {p}
             </p>
           ))}
+          <Button className="mt-6" onClick={() => navigate("/check")}>Check my payslip</Button>
         </div>
       </section>
 

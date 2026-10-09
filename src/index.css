@@ -337,9 +337,9 @@
 .ap-marketing .ap-home-price { display: inline-block; }
 .ap-marketing .ap-home-tier p { margin-top: 16px; }
 .ap-marketing .ap-home-tier .ap-home-price { margin-right: 8px; }
-.ap-marketing .ap-home-tier li svg { display: none; }
+.ap-marketing .ap-home-tier li svg { flex-shrink: 0; }
 .ap-marketing .ap-home-section h3 { font-size: 19px; line-height: 26px; margin-bottom: 12px; }
-.ap-marketing .ap-home-section > .mx-auto > p:not(.ap-lede) { color: hsl(var(--ink-2)); font-size: 16px; line-height: 26px; }
+.ap-marketing .ap-home-section > .mx-auto > p:not(.ap-lede):not(.text-\[13px\]) { color: hsl(var(--ink-2)); font-size: 16px; line-height: 26px; }
 .ap-marketing .ap-home-section li svg { color: hsl(var(--primary)); }
 .ap-marketing [data-reveal] { opacity: 1; transition: none; }
 .checker-form > header { margin-bottom: 24px; }

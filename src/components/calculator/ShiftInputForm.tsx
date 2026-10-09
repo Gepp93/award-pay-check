@@ -132,7 +132,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
           <div className="space-y-2">
             <Label>Your Award</Label>
             {awardInfo ? (
-              <div className="p-3 bg-primary/10 border border-rule/20 rounded-md">
+              <div className="checker-choice">
                 <p className="font-semibold text-sm">{awardInfo.awardName}</p>
                 <p className="text-[13px] text-muted-foreground mt-1">
                   Code: {awardInfo.awardCode}
@@ -253,7 +253,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
           </div>
 
           {officialBaseRate && (
-            <div className="space-y-3 p-4 bg-primary/10 border border-primary/20 rounded-md">
+            <div className="space-y-3 border-t border-rule py-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-primary">Official FWC Rate</p>
@@ -261,7 +261,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
                 </div>
                 <p className="font-mono tabular-nums text-2xl font-semibold text-primary">${officialBaseRate.toFixed(2)}<span className="text-sm">/hr</span></p>
               </div>
-              <div className="pt-2 border-t border-primary/20">
+              <div className="pt-2 border-t border-rule">
                 <Label htmlFor="actualRate" className="text-[13px]">What are you actually being paid? (Optional)</Label>
                 <Input
                   id="actualRate"
@@ -271,12 +271,10 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
                   placeholder={`Enter your actual rate to compare`}
                   value={actualPayRate || ""}
                   onChange={(e) => setActualPayRate(Number(e.target.value))}
-                  className="bg-background mt-1"
+                  className="bg-card mt-1 font-mono text-right"
                 />
                 {actualPayRate > 0 && (
-                  <div className="mt-2 p-2 rounded-md" style={{
-                    backgroundColor: actualPayRate < officialBaseRate ? 'hsl(var(--destructive) / 0.1)' : 'hsl(var(--success) / 0.1)',
-                  }}>
+                  <div className={`mt-2 py-2 border-t border-rule ${actualPayRate < officialBaseRate ? "text-clay" : "text-primary"}`}>
                     {actualPayRate < officialBaseRate ? (
                       <div className="text-sm">
                         <p className="font-semibold text-destructive">You may be underpaid!</p>

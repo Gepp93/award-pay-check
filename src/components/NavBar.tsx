@@ -37,19 +37,19 @@ export const NavBar = () => {
             <div className="hidden md:flex items-center gap-4">
               <Button
                 variant="ghost"
-                onClick={() => handleNavigation("/reports")}
-                className={`h-16 rounded-none flex items-center gap-2 ${pathname === "/reports" ? "text-primary border-b-2 border-primary" : "text-ink-2"}`}
-              >
-                <FileText className="h-4 w-4" />
-                My reports
-              </Button>
-              <Button
-                variant="ghost"
                 onClick={() => handleNavigation("/check")}
                 className={`h-16 rounded-none flex items-center gap-2 ${pathname === "/check" ? "text-primary border-b-2 border-primary" : "text-ink-2"}`}
               >
                 <ClipboardCheck className="h-4 w-4" />
                 Check
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => handleNavigation("/reports")}
+                className={`h-16 rounded-none flex items-center gap-2 ${pathname === "/reports" ? "text-primary border-b-2 border-primary" : "text-ink-2"}`}
+              >
+                <FileText className="h-4 w-4" />
+                My reports
               </Button>
               <Button
                 variant="ghost"
@@ -91,19 +91,19 @@ export const NavBar = () => {
             <div className="flex flex-col p-4 gap-2">
               <Button
                 variant="ghost"
-                onClick={() => handleNavigation("/reports")}
-                className="flex items-center gap-2 justify-start w-full min-h-14"
-              >
-                <FileText className="h-4 w-4" />
-                My reports
-              </Button>
-              <Button
-                variant="ghost"
                 onClick={() => handleNavigation("/check")}
                 className="flex items-center gap-2 justify-start w-full min-h-14"
               >
                 <ClipboardCheck className="h-4 w-4" />
                 Check
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => handleNavigation("/reports")}
+                className="flex items-center gap-2 justify-start w-full min-h-14"
+              >
+                <FileText className="h-4 w-4" />
+                My reports
               </Button>
               <Button
                 variant="ghost"
