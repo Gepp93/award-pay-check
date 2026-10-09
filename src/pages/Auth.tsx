@@ -15,7 +15,7 @@ const Auth = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") || "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,10 +23,12 @@ const Auth = () => {
   const redirectParam = searchParams.get("redirect");
   const isCheckoutRedirect = redirectParam === "checkout";
   
-  // Support return navigation from pay check wizard
-  const returnTo = (location.state as any)?.returnTo;
+  // Support return navigation from pay check wizard or a same-site returnTo query
+  const returnToParam = searchParams.get("returnTo");
+  const safeReturnToParam = returnToParam && returnToParam.startsWith("/") && !returnToParam.startsWith("//") ? returnToParam : null;
+  const returnTo = (location.state as any)?.returnTo || safeReturnToParam;
   const returnState = (location.state as any)?.returnState;
-  const modeFromState = (location.state as any)?.mode;
+  const modeFromState = (location.state as any)?.mode || searchParams.get("mode");
 
   // Set initial login/signup mode from state
   useEffect(() => {
@@ -38,6 +40,12 @@ const Auth = () => {
   }, [modeFromState]);
 
   const handlePostAuthRedirect = async () => {
+    // Link any pass bought as a guest with this confirmed email.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { error: claimError } = await supabase.rpc("claim_my_passes");
+      if (claimError) console.error("claim_my_passes error:", claimError);
+    }
     if (isCheckoutRedirect) {
       // Redirect to Stripe checkout for 3-month pass
       const { data: { user } } = await supabase.auth.getUser();
