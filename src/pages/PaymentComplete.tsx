@@ -31,11 +31,20 @@ export default function PaymentComplete() {
       // 1) Check if this is a subscription purchase.
       let pendingSubId = localStorage.getItem("pendingSubscriptionId");
       if (!pendingSubId && sessionId) {
-        const { data: resolved } = await supabase.rpc("resolve_pass_purchase", { p_session_id: sessionId }).maybeSingle();
-        if (resolved?.status === "paid" && resolved.report_id) {
-          localStorage.removeItem("pendingReportId");
-          navigate(`/report/${resolved.report_id}`);
-          return;
+        const started = Date.now();
+        while (!cancelledRef.current && Date.now() - started < 20_000) {
+          const { data: resolved } = await supabase.rpc("resolve_pass_purchase", { p_session_id: sessionId }).maybeSingle();
+          if (resolved?.status === "paid") {
+            localStorage.removeItem("pendingReportId");
+            if (resolved.report_id) navigate(`/report/${resolved.report_id}`);
+            else if (user) navigate("/app-dashboard");
+            else { setSubscriptionId(sessionId); setSubscriptionPaid(true); setPhase("timeout"); }
+            return;
+          }
+          // The legacy report fallback may resolve before a purchase row exists.
+          const { data: legacy } = await supabase.from("reports").select("id,payment_status").eq("stripe_session_id", sessionId).maybeSingle();
+          if (legacy?.payment_status === "paid") { navigate(`/report/${legacy.id}`); return; }
+          await new Promise(r => setTimeout(r, 2000));
         }
       }
       if (pendingSubId) {

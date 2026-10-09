@@ -57,7 +57,7 @@ export default function GuidedCheck() {
   const activeStep = useRef<Step>("start"); const mounted = useRef(true); const resultMade = useRef(false);
   const hash = location.hash.slice(1); const step: Step = VALID_STEPS.includes(hash) ? hash as Step : "start";
   activeStep.current = step;
-  const sequence: Step[] = ["job", "award", "employment", "level", ...(classes.some(c => /junior|under \d|\b(?:1[5-9]|20) years/i.test(c.classification)) && a.age === undefined ? ["age" as Step] : []), "pay", "hours", "allowances", "review"];
+  const sequence: Step[] = ["job", "award", "employment", "level", ...(classes.some(c => /junior|under \d|\b(?:1[5-9]|20) years/i.test(c.classification)) ? ["age" as Step] : []), "pay", "hours", "allowances", "review"];
   const number = Math.max(1, sequence.indexOf(step === "industry" ? "job" : step) + 1);
   const validJobs = useMemo(() => JOBS.map(j => ({ ...j, codes: j.codes.filter(code => awards.some(x => x.code === code)) })).filter(j => j.codes.length), [awards]);
   const matchingJob = validJobs.find(j => j.title.toLowerCase() === a.job.toLowerCase()) ?? validJobs.find(j => a.job.toLowerCase().includes(j.title.toLowerCase()));
@@ -68,7 +68,8 @@ export default function GuidedCheck() {
   function update(patch: Partial<Answers>) { Object.keys(patch).forEach(k => touched.current.add(k)); setA(prev => ({ ...prev, ...patch })); }
   function advance(current = step) {
     if (reviewEdit) { setReviewEdit(false); go("review"); return; }
-    const index = sequence.indexOf(current); go(sequence[index + 1] ?? "review");
+    const index = sequence.indexOf(current); const next = sequence[index + 1] ?? "review";
+    go(next === "age" && a.age !== undefined ? "pay" : next);
   }
   function back() { if (reviewEdit) { setReviewEdit(false); go("review"); return; } const index = sequence.indexOf(step); go(index > 0 ? sequence[index - 1] : "start"); }
   function tag(key: string) { return a.fromPayslip.includes(key) ? <span className="ledger-label text-primary bg-primary-soft px-2 py-1 rounded-sm">From your payslip</span> : null; }
