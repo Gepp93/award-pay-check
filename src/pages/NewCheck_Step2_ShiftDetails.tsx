@@ -367,14 +367,14 @@ export default function NewCheck_Step2_ShiftDetails() {
     <>
       {user ? <NavBar /> : <PublicNavBar />}
       {/* Add top padding to account for fixed PublicNavBar (h-20 = 80px) when not logged in */}
-      <div className={`min-h-screen flex items-start justify-center p-4 bg-background ${!user ? 'pt-24' : 'pt-4'}`}>
-        <Card className="w-full max-w-2xl">
-        <CardHeader>
+      <div className={`checker-page checker-form ${!user ? "checker-public" : ""}`}>
+        <main>
+        <header className="checker-heading">
           <ProgressIndicator currentStep={2} />
-          <CardTitle>Step 2: Hours & Pay</CardTitle>
-          <CardDescription>Tell us about your shift(s) and pay details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+          <h1>Step 2: Hours & Pay</h1>
+          <p>Tell us about your shift(s) and pay details</p>
+        </header>
+        <div className="space-y-6">
           <div className="space-y-2">
             <Label>Pay Period Type</Label>
             <Select value={payPeriodType} onValueChange={(value: any) => setPayPeriodType(value)}>
@@ -710,7 +710,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                   From your payslip — edit any field if it's wrong.
                 </div>
               )}
-              <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-4">
+              <div className="border-t border-border pt-4 space-y-4">
                 <div className="space-y-2">
                   <Label>Base hourly rate{prefilledFields.payslipBaseRate && <span className="ml-2 text-[13px] font-normal text-primary">(from payslip)</span>}</Label>
                   <div className="relative">
@@ -720,7 +720,7 @@ export default function NewCheck_Step2_ShiftDetails() {
                       step="0.01"
                       value={payslipBaseRate}
                       onChange={(e) => setPayslipBaseRate(e.target.value)}
-                      className="pl-7"
+                      className="pl-7 font-mono text-right"
                       placeholder="0.00"
                     />
                   </div>
@@ -728,35 +728,38 @@ export default function NewCheck_Step2_ShiftDetails() {
 
                 <div className="space-y-2">
                   <Label>Hours at base rate{prefilledFields.hoursAtBase && <span className="ml-2 text-[13px] font-normal text-primary">(from payslip)</span>}</Label>
-                  <Input
+                  <div className="checker-affix"><span>hrs</span><Input
+                    className="font-mono text-right pr-12"
                     type="number"
                     step="0.01"
                     value={hoursAtBase}
                     onChange={(e) => setHoursAtBase(e.target.value)}
                     placeholder="0"
-                  />
+                  /></div>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Hours at 1.5× (time and a half){prefilledFields.hoursAt150 && <span className="ml-2 text-[13px] font-normal text-primary">(from payslip)</span>}</Label>
-                  <Input
+                  <div className="checker-affix"><span>hrs</span><Input
+                    className="font-mono text-right pr-12"
                     type="number"
                     step="0.01"
                     value={hoursAt150}
                     onChange={(e) => setHoursAt150(e.target.value)}
                     placeholder="0"
-                  />
+                  /></div>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Hours at 2× (double time){prefilledFields.hoursAt200 && <span className="ml-2 text-[13px] font-normal text-primary">(from payslip)</span>}</Label>
-                  <Input
+                  <div className="checker-affix"><span>hrs</span><Input
+                    className="font-mono text-right pr-12"
                     type="number"
                     step="0.01"
                     value={hoursAt200}
                     onChange={(e) => setHoursAt200(e.target.value)}
                     placeholder="0"
-                  />
+                  /></div>
                 </div>
 
                 <div className="space-y-3">
@@ -791,11 +794,11 @@ export default function NewCheck_Step2_ShiftDetails() {
             </CollapsibleContent>
           </Collapsible>
 
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => navigate("/new-check-step-1")} className="flex-1">
+          <div className="checker-actions">
+            <Button variant="outline" onClick={() => navigate("/new-check-step-1")} className="w-full md:w-auto">
               Back
             </Button>
-            <Button onClick={handleCheckPay} disabled={loading} className="flex-1" size="lg">
+            <Button onClick={handleCheckPay} disabled={loading} className="w-full md:w-auto" size="lg">
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -806,8 +809,8 @@ export default function NewCheck_Step2_ShiftDetails() {
               )}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </main>
       </div>
     </>
   );

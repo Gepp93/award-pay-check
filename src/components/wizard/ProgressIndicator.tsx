@@ -7,55 +7,25 @@ interface ProgressIndicatorProps {
 
 export const ProgressIndicator = ({ currentStep }: ProgressIndicatorProps) => {
   const steps = [
-    { number: 1, label: "Job Details" },
-    { number: 2, label: "Hours & Pay" },
-    { number: 3, label: "Results" },
+    { number: 1, label: "Payslip" },
+    { number: 2, label: "Your job" },
+    { number: 3, label: "Result" },
   ];
 
   return (
-    <div className="w-full mb-8">
-      <div className="flex items-center justify-between max-w-2xl mx-auto">
-        {steps.map((step, index) => (
-          <div key={step.number} className="flex items-center flex-1">
-            <div className="flex flex-col items-center flex-1">
-              <div
-                className={cn(
-                  "w-10 h-10 rounded-md flex items-center justify-center font-semibold transition-all",
-                  currentStep > step.number
-                    ? "bg-primary text-primary-foreground"
-                    : currentStep === step.number
-                    ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-                    : "bg-muted text-muted-foreground"
-                )}
-              >
-                {currentStep > step.number ? (
-                  <Check className="w-5 h-5" />
-                ) : (
-                  step.number
-                )}
-              </div>
-              <span
-                className={cn(
-                  "text-[13px] mt-2 font-medium",
-                  currentStep >= step.number
-                    ? "text-foreground"
-                    : "text-muted-foreground"
-                )}
-              >
-                {step.label}
-              </span>
-            </div>
-            {index < steps.length - 1 && (
-              <div
-                className={cn(
-                  "h-0.5 flex-1 mx-2",
-                  currentStep > step.number ? "bg-primary" : "bg-muted"
-                )}
-              />
-            )}
-          </div>
+    <nav className="checker-progress no-print" aria-label="Pay check progress">
+      <ol>
+        {steps.map((step) => (
+          <li key={step.number} aria-current={currentStep === step.number ? "step" : undefined}
+            className={cn(currentStep === step.number ? "is-current" : "", currentStep > step.number ? "is-complete" : "")}>
+            {currentStep > step.number && <Check className="h-3.5 w-3.5 text-primary" aria-label="Completed" />}
+            <span className="font-mono">0{step.number}</span><span>{step.label}</span>
+          </li>
         ))}
+      </ol>
+      <div className="checker-progress-bar" aria-hidden="true">
+        {steps.map((step) => <span key={step.number} className={currentStep >= step.number ? "bg-primary" : "bg-border"} />)}
       </div>
-    </div>
+    </nav>
   );
 };

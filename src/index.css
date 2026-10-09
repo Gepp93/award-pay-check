@@ -235,3 +235,96 @@
  .ap-ledger .ap-lamt { font-size: 14px; }
  .ap-home-tier h3 { font-size: 19px; }
 }
+
+/* Ledger checker and report presentation, using the shared foundation. */
+.checker-page { max-width: 824px; margin: 0 auto; padding: 48px 32px 64px; min-height: calc(100vh - 64px); }
+.checker-public { padding-top: 128px; }
+.checker-heading { margin-bottom: 32px; }
+.checker-heading h1 { font-size: 36px; line-height: 44px; font-weight: 600; margin: 12px 0; }
+.checker-heading p { font-size: 16px; line-height: 26px; color: hsl(var(--ink-2)); }
+.checker-form label { font-size: 14px; font-weight: 600; color: hsl(var(--foreground)); }
+.checker-form input, .checker-form [role="combobox"] { min-height: 48px; }
+.checker-form input[type="number"] { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; text-align: right; }
+.checker-form input[type="date"], .checker-form input[type="time"] { min-width: 0; width: 100%; }
+.checker-form [role="radiogroup"] > div { min-height: 56px; padding: 12px 16px; border: 1px solid hsl(var(--rule-strong)); border-radius: 4px; }
+.checker-form [role="radiogroup"] > div:has([data-state="checked"]) { border: 2px solid hsl(var(--primary)); padding: 11px 15px; background: hsl(var(--primary-soft)); }
+.checker-form [role="alert"] { color: hsl(var(--clay)); }
+.checker-progress { margin-bottom: 32px; }
+.checker-progress ol { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.checker-progress li { display: flex; align-items: center; gap: 6px; font-size: 14px; color: hsl(var(--ink-3)); }
+.checker-progress li + li::before { content: "·"; margin-right: 2px; font-weight: 400; color: hsl(var(--ink-3)); }
+.checker-progress .is-current { color: hsl(var(--foreground)); font-weight: 600; }
+.checker-progress-bar { display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; margin-top: 16px; }
+.checker-progress-bar span { height: 3px; }
+.checker-choice { width: 100%; min-height: 56px; height: auto; display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 15px 16px; border: 1px solid hsl(var(--rule-strong)); border-radius: 4px; background: hsl(var(--card)); color: hsl(var(--foreground)); text-align: left; white-space: normal; font-size: 16px; line-height: 24px; }
+.checker-choice.is-selected { padding: 14px 15px; border: 2px solid hsl(var(--primary)); background: hsl(var(--primary-soft)); }
+.choice-radio { display: inline-block; flex: 0 0 18px; height: 18px; border: 1px solid hsl(var(--rule-strong)); border-radius: 50%; }
+.is-selected .choice-radio { border: 5px solid hsl(var(--primary)); background: hsl(var(--card)); }
+.checker-choice > div { min-width: 0; }
+.checker-onboarding { background: transparent; border: 0; }
+.checker-onboarding > div { padding: 0; }
+.checker-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
+.checker-upload { padding: 40px 24px; background: hsl(var(--card)); border: 1px dashed hsl(var(--rule-strong)); border-radius: 6px; text-align: center; cursor: pointer; }
+.checker-upload:hover { border-color: hsl(var(--primary)); }
+.checker-upload:focus-visible { outline: 2px solid hsl(var(--primary)); outline-offset: 2px; }
+.checker-reading { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 48px; }
+.checker-affix { position: relative; }
+.checker-affix > span { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; color: hsl(var(--ink-3)); pointer-events: none; }
+.checker-affix-money > span { left: 14px; right: auto; }
+.checker-affix-money input { padding-left: 28px; }
+.checker-result-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 24px; align-items: start; }
+.checker-result-layout > :only-child { grid-column: 1 / -1; }
+.checker-sheet { min-width: 0; border: 1px solid hsl(var(--rule)); border-radius: 6px; background: hsl(var(--card)); box-shadow: var(--shadow-sheet); padding: 32px; }
+.checker-sheet-header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; margin-bottom: 32px; }
+.ledger-label { font-size: 12px; line-height: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--ink-2)); }
+.checker-owed { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; font-size: 64px; line-height: 1.2; font-weight: 500; color: hsl(var(--clay)); overflow-wrap: anywhere; }
+.checker-owed-range { font-size: 40px; }
+.checker-result-headline { margin-bottom: 32px; }
+.checker-result-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; border-top: 2px solid hsl(var(--foreground)); padding-top: 20px; margin: 32px 0; }
+.checker-result-meta dt { font-size: 12px; line-height: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--ink-2)); margin-bottom: 8px; overflow-wrap: anywhere; }
+.checker-result-meta dd { font-size: 14px; line-height: 22px; overflow-wrap: anywhere; }
+.checker-findings h3 { font-size: 19px; line-height: 26px; margin-bottom: 12px; }
+.checker-finding-row { display: flex; justify-content: space-between; align-items: start; gap: 12px; padding: 16px 0; border-bottom: 1px solid hsl(var(--rule)); font-size: 14px; line-height: 22px; }
+.ledger-missing { display: table; margin-bottom: 6px; padding: 2px 5px; border-radius: 2px; background: hsl(var(--clay-soft)); color: hsl(var(--clay)); font-size: 11px; line-height: 17px; font-weight: 600; letter-spacing: 0.08em; }
+.checker-locked-detail { display: flex; align-items: center; gap: 5px; font-size: 13px; line-height: 20px; color: hsl(var(--ink-3)); flex-shrink: 0; }
+.checker-unlock { background: hsl(var(--card)); border: 1px solid hsl(var(--rule)); border-radius: 6px; padding: 24px; }
+.checker-unlock h2 { font-size: 22px; line-height: 28px; margin-bottom: 20px; }
+.checker-includes { margin: 0 0 24px; padding: 0; list-style: none; }
+.checker-includes li { display: flex; align-items: start; gap: 8px; margin-bottom: 14px; font-size: 14px; line-height: 22px; color: hsl(var(--ink-2)); }
+.checker-includes svg { margin-top: 3px; }
+.checker-email { border-top: 1px solid hsl(var(--rule)); margin-top: 32px; padding-top: 24px; }
+.checker-email h2 { font-size: 16px; line-height: 26px; margin-bottom: 16px; }
+.checker-email form { display: flex; gap: 12px; align-items: end; }
+.checker-email label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.ledger-table { width: 100%; font-size: 14px; line-height: 22px; border-collapse: collapse; }
+.ledger-table th { padding: 12px; background: hsl(var(--surface-sunk)); color: hsl(var(--ink-2)); text-align: left; text-transform: uppercase; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; }
+.ledger-table th:last-child { text-align: right; }
+.ledger-table td { height: 52px; padding: 12px; border-bottom: 1px solid hsl(var(--rule)); }
+.ledger-table td:last-child { white-space: nowrap; }
+.ledger-table .ledger-total-row { border-top: 2px solid hsl(var(--foreground)); }
+.ledger-report dd { overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .checker-page { padding: 48px 16px 48px; }
+  .checker-public { padding-top: 128px; }
+  .checker-heading h1 { font-size: 28px; line-height: 34px; }
+  .checker-progress li { font-size: 13px; gap: 4px; }
+  .checker-progress-bar { display: grid; }
+  .checker-result-layout { grid-template-columns: minmax(0, 1fr); }
+  .checker-sheet { padding: 20px; }
+  .checker-owed { font-size: 52px; }
+  .checker-owed-range { font-size: 32px; }
+  .checker-result-meta { gap: 12px; }
+  .checker-actions { flex-direction: column-reverse; }
+  .checker-actions button { width: 100%; }
+  .checker-email form { flex-direction: column; align-items: stretch; }
+  .checker-finding-row { gap: 8px; }
+  .checker-locked-detail { max-width: 86px; }
+  .ledger-table td, .ledger-table th { padding: 12px 8px; }
+}
+@media print {
+  .no-print, nav, .ap-nav { display: none !important; }
+  .checker-page { max-width: none; padding: 0; }
+  .checker-sheet { box-shadow: none; border: 0; padding: 0; }
+  .checker-sheet, .checker-sheet * { color: black !important; background: transparent !important; }
+  .ledger-table tr { break-inside: avoid; }
+}

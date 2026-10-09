@@ -91,8 +91,8 @@ export const JobTypeSelection = ({ industry, onSelect, onBack }: JobTypeSelectio
   ];
 
   return (
-    <Card className="bg-card border-border ">
-      <CardHeader>
+    <section className="checker-onboarding checker-form">
+      <header className="checker-heading">
         <Button
           variant="ghost"
           size="sm"
@@ -102,23 +102,23 @@ export const JobTypeSelection = ({ industry, onSelect, onBack }: JobTypeSelectio
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <CardTitle>Step 2: Select Your Role</CardTitle>
-        <CardDescription>Choose your job type in {industry}</CardDescription>
-      </CardHeader>
-      <CardContent>
+        <h1>Step 2: Select Your Role</h1>
+        <p>Choose your job type in {industry}</p>
+      </header>
+      <div>
         <div className="grid gap-3">
           {jobTypes.map((jobType) => (
             <Button
               key={jobType}
               variant="outline"
-              className="justify-start hover:bg-accent/20 hover:border-accent hover:text-foreground transition-all font-medium"
+              className="checker-choice"
               onClick={() => onSelect(jobType)}
             >
-              {jobType}
+              <span className="choice-radio" aria-hidden="true" />{jobType}
             </Button>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

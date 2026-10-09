@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ApNav } from "@/components/ApNav";
 import SEO from "@/components/SEO";
 import { Loader2, Camera, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
 import { takePreloadedPayslip } from "@/lib/pendingPayslip";
 
 // Tiny scroll-reveal hook (same pattern used on Why / How / Pricing).
@@ -174,98 +176,31 @@ export default function CheckUpload() {
       />
       <ApNav />
 
-      <section className="ap-wrap ap-section" style={{ paddingTop: 48, paddingBottom: 28 }}>
-        <div style={{ textAlign: "center", maxWidth: 720, margin: "0 auto" }} data-reveal>
-          <div className="ap-eyebrow" style={{ justifyContent: "center" }}>
-            Free pay check
-          </div>
-          <h1 className="ap-h1" style={{ marginBottom: 18 }}>
-            Check your <span className="ap-hl">payslip</span>
-          </h1>
-          <p className="ap-lede" style={{ margin: "0 auto 12px" }}>
-            Snap a photo or upload your payslip — we'll read it and check it against
-            official Fair Work rates.
-          </p>
-        </div>
-      </section>
-
-      <section className="ap-wrap" style={{ paddingBottom: 80 }}>
-        <div style={{ maxWidth: 640, margin: "0 auto" }} data-reveal>
-          <div
-            onDrop={onDrop}
-            onDragOver={(e) => e.preventDefault()}
-            onClick={openPicker}
-            role="button"
-            tabIndex={0}
+      <main className="checker-page checker-form">
+        <ProgressIndicator currentStep={1} />
+        <header className="checker-heading">
+          <div className="ap-eyebrow">Free pay check</div>
+          <h1>Check your payslip</h1>
+          <p>Snap a photo or upload your payslip — we'll read it and check it against official Fair Work rates.</p>
+        </header>
+        <div>
+          <div onDrop={onDrop} onDragOver={(e) => e.preventDefault()} onClick={openPicker}
+            role="button" tabIndex={0}
             onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openPicker()}
-            style={{
-              border: "1px dashed hsl(var(--rule-strong))",
-              borderRadius: 6,
-              background: "hsl(var(--card))",
-              padding: "44px 24px",
-              textAlign: "center",
-              cursor: status === "reading" || status === "preparing" ? "default" : "pointer",
-              transition: "border-color .2s ease, background .2s ease",
-              opacity: status === "reading" || status === "preparing" ? 0.85 : 1,
-            }}
-            onMouseEnter={(e) => {
-              if (status !== "reading" && status !== "preparing")
-                e.currentTarget.style.borderColor = "hsl(var(--primary))";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "hsl(var(--border))";
-            }}
-          >
-            <input
-              ref={inputRef}
-              type="file"
-              accept=".pdf,.heic,.heif,image/*"
-              onChange={onChange}
-              style={{ display: "none" }}
-              disabled={status === "reading" || status === "preparing"}
-            />
-
+            className="checker-upload">
+            <input ref={inputRef} type="file" accept=".pdf,.heic,.heif,image/*" onChange={onChange}
+              className="hidden" disabled={status === "reading" || status === "preparing"} />
             {status === "reading" || status === "preparing" ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-                <Loader2 className="h-8 w-8 animate-spin" style={{ color: "hsl(var(--primary))" }} />
-                <div style={{ fontWeight: 600, fontSize: 17 }}>
-                  {status === "preparing" ? "Preparing your file…" : "Reading your payslip…"}
-                </div>
-                <div style={{ color: "hsl(var(--muted-foreground))", fontSize: 14 }}>
-                  This usually takes a few seconds.
-                </div>
+              <div className="checker-reading" role="status">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span>Reading your payslip…</span>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
-                <div
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 4,
-                    background: "hsl(var(--primary-soft))",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "hsl(var(--primary))",
-                  }}
-                >
-                  <Camera className="h-6 w-6" />
-                </div>
-                <div style={{ fontWeight: 600, fontSize: 18 }}>Tap to take a photo or upload</div>
-                <div style={{ color: "hsl(var(--muted-foreground))", fontSize: 14, maxWidth: 360 }}>
-                  PDF, JPG, PNG or HEIC.
-                </div>
-                <button
-                  type="button"
-                  className="ap-btn ap-btn-primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openPicker();
-                  }}
-                  style={{ marginTop: 6 }}
-                >
-                  Choose payslip
-                </button>
+              <div className="flex flex-col items-center gap-4">
+                <Camera className="h-10 w-10 text-primary" />
+                <div className="text-base font-semibold">Take a photo or upload your payslip</div>
+                <div className="text-[13px] text-muted-foreground">PDF, JPG, PNG or HEIC.</div>
+                <Button type="button" onClick={(e) => { e.stopPropagation(); openPicker(); }}>Choose payslip</Button>
               </div>
             )}
           </div>
@@ -288,8 +223,8 @@ export default function CheckUpload() {
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, marginBottom: 4 }}>{errorMsg}</div>
                 <div style={{ display: "flex", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-                  <button
-                    className="ap-btn ap-btn-primary"
+                  <Button
+                    
                     onClick={() => {
                       setStatus("idle");
                       setErrorMsg("");
@@ -297,10 +232,10 @@ export default function CheckUpload() {
                     }}
                   >
                     Try a sharper photo
-                  </button>
-                  <button className="ap-ghost" onClick={goManual} style={{ cursor: "pointer" }}>
+                  </Button>
+                  <Button variant="link" onClick={goManual} style={{ cursor: "pointer" }}>
                     Enter manually
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -309,7 +244,7 @@ export default function CheckUpload() {
           <p
             style={{
               textAlign: "center",
-              fontSize: 13,
+              fontSize: 14,
               color: "hsl(var(--muted-foreground))",
               marginTop: 18,
             }}
@@ -333,7 +268,7 @@ export default function CheckUpload() {
             </a>
           </div>
         </div>
-      </section>
+      </main>
 
       <footer style={{ borderTop: "1px solid hsl(var(--border))", padding: "24px 0", textAlign: "center", fontSize: 13, color: "hsl(var(--muted-foreground))" }}>
         AwardPay is an interpretation tool, not legal advice.

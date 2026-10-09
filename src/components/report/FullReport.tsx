@@ -138,7 +138,7 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
     y += 6;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.setTextColor(20, 83, 45);
+    doc.setTextColor(0);
     doc.text(text, LEFT, y);
     doc.setTextColor(0);
     y += 14;
@@ -147,7 +147,7 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.setTextColor(20, 83, 45);
+  doc.setTextColor(0);
   doc.text("AwardPay", 48, y);
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(12);
@@ -166,7 +166,7 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   doc.setTextColor(110);
   doc.text(headline.label, 48, y);
   if (owed > 0) doc.setTextColor(184, 134, 11);
-  else doc.setTextColor(20, 83, 45);
+  else doc.setTextColor(0);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(28);
   doc.text(headline.amount, 48, y + 28);
@@ -265,8 +265,7 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
 
   return (
     <article
-      className="rounded-lg border bg-card shadow-sheet p-6 md:p-8 space-y-8"
-      style={{ borderColor: "hsl(var(--border))" }}
+      className="checker-sheet ledger-report space-y-8"
     >
       {/* Header */}
       <header className="flex items-start justify-between gap-4 flex-wrap">
@@ -293,7 +292,7 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
               });
             }
           }}
-          className="gap-2"
+          className="gap-2 no-print"
         >
           <Download className="h-4 w-4" />
           Download report (PDF)
@@ -302,24 +301,11 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
 
       {/* Headline */}
       {isUnderpaid ? (
-        <section
-          className="rounded-lg px-6 py-8 text-center"
-          style={{
-            background: "hsl(var(--foreground) / 0.08)",
-            border: "1px solid hsl(var(--foreground) / 0.3)",
-          }}
-        >
+        <section className="checker-result-headline">
           <div className="text-[13px] font-semibold uppercase tracking-wider text-muted-foreground">
             {headline.label}
           </div>
-          <div
-            className="font-semibold tabular-nums font-mono mt-2"
-            style={{
-              color: "hsl(var(--foreground))",
-              fontSize: 64,
-              lineHeight: 1,
-            }}
-          >
+          <div className="checker-owed figure mt-2">
             {headline.amount}
           </div>
           {(reasons.length + allowances.length) > 0 && (
@@ -335,15 +321,9 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
           )}
         </section>
       ) : (
-        <section
-          className="rounded-lg px-6 py-8 text-center"
-          style={{
-            background: "hsl(var(--primary) / 0.06)",
-            border: "1px solid hsl(var(--primary) / 0.2)",
-          }}
-        >
+        <section className="checker-result-headline">
           <CheckCircle className="h-8 w-8 mx-auto text-primary mb-2" />
-          <div className="text-xl font-semibold">Your pay looks correct for this period</div>
+          <div className="text-xl font-semibold">Looks like you were paid correctly</div>
         </section>
       )}
 
@@ -375,8 +355,9 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
       {/* What's missing */}
       <section>
         <h3 className="text-base font-semibold mb-3">What's missing</h3>
-        <div className="rounded-lg border overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="ledger-table-wrap">
+          <table className="ledger-table">
+            <thead><tr><th>Pay item</th><th className="text-right">Amount</th></tr></thead>
             <tbody>
               {bd.regularHours > 0 && (
                 <Row
@@ -409,6 +390,7 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
                     : "—"
                 }
               />
+              {!isUnderpaid && <tr><td colSpan={2}><span className="flex items-center gap-2 text-primary"><CheckCircle className="h-4 w-4" />Paid correctly</span></td></tr>}
               {isUnderpaid && (
                 <Row
                   label="Shortfall"
@@ -438,7 +420,7 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
             {allowances.map((a) => (
               <div
                 key={a.id || a.name}
-                className="rounded-md border p-3 flex items-start justify-between gap-3"
+                className="border-b border-border py-4 flex items-start justify-between gap-3"
               >
                 <div>
                   <div className="font-medium text-sm">
@@ -456,8 +438,8 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
                 {a.estimatedValue > 0 && (
                   <div className="text-right">
                     <div className="text-[13px] uppercase text-muted-foreground">Est.</div>
-                    <div className="font-mono tabular-nums font-semibold text-primary">
-                      {fmt(Number(a.estimatedValue))}
+                    <div className="font-mono tabular-nums font-medium text-clay">
+                      +{fmt(Number(a.estimatedValue))}
                     </div>
                   </div>
                 )}
@@ -507,9 +489,9 @@ function Detail({
 }) {
   if (value == null || value === "") return null;
   return (
-    <div className="flex justify-between border-b border-border/50 pb-1">
+    <div className="flex justify-between gap-4 border-b border-border pb-2 min-w-0">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className={mono ? "font-mono tabular-nums font-medium" : "font-medium"}>
+      <dd className={mono ? "font-mono tabular-nums font-medium text-right" : "font-medium text-right"}>
         {value}
       </dd>
     </div>
@@ -528,22 +510,12 @@ function Row({
   highlight?: boolean;
 }) {
   return (
-    <tr
-      className="border-b last:border-0"
-      style={
-        highlight
-          ? { background: "hsl(var(--foreground) / 0.08)" }
-          : undefined
-      }
-    >
+    <tr className={bold ? "ledger-total-row" : ""}>
       <td className={`px-4 py-2 ${bold ? "font-semibold" : ""}`}>{label}</td>
       <td
-        className={`px-4 py-2 text-right font-mono tabular-nums ${
-          bold ? "font-semibold" : ""
-        }`}
-        style={highlight ? { color: "hsl(var(--foreground))" } : undefined}
+        className={`text-right font-mono tabular-nums ${bold ? "font-semibold" : ""} ${highlight ? "text-clay" : ""}`}
       >
-        {value}
+        {highlight ? "+" : ""}{value}
       </td>
     </tr>
   );

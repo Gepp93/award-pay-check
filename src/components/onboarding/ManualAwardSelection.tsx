@@ -61,14 +61,14 @@ export const ManualAwardSelection = ({ onSelect }: ManualAwardSelectionProps) =>
   };
 
   return (
-    <Card className="bg-card border-border ">
-      <CardHeader>
-        <CardTitle>Select Your Award</CardTitle>
-        <CardDescription>
+    <section className="checker-onboarding checker-form">
+      <header className="checker-heading">
+        <h1>Select Your Award</h1>
+        <p>
           Search by award name or code (e.g., MA000009)
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </p>
+      </header>
+      <div className="space-y-4">
         <div className="flex gap-2">
           <Input
             placeholder="Search awards..."
@@ -92,20 +92,20 @@ export const ManualAwardSelection = ({ onSelect }: ManualAwardSelectionProps) =>
             </div>
           ) : (
             awards.map((award) => (
-              <button
+              <Button variant="outline"
                 key={award.code}
                 onClick={() => handleSelectAward(award)}
-                className={`w-full text-left p-4 rounded-lg border transition-all ${
+                className={`checker-choice ${
                   selectedAward?.code === award.code
-                    ? "border-accent bg-accent/10"
-                    : "border-border hover:border-accent/50"
+                    ? "is-selected border-primary bg-primary-soft"
+                    : "border-input hover:border-primary"
                 }`}
               >
-                <div className="font-semibold">{award.title}</div>
+                <span className="choice-radio" aria-hidden="true" /><div className="min-w-0"><div className="font-semibold">{award.title}</div>
                 <div className="text-sm text-muted-foreground">
                   Code: {award.code}
-                </div>
-              </button>
+                </div></div>
+              </Button>
             ))
           )}
         </div>
@@ -113,12 +113,12 @@ export const ManualAwardSelection = ({ onSelect }: ManualAwardSelectionProps) =>
         {selectedAward && (
           <Button
             onClick={handleConfirm}
-            className="w-full bg-accent hover:bg-accent/90"
+            className="w-full"
           >
             Confirm Selection
           </Button>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

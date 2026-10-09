@@ -41,7 +41,7 @@ export const MultiDayShiftEntry = ({
       {shifts.map((shift, index) => (
         <div
           key={index}
-          className="border border-border rounded-lg p-4 space-y-3 bg-secondary/5"
+          className="checker-form border-t border-border py-4 space-y-3"
         >
           <div className="flex items-center justify-between mb-2">
             <span className="font-medium text-sm">
@@ -62,7 +62,7 @@ export const MultiDayShiftEntry = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor={`date-${index}`} className="text-[13px]">
+              <Label htmlFor={`date-${index}`} className="text-sm font-semibold">
                 Date
               </Label>
               <Input
@@ -79,12 +79,12 @@ export const MultiDayShiftEntry = ({
               />
             </div>
             <div>
-              <Label htmlFor={`break-${index}`} className="text-[13px]">
+              <Label htmlFor={`break-${index}`} className="text-sm font-semibold">
                 Break (mins)
               </Label>
               <Input
                 id={`break-${index}`}
-                type="number"
+                className="font-mono text-right" type="number"
                 placeholder="30"
                 value={shift.break_minutes || ""}
                 onChange={(e) =>
@@ -99,7 +99,7 @@ export const MultiDayShiftEntry = ({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor={`start-${index}`} className="text-[13px]">
+              <Label htmlFor={`start-${index}`} className="text-sm font-semibold">
                 Start Time
               </Label>
               <Input
@@ -112,7 +112,7 @@ export const MultiDayShiftEntry = ({
               />
             </div>
             <div>
-              <Label htmlFor={`finish-${index}`} className="text-[13px]">
+              <Label htmlFor={`finish-${index}`} className="text-sm font-semibold">
                 Finish Time
               </Label>
               <Input

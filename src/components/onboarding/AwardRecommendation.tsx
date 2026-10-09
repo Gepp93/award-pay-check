@@ -80,17 +80,17 @@ export const AwardRecommendation = ({
 
   if (loading) {
     return (
-      <Card className="bg-card border-border ">
-        <CardContent className="py-8">
+      <section className="checker-onboarding checker-form">
+        <div className="py-8">
           <div className="text-center">Loading recommendation...</div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     );
   }
 
   return (
-    <Card className="bg-card border-border ">
-      <CardHeader>
+    <section className="checker-onboarding checker-form">
+      <header className="checker-heading">
         <Button
           variant="ghost"
           size="sm"
@@ -100,13 +100,13 @@ export const AwardRecommendation = ({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
-        <CardTitle>Step 4: Award Recommendation</CardTitle>
-        <CardDescription>Based on your answers</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="bg-accent/10 border border-accent rounded-lg p-6">
+        <h1>Step 4: Award Recommendation</h1>
+        <p>Based on your answers</p>
+      </header>
+      <div className="space-y-6">
+        <div className="checker-choice is-selected bg-primary-soft border-primary">
           <div className="flex items-start gap-4">
-            <CheckCircle className="w-6 h-6 text-accent mt-1" />
+            <CheckCircle className="w-6 h-6 text-primary mt-1" />
             <div className="flex-1">
               <h3 className="font-semibold mb-2">Your Recommended Award</h3>
               {recommendedAward ? (
@@ -132,7 +132,7 @@ export const AwardRecommendation = ({
           {recommendedAward && (
             <Button
               onClick={() => onConfirm(recommendedAward.id, recommendedAward.name, recommendedAward.code)}
-              className="bg-accent hover:bg-accent/90"
+              
             >
               Yes, this is correct
             </Button>
@@ -144,7 +144,7 @@ export const AwardRecommendation = ({
             No, choose my award manually
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };
