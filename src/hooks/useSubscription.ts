@@ -10,6 +10,8 @@ interface SubscriptionState {
   expiresAt?: string | null;
 }
 
+const claimedUsers = new Set<string>();
+
 export function useSubscription() {
   const [state, setState] = useState<SubscriptionState>({
     isPremium: false,
@@ -37,6 +39,13 @@ export function useSubscription() {
             });
           }
           return;
+        }
+
+        // Link guest pass purchases made with this confirmed email (once per session per user).
+        if (!claimedUsers.has(user.id)) {
+          claimedUsers.add(user.id);
+          const { error: claimError } = await supabase.rpc("claim_my_passes");
+          if (claimError) console.error("claim_my_passes error:", claimError);
         }
 
         // Fetch profile and admin status in parallel
