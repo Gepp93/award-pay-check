@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -13,7 +13,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 import { useUserCredits } from "@/hooks/useUserCredits";
-import { FULL_REPORT_LINK, buildCheckoutUrl } from "@/lib/paymentLinks";
+import { startSubscriptionCheckout } from "@/lib/paymentLinks";
+import { THREE_MONTH_PASS } from "@/lib/plans";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface PotentialAllowance {
   id: string;
@@ -46,13 +48,14 @@ function useCountUp(target: number, durationMs = 900) {
   return value;
 }
 
-export default function NewCheck_Step3_Result() {
+export default function NewCheck_Step3_Result({ resultState }: { resultState?: any } = {}) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { result, shiftDetails, advancedPayslip } = location.state || {};
+  const { result, shiftDetails, advancedPayslip } = resultState || location.state || {};
   const [user, setUser] = useState<User | null>(null);
   const fromDashboard = location.state?.fromDashboard;
   const [unlocking, setUnlocking] = useState(false);
+  const { isPremium } = useSubscription();
   const { credits, refetch: refetchCredits } = useUserCredits();
   const sessionReportIdRef = useRef<string | null>(null);
   const [leadEmail, setLeadEmail] = useState("");
@@ -96,7 +99,8 @@ export default function NewCheck_Step3_Result() {
 
   // No account required to buy: save the report (owned if signed in, otherwise
   // anonymous) and send the buyer straight to Stripe with the report id.
-  const handleUnlock = async (product: "full_report" | "backpay_pack" = "full_report") => {
+  const handleUnlock = async () => {
+    const product = "three_month_pass";
     if (!result || !shiftDetails) return;
     if (unlocking) return;
     setUnlocking(true);
@@ -131,16 +135,14 @@ export default function NewCheck_Step3_Result() {
       localStorage.setItem("pendingReportId", reportId);
 
       // Signed-in users with credits get the report unlocked without paying.
-      if (user && credits > 0) {
+      if (user && (credits > 0 || isPremium)) {
         navigate(`/report/${reportId}`);
         return;
       }
 
-      window.location.href = buildCheckoutUrl(
-        FULL_REPORT_LINK,
-        reportId,
-        leadEmail || user?.email || undefined,
-      );
+      const checkout = await startSubscriptionCheckout("three_month_pass", leadEmail || user?.email || undefined, user?.id, reportId);
+      if (!checkout) throw new Error("Checkout unavailable");
+      window.location.href = checkout;
     } catch (e: any) {
       console.error("Error creating report:", e);
       toast.error("Couldn't start your report — please try again.");
@@ -169,8 +171,7 @@ export default function NewCheck_Step3_Result() {
   };
 
   if (!result || !shiftDetails) {
-    navigate("/new-check-step-1");
-    return null;
+    return <Navigate to="/check" replace />;
   }
 
   return (
@@ -246,9 +247,11 @@ export default function NewCheck_Step3_Result() {
             </dl>
             {isUnderpaid && <LockedTeaser result={result} />}
           </article>
-          {isUnderpaid && (
+          {(
             <aside className="checker-unlock no-print">
-              <h2>Get the full report</h2>
+              <h2>Get your full report</h2>
+              {!isUnderpaid && <p className="text-sm text-ink-2 mb-4">Want to keep checking every payslip for the next 3 months?</p>}
+              <div className="figure text-[32px] mb-4">{THREE_MONTH_PASS.priceLabel}<span className="font-sans text-sm text-ink-3"> / {THREE_MONTH_PASS.name}</span></div>
               <ReportIncludes />
                 {user && credits > 0 && (
                   <div className="text-sm text-center text-muted-foreground">
@@ -260,14 +263,16 @@ export default function NewCheck_Step3_Result() {
                   <Button
                     type="button"
                     className="w-full"
-                    onClick={() => handleUnlock("full_report")}
+                    onClick={() => handleUnlock()}
                     disabled={unlocking}
                   >
                     {unlocking
                       ? "Preparing…"
+                      : isPremium
+                      ? "Open full report"
                       : credits > 0
                       ? `Unlock with 1 credit (${credits} left)`
-                      : "Unlock full report — $10"}
+                      : `Unlock with ${THREE_MONTH_PASS.name} — ${THREE_MONTH_PASS.priceLabel}`}
                   </Button>
                 </div>
                 <p className="text-[13px] text-center text-muted-foreground">
@@ -278,7 +283,7 @@ export default function NewCheck_Step3_Result() {
             </aside>
           )}
         </div>
-        {isUnderpaid && (
+        {(
           <section className="checker-email no-print">
             <h2>Not ready yet?</h2>
             {!leadSent ? (
