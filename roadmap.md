@@ -1,7 +1,7 @@
 # Phase 8 guided-flow polish
-- [ ] Fast reader-outage fallback, keyword award matching and printed penalty-hour roster defaults.
-- [ ] Casual/part-time shortcuts, monthly typical-week comparison and mobile sticky actions.
-- [ ] Check paywall/marketing wording; rerun network-stubbed guided paths, unit tests and build diagnostics.
+- [x] Fast reader-outage fallback (429/unavailable: one request), keyword award matching and tagged printed penalty-hour roster defaults.
+- [x] Casual/part-time shortcuts, monthly typical-week paid-share comparison and mobile sticky actions with safe-area padding.
+- [x] Exact paywall copy verified; no advertised free wording (internal unpaid-status values retained). Nine stubbed guided/reader paths and 28 unit tests passed; 390px chips/inputs/actions verified; preview build OK. No live writes or charges.
 
 # Phase 7 payment security and reader diagnosis
 - [x] Harden paid-access policies, triggers and function privileges; role-based SQL checks passed and all fixtures rolled back.
