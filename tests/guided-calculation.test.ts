@@ -1,6 +1,6 @@
 import { describe,test,expect,mock } from 'bun:test';
 const calls:any[]=[];let returned:any[]=[];
-mock.module('../src/integrations/supabase/client',{supabase:{functions:{invoke:async(name:string,options:any)=>{calls.push({name,...options});return {data:name==='calculate-shift-pay'?returned.shift():{results:[]},error:null};}}}});
+mock.module('../src/integrations/supabase/client',()=>({supabase:{functions:{invoke:async(name:string,options:any)=>{calls.push({name,...options});return {data:name==='calculate-shift-pay'?returned.shift():{results:[]},error:null};}}}}));
 const {calculateAnswers}=await import('../src/features/check/calculate');
 const {defaults}=await import('../src/features/check/model');
 const result=(amount=25)=>({mode:'unsure',overallMinUnderpayment:amount,overallMaxUnderpayment:amount,likelyClassifications:[{classificationId:'1',possibleUnderpayment:amount,awardPayTotal:200}],reasons:[],potentialAllowances:[]});
