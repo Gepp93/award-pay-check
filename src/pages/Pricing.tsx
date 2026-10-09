@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check } from "lucide-react";
@@ -78,7 +79,7 @@ const Pricing = () => {
   useReveal();
 
   return (
-    <div>
+    <div className="ap-marketing">
       <SEO
         title="Pricing — Free pay check, pay only if you're owed | AwardPay"
         description="Checking your pay is always free. Pay only once you've seen what you're owed. $10 Full report, $30 Back-pay pack. Prices in AUD."
@@ -87,117 +88,84 @@ const Pricing = () => {
 
       <ApNav />
 
-      <section className="ap-wrap ap-section" style={{ paddingBottom: 28 }}>
-        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
           <div className="ap-eyebrow" data-reveal>Pricing</div>
-          <h1 className="ap-h1 text-center" data-reveal>
-            Simple pricing. Pay only when it's <span className="ap-hl">worth&nbsp;it</span>.
+          <h1 className="ap-h1" data-reveal>
+            Simple pricing. Pay only when it's <span className="">worth&nbsp;it</span>.
           </h1>
-          <p className="ap-lede text-center" data-reveal style={{ marginBottom: 0, maxWidth: "none" }}>
+          <p className="ap-lede" data-reveal >
             Checking your pay is always free. You only pay once you've seen what you're owed.
           </p>
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
+      <section className="ap-wrap ap-home-section" >
         <div
-          className="ap-pricing-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 22,
-            alignItems: "stretch",
-          }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          
         >
           {tiers.map((t, i) => {
             const highlighted = t.highlighted;
             return (
               <div
                 key={t.name}
+                className={`ap-home-tier ${highlighted ? "ap-home-tier-paid" : ""}`}
                 data-reveal
-                style={{
-                  position: "relative",
-                  background: "hsl(var(--card))",
-                  border: highlighted
-                    ? "1px solid hsl(var(--primary))"
-                    : "1px solid hsl(var(--border))",
-                  borderRadius: "var(--radius)",
-                  padding: "28px 24px",
-                  display: "flex",
-                  flexDirection: "column",
-                  transform: highlighted ? "translateY(-8px)" : "none",
-                  
-                  transitionDelay: `${i * 80}ms`,
-                }}
+                
               >
                 {highlighted && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: -14,
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      background: "hsl(var(--primary))",
-                      color: "hsl(var(--primary-foreground))",
-                      fontWeight: 600,
-                      fontSize: 13,
-                      letterSpacing: ".08em",
-                      textTransform: "uppercase",
-                      padding: "6px 12px",
-                      borderRadius: 6,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
+                  <div className="ap-home-best-value">
                     Most popular
                   </div>
                 )}
 
-                <div style={{ fontWeight: 600, fontSize: 14, letterSpacing: ".1em", textTransform: "uppercase", color: "hsl(var(--primary))" }}>
+                <h3>
                   {t.name}
-                </div>
+                </h3>
 
-                <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 10 }}>
-                  <span style={{ fontWeight: 600, fontSize: 44, letterSpacing: "0", lineHeight: 1 }}>
+                <div >
+                  <span className="ap-home-price">
                     {t.price}
                   </span>
                   {t.priceSuffix && (
-                    <span style={{ fontSize: 14, color: "hsl(var(--muted-foreground))" }}>
+                    <span >
                       {t.priceSuffix}
                     </span>
                   )}
                 </div>
 
-                <p style={{ marginTop: 8, marginBottom: 18, fontSize: 14.5, color: "hsl(var(--muted-foreground))", lineHeight: 1.5 }}>
+                <p >
                   {t.who}
                 </p>
 
-                <ul className="list-none pl-0 text-left" style={{ margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10, flex: 1, fontSize: 15, lineHeight: 1.5, color: "hsl(var(--ink-2))" }}>
+                <ul className="list-none pl-0 text-left" >
                   {t.features.map((f, j) => (
-                    <li key={j} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-                      <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                    <li key={j} >
+                      <Check className="hidden"  />
                       <span>{f}</span>
                     </li>
                   ))}
                 </ul>
 
-                <button
-                  className={`ap-btn ${highlighted ? "ap-btn-primary" : "ap-btn-outline"}`}
+                <Button
+                  variant={highlighted ? "default" : "secondary"} className="w-full mt-6"
                   onClick={start}
-                  style={{ marginTop: 22, width: "100%" }}
+                  
                 >
                   {t.cta}
-                </button>
+                </Button>
               </div>
             );
           })}
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 18, paddingBottom: 64 }}>
+      <section className="ap-wrap ap-home-section" >
         <p
-          className="text-center"
+          className="text-left"
           data-reveal
-          style={{ fontSize: 13.5, color: "hsl(var(--muted-foreground))", maxWidth: 720, margin: "0 auto", lineHeight: 1.6 }}
+          
         >
           Every check starts free — you only pay once you've seen what you're owed. Prices in AUD.
           Your payslip is read, then discarded. AwardPay is an interpretation tool, not legal advice.
@@ -211,12 +179,6 @@ const Pricing = () => {
         </div>
       </footer>
 
-      <style>{`
-        @media (max-width: 920px) {
-          .ap-pricing-grid { grid-template-columns: 1fr !important; }
-          .ap-pricing-grid > div { transform: none !important; }
-        }
-      `}</style>
     </div>
   );
 };

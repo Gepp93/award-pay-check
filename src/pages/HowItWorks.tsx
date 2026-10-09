@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, Camera, Scale, DollarSign } from "lucide-react";
@@ -20,21 +21,7 @@ function useReveal() {
 }
 
 const ulCls = "list-none pl-0 text-left space-y-2 mt-4";
-const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))" } as const;
-const h2Style = { fontSize: 28 } as const;
 
-const circle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 44,
-  height: 44,
-  borderRadius: 6,
-  border: "1.5px solid hsl(var(--primary))",
-  color: "hsl(var(--primary))",
-  background: "hsl(var(--background))",
-  flexShrink: 0,
-};
 
 const HowItWorks = () => {
   const navigate = useNavigate();
@@ -54,7 +41,7 @@ const HowItWorks = () => {
   ];
 
   return (
-    <div>
+    <div className="ap-marketing">
       <SEO
         title="How AwardPay checks your pay"
         description="We turn your payslip into an award-accurate breakdown using real Fair Work rates — penalties, overtime and allowances included."
@@ -63,66 +50,42 @@ const HowItWorks = () => {
 
       <ApNav />
 
-      <section className="ap-wrap ap-section" style={{ paddingBottom: 28 }}>
-        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
           <div className="ap-eyebrow" data-reveal>How it works</div>
-          <h1 className="ap-h1 text-center" data-reveal>
-            How AwardPay checks your <span className="ap-hl">pay</span>
+          <h1 className="ap-h1" data-reveal>
+            How AwardPay checks your <span className="">pay</span>
           </h1>
-          <p className="ap-lede text-center" data-reveal style={{ marginBottom: 0, maxWidth: "none" }}>
+          <p className="ap-lede" data-reveal >
             We turn your payslip into an award-accurate breakdown using real Fair Work rates.
           </p>
         </div>
       </section>
 
-      {/* 3-step focal indicator */}
-      <section className="ap-wrap" style={{ paddingTop: 8, paddingBottom: 24 }}>
-        <div className="mx-auto" style={{ maxWidth: 420 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <div data-reveal style={{ transitionDelay: "0ms" }}>
-              <span style={circle}><Camera size={20} /></span>
-            </div>
-            <div data-reveal style={{ flex: 1, height: 1, background: "hsl(var(--primary) / 0.3)", transitionDelay: "100ms" }} />
-            <div data-reveal style={{ transitionDelay: "150ms" }}>
-              <span style={circle}><Scale size={20} /></span>
-            </div>
-            <div data-reveal style={{ flex: 1, height: 1, background: "hsl(var(--primary) / 0.3)", transitionDelay: "250ms" }} />
-            <div data-reveal style={{ transitionDelay: "300ms" }}>
-              <span style={circle}><DollarSign size={20} /></span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="ap-wrap" style={{ paddingTop: 8, paddingBottom: 24 }}>
-        <div className="mx-auto" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={h2Style}>Three steps</h2>
-          <ol className="list-none pl-0 text-left space-y-3 mt-4" style={ulStyle}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal>Three steps</h2>
+          <ol className="ap-steps">
             {steps.map((t, i) => (
-              <li key={i} className="flex items-start gap-3" data-reveal style={{ transitionDelay: `${i * 80}ms` }}>
+              <li key={i} className="ap-step flex items-start gap-3" data-reveal >
                 <span
-                  className="inline-flex items-center justify-center shrink-0"
-                  style={{
-                    width: 24, height: 24, borderRadius: 6,
-                    background: "hsl(var(--primary))",
-                    color: "hsl(var(--primary-foreground))",
-                    fontSize: 13, fontWeight: 600, marginTop: 4,
-                  }}
+                  className="num shrink-0"
+                  
                 >{i + 1}</span>
-                <span>{t}</span>
+                <div><div className="ap-step-snippet">{i === 0 ? <Camera size={24} /> : i === 1 ? <Scale size={24} /> : <DollarSign size={24} />}</div><h3>{t}</h3></div>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
-        <div className="mx-auto" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={h2Style}>What we check</h2>
-          <ul className={ulCls} style={ulStyle}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal>What we check</h2>
+          <ul className={ulCls}>
             {checks.map((t, i) => (
-              <li key={i} className="flex items-start gap-2" data-reveal style={{ transitionDelay: `${i * 80}ms` }}>
-                <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+              <li key={i} className="flex items-start gap-2" data-reveal >
+                <Check className="h-4 w-4 mt-1 shrink-0"  />
                 <span>{t}</span>
               </li>
             ))}
@@ -130,21 +93,21 @@ const HowItWorks = () => {
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 16, paddingBottom: 40 }}>
-        <div className="mx-auto" style={{ maxWidth: 760 }}>
-          <p className="text-center" data-reveal style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", margin: 0 }}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <p className="text-left" data-reveal >
             AwardPay is an interpretation tool based on official Fair Work data, not legal advice.
           </p>
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 80 }}>
-        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={{ marginBottom: 18 }}>See what you're owed</h2>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal >See what you're owed</h2>
           <div data-reveal>
-            <button className="ap-btn ap-btn-primary ap-btn-lg" onClick={start}>
+            <Button className="ap-btn ap-btn-primary ap-btn-lg" onClick={start}>
               Check my payslip — free
-            </button>
+            </Button>
           </div>
         </div>
       </section>

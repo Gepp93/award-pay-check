@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Check, AlertCircle } from "lucide-react";
@@ -52,10 +53,8 @@ interface AwardPage {
 }
 
 const bullet = "flex items-start gap-2";
-const checkIcon = <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "hsl(var(--primary))" }} />;
+const checkIcon = <Check className="h-4 w-4 mt-1 shrink-0"  />;
 const ulCls = "list-none pl-0 text-left space-y-2 mt-4";
-const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))" } as const;
-const h2Style = { fontSize: 28 } as const;
 
 const formatCurrency = (n?: number) =>
   typeof n === "number"
@@ -107,7 +106,7 @@ const UnderpaidAward = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ color: "hsl(var(--muted-foreground))" }}>
+      <div className="min-h-screen flex items-center justify-center" >
         Loading…
       </div>
     );
@@ -116,14 +115,14 @@ const UnderpaidAward = () => {
   if (error || !page) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-        <AlertCircle className="h-12 w-12 mb-4" style={{ color: "hsl(var(--muted-foreground))" }} />
-        <h1 className="ap-h1 text-center" style={{ fontSize: 32 }}>Page not found</h1>
-        <p className="ap-lede text-center" style={{ marginBottom: 24 }}>
+        <AlertCircle className="h-12 w-12 mb-4"  />
+        <h1 className="ap-h1" >Page not found</h1>
+        <p className="ap-lede" >
           We couldn't find an award page for "{slug}". It may not be published yet.
         </p>
-        <button className="ap-btn ap-btn-primary" onClick={() => navigate("/")}>
+        <Button className="ap-btn ap-btn-primary" onClick={() => navigate("/")}>
           Back to home
-        </button>
+        </Button>
       </div>
     );
   }
@@ -154,7 +153,7 @@ const UnderpaidAward = () => {
   ];
 
   return (
-    <div>
+    <div className="ap-marketing">
       <SEO
         title={page.title}
         description={page.meta_description}
@@ -164,34 +163,35 @@ const UnderpaidAward = () => {
 
       <ApNav />
 
-      <section className="ap-wrap ap-section" style={{ paddingBottom: 28 }}>
-        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
           <div className="ap-eyebrow" data-reveal>Underpaid? Check your payslip</div>
-          <h1 className="ap-h1 text-center" data-reveal>
-            {body.h1 || page.title}
+          <h1 className="ap-h1" data-reveal>
+            {page.awards?.name || body.h1 || page.title}
           </h1>
           {intro.map((p, i) => (
             <p
               key={i}
-              className="ap-lede text-center"
+              className="ap-lede"
               data-reveal
-              style={{ marginBottom: i === intro.length - 1 ? 0 : 16, maxWidth: "none" }}
+              
             >
               {p}
             </p>
           ))}
+          <Button className="mt-6" onClick={() => navigate("/check")}>Check my payslip</Button>
         </div>
       </section>
 
       {signs.length > 0 && (
-        <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
-          <div className="mx-auto" style={{ maxWidth: 760 }}>
-            <h2 className="ap-h2 text-center" data-reveal style={h2Style}>
+        <section className="ap-wrap ap-home-section" >
+          <div className="mx-auto" >
+            <h2 className="ap-h2" data-reveal>
               Are you being underpaid?
             </h2>
-            <ul className={ulCls} style={ulStyle}>
+            <ul className={ulCls}>
               {signs.map((t, i) => (
-                <li key={i} className={bullet} data-reveal style={{ transitionDelay: `${i * 80}ms` }}>
+                <li key={i} className={bullet} data-reveal >
                   {checkIcon}
                   <span>{t}</span>
                 </li>
@@ -201,73 +201,55 @@ const UnderpaidAward = () => {
         </section>
       )}
 
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
-        <div className="mx-auto" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={h2Style}>
-            Pay rates for {page.awards?.name || "this award"}
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal>
+            Key rates — {page.awards?.name || "this award"}
           </h2>
 
           {hasRates ? (
             <div data-reveal className="overflow-x-auto mt-4">
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: 15,
-                  lineHeight: 1.5,
-                  background: "hsl(var(--card))",
-                  borderRadius: 6,
-                  overflow: "hidden",
-                  border: "1px solid hsl(var(--border))",
-                }}
-              >
+              <table className="ledger-table">
                 <thead>
-                  <tr style={{ background: "hsl(var(--primary-soft))" }}>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 600, color: "hsl(var(--primary))" }}>
+                  <tr >
+                    <th >
                       Classification
                     </th>
-                    <th style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600, color: "hsl(var(--primary))" }}>
+                    <th className="text-right">
                       Hourly
                     </th>
-                    <th style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600, color: "hsl(var(--primary))" }}>
+                    <th className="text-right">
                       Casual hourly
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {rates.map((row, i) => (
-                    <tr key={i} style={{ borderTop: "1px solid hsl(var(--border))" }}>
-                      <td style={{ padding: "12px 16px", color: "hsl(var(--ink-2))" }}>{row.level || "—"}</td>
-                      <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600 }}>{formatCurrency(row.hourly)}</td>
-                      <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600 }}>{formatCurrency(row.casual_hourly)}</td>
+                    <tr key={i} >
+                      <td >{row.level || "—"}</td>
+                      <td className="font-mono text-right">{formatCurrency(row.hourly)}</td>
+                      <td className="font-mono text-right">{formatCurrency(row.casual_hourly)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               {page.awards?.effective_date && (
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: "hsl(var(--muted-foreground))",
-                    marginTop: 10,
-                    marginBottom: 0,
-                  }}
-                >
+                <p className="text-[13px] text-ink-3 mt-3">
                   Rates current from {new Date(page.awards.effective_date).toLocaleDateString("en-AU")}.
                 </p>
               )}
             </div>
           ) : (
-            <p className="text-center" data-reveal style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))", margin: "16px 0 0" }}>
+            <p className="text-left" data-reveal >
               No specific rates are available for this award yet. Check your own payslip to compare your hourly rate.
             </p>
           )}
 
           {body.rates_note && (
             <p
-              className="text-left"
+              className="text-[13px] text-ink-3 mt-4"
               data-reveal
-              style={{ fontSize: 15, lineHeight: 1.6, color: "hsl(var(--muted-foreground))", margin: "16px 0 0" }}
+              
             >
               {body.rates_note}
             </p>
@@ -276,9 +258,9 @@ const UnderpaidAward = () => {
       </section>
 
       {faq.length > 0 && (
-        <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
-          <div className="mx-auto" style={{ maxWidth: 760 }}>
-            <h2 className="ap-h2 text-center" data-reveal style={h2Style}>
+        <section className="ap-wrap ap-home-section" >
+          <div className="mx-auto" >
+            <h2 className="ap-h2" data-reveal>
               Common questions
             </h2>
             <div className="mt-4 space-y-3">
@@ -286,18 +268,14 @@ const UnderpaidAward = () => {
                 f.q && f.a && (
                   <div
                     key={i}
+                    className="border-b border-rule py-5"
                     data-reveal
-                    style={{
-                      background: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 6,
-                      padding: "16px 18px",
-                    }}
+                    
                   >
-                    <h3 style={{ fontSize: 16, fontWeight: 600, margin: "0 0 8px", color: "hsl(var(--foreground))" }}>
+                    <h3 >
                       {f.q}
                     </h3>
-                    <p style={{ fontSize: 15, lineHeight: 1.55, color: "hsl(var(--ink-2))", margin: 0 }}>
+                    <p >
                       {f.a}
                     </p>
                   </div>
@@ -308,23 +286,23 @@ const UnderpaidAward = () => {
         </section>
       )}
 
-      <section className="ap-wrap" style={{ paddingTop: 40, paddingBottom: 80 }}>
-        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={{ marginBottom: 18 }}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal >
             {body.cta_copy || "Check your payslip for $10"}
           </h2>
           <div data-reveal>
-            <button
+            <Button
               className="ap-btn ap-btn-primary ap-btn-lg"
               onClick={handleCta}
               disabled={ctaLoading}
             >
               {ctaLoading ? "Opening checkout…" : body.cta_copy || "Check your payslip — $10"}
-            </button>
+            </Button>
           </div>
           <p
             data-reveal
-            style={{ fontSize: 14, color: "hsl(var(--muted-foreground))", marginTop: 14 }}
+            
           >
             One-time payment. Unlimited checks for 12 months.
           </p>

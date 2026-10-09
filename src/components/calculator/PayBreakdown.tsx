@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { DollarSign, Clock, TrendingUp, Gift } from "lucide-react";
 import { type ShiftData } from "@/lib/payCalculator";
@@ -11,14 +10,14 @@ interface PayBreakdownProps {
 export const PayBreakdown = ({ breakdown, shiftData }: PayBreakdownProps) => {
   if (!breakdown || !shiftData) {
     return (
-      <Card className="bg-card border-border ">
-        <CardContent className="py-16 text-center">
+      <section className="checker-form border-t border-rule py-6">
+        <div className="py-16 text-center">
           <DollarSign className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground">
             Enter your shift details to see your pay breakdown
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     );
   }
 
@@ -53,14 +52,14 @@ export const PayBreakdown = ({ breakdown, shiftData }: PayBreakdownProps) => {
   ];
 
   return (
-    <Card className="bg-card border-border ">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <section className="checker-form border-t border-rule py-6">
+      <header>
+        <h2 className="flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-success" />
           Pay Breakdown
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </h2>
+      </header>
+      <div className="space-y-4">
         {items.map((item, index) => {
           const Icon = item.icon;
           return (
@@ -69,14 +68,14 @@ export const PayBreakdown = ({ breakdown, shiftData }: PayBreakdownProps) => {
                 <div className="flex items-center gap-2">
                   <Icon
                     className={`h-4 w-4 ${
-                      item.highlight ? "text-accent" : "text-muted-foreground"
+                      item.highlight ? "text-primary" : "text-muted-foreground"
                     }`}
                   />
                   <span className="font-medium">{item.label}</span>
                 </div>
                 <span
-                  className={`font-semibold ${
-                    item.highlight ? "text-accent" : ""
+                  className={`font-mono tabular-nums text-right font-medium ${
+                    item.highlight ? "text-primary" : ""
                   }`}
                 >
                   ${item.value.toFixed(2)}
@@ -92,20 +91,19 @@ export const PayBreakdown = ({ breakdown, shiftData }: PayBreakdownProps) => {
 
         <Separator className="my-4" />
 
-        <div className="bg-primary rounded-lg p-4">
+        <div className="border-t-2 border-foreground pt-6">
           <div className="flex items-center justify-between">
-            <span className="text-lg font-semibold text-primary-foreground">
+            <span className="text-lg font-semibold text-foreground">
               Total Pay
             </span>
-            <span className="text-2xl font-semibold text-primary-foreground">
-              ${breakdown.total.toFixed(2)}
+            <span className="font-mono tabular-nums text-2xl font-semibold text-foreground">${breakdown.total.toFixed(2)}
             </span>
           </div>
-          <p className="text-sm text-primary-foreground/80 mt-2">
+          <p className="text-sm text-ink-3 mt-2">
             Total hours worked: {breakdown.totalHours.toFixed(2)}
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

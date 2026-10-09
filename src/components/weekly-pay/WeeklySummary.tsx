@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, DollarSign, AlertCircle, ExternalLink } from "lucide-react";
 
@@ -11,23 +10,23 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
   const isUnderpaid = totalUnderpayment > 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <section className="checker-form border-t border-rule py-6">
+      <header>
+        <h2 className="flex items-center gap-2">
           <DollarSign className="w-5 h-5" />
           Weekly Summary
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </h2>
+      </header>
+      <div className="space-y-4">
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Total award pay</span>
-            <span className="text-xl font-semibold">${calculation.totalShouldEarn.toFixed(2)}</span>
+            <span className="font-mono tabular-nums text-xl font-semibold">${calculation.totalShouldEarn.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Total you were paid</span>
-            <span className="text-xl font-semibold">${calculation.totalActualPaid.toFixed(2)}</span>
+            <span className="font-mono tabular-nums text-xl font-semibold">${calculation.totalActualPaid.toFixed(2)}</span>
           </div>
 
           <div className="border-t pt-3">
@@ -39,7 +38,7 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
                 ) : (
                   <TrendingDown className="w-5 h-5 text-ink-2" />
                 )}
-                <span className={`text-2xl font-semibold ${isUnderpaid ? 'text-clay' : 'text-ink-2'}`}>
+                <span className={`font-mono tabular-nums text-2xl font-medium ${isUnderpaid ? 'text-clay' : 'text-ink-2'}`}>
                   {isUnderpaid ? '+' : ''}${totalUnderpayment.toFixed(2)}
                 </span>
               </div>
@@ -48,8 +47,8 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
 
           {isUnderpaid && totalUnderpayment > 0 && (
             <>
-              <div className="bg-primary-soft border border-rule-strong rounded-md p-4 mt-4">
-                <p className="text-sm text-primary font-medium mb-3">
+              <div className="border-t border-rule py-4 mt-4">
+                <p className="text-sm text-clay font-medium mb-3">
                   You may be owed ${totalUnderpayment.toFixed(2)} this week!
                 </p>
                 
@@ -77,7 +76,7 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
           )}
 
           {!isUnderpaid && totalUnderpayment < -10 && (
-            <div className="bg-primary-soft border border-rule-strong rounded-md p-4 mt-4">
+            <div className="border-t border-rule py-4 mt-4">
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-ink-2 flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
@@ -92,7 +91,7 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

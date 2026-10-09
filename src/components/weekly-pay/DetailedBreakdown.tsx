@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Calculator } from "lucide-react";
 
@@ -57,14 +56,14 @@ export const DetailedBreakdown = ({
   };
 
   return (
-    <Card className="col-span-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <section className="checker-form border-t border-rule py-6">
+      <header>
+        <h2 className="flex items-center gap-2">
           <Calculator className="w-5 h-5" />
           Detailed Calculation Breakdown
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </h2>
+      </header>
+      <div className="space-y-6">
         {calculation.shifts.map((calc: any, idx: number) => {
           const shift = shifts.find(s => s.id === calc.id);
           if (!shift || shift.actualPaid === 0) return null;
@@ -112,7 +111,7 @@ export const DetailedBreakdown = ({
             : 0;
 
           return (
-            <div key={calc.id} className="border rounded-lg p-4 space-y-3">
+            <div key={calc.id} className="border-t-2 border-foreground py-6 space-y-3">
               <div className="flex justify-between items-center">
                 <h3 className="font-semibold text-lg">{shift.dayOfWeek}</h3>
                 <span className="text-sm text-muted-foreground">
@@ -125,7 +124,7 @@ export const DetailedBreakdown = ({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Base Rate:</span>
-                  <span className="font-medium">${baseRate.toFixed(2)}/hr</span>
+                  <span className="font-mono tabular-nums font-medium">${baseRate.toFixed(2)}/hr</span>
                 </div>
 
                 {penaltyMultiplier !== 1 && (
@@ -137,27 +136,27 @@ export const DetailedBreakdown = ({
 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Regular Hours ({regularHours.toFixed(2)}h):</span>
-                  <span className="font-medium">${basePay.toFixed(2)}</span>
+                  <span className="font-mono tabular-nums font-medium">${basePay.toFixed(2)}</span>
                 </div>
 
                 {overtimeHours > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Overtime Hours ({overtimeHours.toFixed(2)}h at {(overtimeMultiplier * 100).toFixed(0)}%):</span>
-                    <span className="font-medium">${overtimePay.toFixed(2)}</span>
+                    <span className="font-mono tabular-nums font-medium">${overtimePay.toFixed(2)}</span>
                   </div>
                 )}
 
                 {mealAllowanceAmount > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Meal Allowance:</span>
-                    <span className="font-medium">${mealAllowanceAmount.toFixed(2)}</span>
+                    <span className="font-mono tabular-nums font-medium">${mealAllowanceAmount.toFixed(2)}</span>
                   </div>
                 )}
 
                 {travelAllowanceAmount > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Travel Allowance:</span>
-                    <span className="font-medium">${travelAllowanceAmount.toFixed(2)}</span>
+                    <span className="font-mono tabular-nums font-medium">${travelAllowanceAmount.toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -167,15 +166,15 @@ export const DetailedBreakdown = ({
               <div className="grid grid-cols-3 gap-4 pt-2">
                 <div>
                   <p className="text-[13px] text-muted-foreground mb-1">Should Earn</p>
-                  <p className="text-lg font-semibold">${calc.shouldEarn.toFixed(2)}</p>
+                  <p className="font-mono tabular-nums text-lg font-semibold">${calc.shouldEarn.toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-[13px] text-muted-foreground mb-1">Actually Paid</p>
-                  <p className="text-lg font-semibold">${shift.actualPaid.toFixed(2)}</p>
+                  <p className="font-mono tabular-nums text-lg font-semibold">${shift.actualPaid.toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-[13px] text-muted-foreground mb-1">Difference</p>
-                  <p className={`text-lg font-semibold ${calc.difference > 0 ? 'text-primary' : calc.difference < 0 ? 'text-destructive' : ''}`}>
+                  <p className={`text-lg font-semibold ${calc.difference > 0 ? 'text-clay' : calc.difference < 0 ? 'text-primary' : ''}`}>
                     {calc.difference >= 0 ? '+' : ''}${calc.difference.toFixed(2)}
                   </p>
                 </div>
@@ -183,7 +182,7 @@ export const DetailedBreakdown = ({
             </div>
           );
         })}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

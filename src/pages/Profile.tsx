@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { NavBar } from "@/components/NavBar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, Loader2, Shield } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -50,7 +49,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="checker-page checker-form">
         <div className="flex items-center gap-3 mb-8">
           <h1 className="text-3xl font-semibold">Profile</h1>
           {isAdmin && (
@@ -62,15 +61,15 @@ const Profile = () => {
         </div>
 
         {/* Account Info */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <section className="border-t-2 border-foreground pt-6">
+          <header className="checker-heading">
+            <h2 className="flex items-center gap-2">
               <User className="h-5 w-5" />
               Account Information
-            </CardTitle>
-            <CardDescription>Your account details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h2>
+            <p>Your account details</p>
+          </header>
+          <div className="space-y-4 divide-y divide-rule [&>div]:py-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground">Email</label>
               <p className="text-foreground">{user?.email}</p>
@@ -93,8 +92,8 @@ const Profile = () => {
                 <p className="text-foreground">{profile.classification_name}</p>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     </div>
   );

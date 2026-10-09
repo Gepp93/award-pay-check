@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { NavBar } from "@/components/NavBar";
 import { PublicNavBar } from "@/components/PublicNavBar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle } from "lucide-react";
 
@@ -103,14 +102,14 @@ export default function PaymentComplete() {
   return (
     <>
       {user ? <NavBar /> : <PublicNavBar />}
-      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-14 h-14 rounded-md bg-primary-soft flex items-center justify-center mb-3">
+      <div className="checker-page flex items-center justify-center">
+        <section className="w-full max-w-[560px] text-center">
+          <header className="text-center">
+            <div className="mx-auto flex items-center justify-center mb-3">
               <CheckCircle className="h-7 w-7 text-primary" />
             </div>
-            <CardTitle>Payment received</CardTitle>
-            <CardDescription>
+            <h1 className="text-[28px] leading-[34px] mb-4">Payment received</h1>
+            <p className="text-ink-2 mb-6">
               {phase === "timeout"
                 ? subscriptionId
                   ? "Your 12-month pass is ready — create your account to start using it."
@@ -118,9 +117,9 @@ export default function PaymentComplete() {
                 : subscriptionId
                 ? "Activating your 12-month pass…"
                 : "Unlocking your full report…"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </p>
+          </header>
+          <div className="space-y-4">
             {phase !== "timeout" ? (
               <div className="flex justify-center py-4">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -149,8 +148,8 @@ export default function PaymentComplete() {
                 </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     </>
   );

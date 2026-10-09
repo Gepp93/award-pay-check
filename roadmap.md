@@ -1,3 +1,8 @@
+# Phase 4 remaining pages
+- [x] Apply shared Ledger presentation without changing behaviour.
+- [x] Restrict debug classifications route to development only.
+- [x] Verify all routes at 1280px and 390px with stubbed requests and check build diagnostics.
+
 # Phase 3 checker and reports
 - [x] Apply Ledger checker, choice-list, result and report presentation; preserve all behaviour.
 - [x] Verify upload through both result states at 1280px and 390px using only stubbed network; confirm no overflow, email/unlock controls, PDF downloads and passing build diagnostics.

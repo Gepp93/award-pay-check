@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check } from "lucide-react";
@@ -51,10 +52,8 @@ function CountUp({ to, duration = 1200 }: { to: number; duration?: number }) {
 }
 
 const bullet = "flex items-start gap-2";
-const checkIcon = <Check className="h-4 w-4 mt-1 shrink-0" style={{ color: "hsl(var(--primary))" }} />;
+const checkIcon = <Check className="h-4 w-4 mt-1 shrink-0"  />;
 const ulCls = "list-none pl-0 text-left space-y-2 mt-4";
-const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))" } as const;
-const h2Style = { fontSize: 28 } as const;
 
 const WhyAwardPay = () => {
   const navigate = useNavigate();
@@ -75,7 +74,7 @@ const WhyAwardPay = () => {
   ];
 
   return (
-    <div>
+    <div className="ap-marketing">
       <SEO
         title="Why AwardPay — know exactly what you're owed"
         description="Modern Awards are complex. AwardPay reads your payslip and checks it against official Fair Work rates, so you know exactly what you're owed."
@@ -84,25 +83,25 @@ const WhyAwardPay = () => {
 
       <ApNav />
 
-      <section className="ap-wrap ap-section" style={{ paddingBottom: 28 }}>
-        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
           <div className="ap-eyebrow" data-reveal>Why AwardPay</div>
-          <h1 className="ap-h1 text-center" data-reveal>
-            Why AwardPay <span className="ap-hl">exists</span>
+          <h1 className="ap-h1" data-reveal>
+            Why AwardPay <span className="">exists</span>
           </h1>
-          <p className="ap-lede text-center" data-reveal style={{ marginBottom: 0, maxWidth: "none" }}>
+          <p className="ap-lede" data-reveal >
             Working out your correct pay under a Modern Award shouldn't take a law degree.
             We make it simple — so you know exactly what you're owed.
           </p>
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
-        <div className="mx-auto" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={h2Style}>The problem</h2>
-          <ul className={ulCls} style={ulStyle}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal>The problem</h2>
+          <ul className={ulCls}>
             {problems.map((t, i) => (
-              <li key={i} className={bullet} data-reveal style={{ transitionDelay: `${i * 80}ms` }}>
+              <li key={i} className={bullet} data-reveal >
                 {checkIcon}<span>{t}</span>
               </li>
             ))}
@@ -111,33 +110,23 @@ const WhyAwardPay = () => {
       </section>
 
       {/* Focal stat — TODO: replace with cited source before publishing */}
-      <section className="ap-wrap" style={{ paddingTop: 32, paddingBottom: 32 }}>
-        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
-          <div
-            data-reveal
-            style={{
-              fontFamily: "IBM Plex Mono, monospace",
-              fontWeight: 600,
-              fontSize: 96,
-              lineHeight: 1,
-              color: "hsl(var(--foreground))",
-              letterSpacing: "0",
-            }}
-          >
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <div className="ap-home-price" data-reveal>
             <CountUp to={1542} />
           </div>
-          <div data-reveal style={{ marginTop: 12, fontSize: 15, color: "hsl(var(--muted-foreground))" }}>
+          <div data-reveal >
             lost by the average underpaid worker each year
           </div>
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
-        <div className="mx-auto" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={h2Style}>What AwardPay does</h2>
-          <ul className={ulCls} style={ulStyle}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal>What AwardPay does</h2>
+          <ul className={ulCls}>
             {does.map((t, i) => (
-              <li key={i} className={bullet} data-reveal style={{ transitionDelay: `${i * 80}ms` }}>
+              <li key={i} className={bullet} data-reveal >
                 {checkIcon}<span>{t}</span>
               </li>
             ))}
@@ -145,33 +134,33 @@ const WhyAwardPay = () => {
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 24 }}>
-        <div className="mx-auto" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={h2Style}>Where our data comes from</h2>
-          <p className="text-center" data-reveal style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))", margin: 0 }}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal>Where our data comes from</h2>
+          <p className="text-left" data-reveal >
             Built on the Fair Work Commission's official Modern Award data, updated as rates change.
             AwardPay is an interpretation tool, not legal advice.
           </p>
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 24, paddingBottom: 56 }}>
-        <div className="mx-auto" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={h2Style}>Who it's for</h2>
-          <p className="text-center" data-reveal style={{ fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))", margin: 0 }}>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal>Who it's for</h2>
+          <p className="text-left" data-reveal >
             Any role under a Modern Award — retail, hospitality, construction, health, trades,
             cleaning, support work and more.
           </p>
         </div>
       </section>
 
-      <section className="ap-wrap" style={{ paddingTop: 40, paddingBottom: 80 }}>
-        <div className="mx-auto text-center" style={{ maxWidth: 760 }}>
-          <h2 className="ap-h2 text-center" data-reveal style={{ marginBottom: 18 }}>See what you're owed</h2>
+      <section className="ap-wrap ap-home-section" >
+        <div className="mx-auto" >
+          <h2 className="ap-h2" data-reveal >See what you're owed</h2>
           <div data-reveal>
-            <button className="ap-btn ap-btn-primary ap-btn-lg" onClick={start}>
+            <Button className="ap-btn ap-btn-primary ap-btn-lg" onClick={start}>
               Check my payslip — free
-            </button>
+            </Button>
           </div>
         </div>
       </section>

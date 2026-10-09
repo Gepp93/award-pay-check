@@ -8,9 +8,9 @@ export const PublicNavBar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border/50">
-      <div className="container mx-auto px-6">
-        <div className="flex justify-between items-center h-20">
+    <header className="ap-nav">
+      <div className="ap-wrap">
+        <div className="flex justify-between items-center h-16">
           <div 
             onClick={() => navigate("/")}
             className="flex items-center gap-2 font-semibold text-xl cursor-pointer"
@@ -20,21 +20,21 @@ export const PublicNavBar = () => {
           </div>
           
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8">
-            <a href="/why-awardpay" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Why AwardPay</a>
-            <a href="/how-it-works" className="text-foreground/70 hover:text-foreground transition-colors font-medium">How It Works</a>
-            <a href="/pricing" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Pricing</a>
-            <a href="/contact" className="text-foreground/70 hover:text-foreground transition-colors font-medium">Contact</a>
+          <nav className="hidden md:flex items-center gap-4">
+            <a href="/why-awardpay" className="text-ink-2 hover:text-foreground transition-colors font-medium">Why AwardPay</a>
+            <a href="/how-it-works" className="text-ink-2 hover:text-foreground transition-colors font-medium">How It Works</a>
+            <a href="/pricing" className="text-ink-2 hover:text-foreground transition-colors font-medium">Pricing</a>
+            <a href="/contact" className="text-ink-2 hover:text-foreground transition-colors font-medium">Contact</a>
             <Button
-              variant="ghost"
+              variant="link"
               onClick={() => navigate("/auth")}
-              className="text-foreground/70 hover:text-foreground"
+              className="text-ink-2 hover:text-foreground"
             >
               Sign In
             </Button>
             <Button
               onClick={() => navigate("/auth")}
-              className="bg-primary text-primary-foreground hover:opacity-90 px-6"
+              size="sm"
             >
               Get Started
             </Button>
@@ -44,7 +44,7 @@ export const PublicNavBar = () => {
           <div className="md:hidden">
             <Button
               variant="ghost"
-              size="icon"
+              size="icon" aria-label={mobileMenuOpen ? "Close menu" : "Open menu"} aria-expanded={mobileMenuOpen}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -58,28 +58,28 @@ export const PublicNavBar = () => {
             <nav className="flex flex-col gap-2">
               <a 
                 href="/why-awardpay" 
-                className="px-4 py-2 text-foreground/70 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                className="min-h-14 flex items-center px-4 py-2 text-ink-2 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Why AwardPay
               </a>
               <a 
                 href="/how-it-works" 
-                className="px-4 py-2 text-foreground/70 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                className="min-h-14 flex items-center px-4 py-2 text-ink-2 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 How It Works
               </a>
               <a 
                 href="/pricing" 
-                className="px-4 py-2 text-foreground/70 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                className="min-h-14 flex items-center px-4 py-2 text-ink-2 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Pricing
               </a>
               <a 
                 href="/contact" 
-                className="px-4 py-2 text-foreground/70 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
+                className="min-h-14 flex items-center px-4 py-2 text-ink-2 hover:text-foreground hover:bg-secondary/50 rounded-lg transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Contact

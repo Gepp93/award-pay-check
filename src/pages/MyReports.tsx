@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { NavBar } from "@/components/NavBar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, FileText, ChevronRight } from "lucide-react";
@@ -72,67 +71,39 @@ export default function MyReports() {
   return (
     <>
       <NavBar />
-      <div className="min-h-screen bg-background p-4 pt-8">
-        <div className="container mx-auto max-w-3xl">
-          <div className="mb-6">
-            <h1 className="text-3xl font-semibold">My Reports</h1>
-            <p className="text-muted-foreground mt-1">
-              All your pay checks in one place — paid reports stay unlocked here.
-            </p>
-          </div>
-
-          {rows.length === 0 ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>No reports yet</CardTitle>
-                <CardDescription>
-                  Run a free check to get started — it takes about a minute.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={() => navigate("/check")}>Start a free pay check</Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="rounded-lg border border-border bg-card divide-y divide-border">
-              {rows.map((r) => {
-                const paid = r.payment_status === "paid";
-                return (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => navigate(`/report/${r.id}`)}
-                    className="w-full flex items-center gap-4 px-4 py-4 hover:bg-secondary/40 text-left transition-colors"
-                  >
-                    <FileText className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-foreground">
-                          {formatHeadline(r)}
-                        </span>
-                        {paid ? (
-                          <Badge className="bg-primary hover:bg-primary text-primary-foreground">Paid</Badge>
-                        ) : (
-                          <Badge variant="secondary">Locked</Badge>
-                        )}
-                      </div>
-                      <div className="text-sm text-muted-foreground mt-0.5">
-                        {new Date(r.created_at).toLocaleDateString("en-AU", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </div>
-                    </div>
-                    <span className="text-sm text-muted-foreground hidden sm:inline">Open</span>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                );
-              })}
-            </div>
-          )}
+      <main className="checker-page">
+        <header className="checker-heading">
+          <div className="ledger-label">Your pay checks</div>
+          <h1>My Reports</h1>
+          <p>All your pay checks in one place — paid reports stay unlocked here.</p>
+        </header>
+        <div className="ap-final border-t border-rule py-6 mb-6">
+          <p className="text-ink-2">Paid reports stay unlocked.</p>
+          <Button onClick={() => navigate("/check")}>Check a payslip</Button>
         </div>
-      </div>
+        {rows.length === 0 ? (
+          <div className="space-y-5 border-t border-rule pt-6">
+            <p>No reports yet — run a free check to get started.</p>
+            <Button onClick={() => navigate("/check")}>Start a free pay check</Button>
+          </div>
+        ) : (
+          <table className="ledger-table ledger-mobile-rows">
+            <thead><tr><th>Period</th><th>Award</th><th>Result</th><th>Amount</th><th>Action</th></tr></thead>
+            <tbody>{rows.map((r) => {
+              const paid = r.payment_status === "paid";
+              return (
+                <tr key={r.id}>
+                  <td data-label="Period" className="font-mono text-[13px]">{new Date(r.created_at).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}</td>
+                  <td data-label="Award">{r.result?.awardName || r.result?.award_name || "—"}</td>
+                  <td data-label="Result"><Badge variant={paid ? "default" : "secondary"}>{paid ? "Paid" : "Locked"}</Badge></td>
+                  <td data-label="Amount" className={`font-mono text-right ${Number(r.owed_amount) > 0 || Number(r.result?.overallMinUnderpayment) > 0 ? "text-clay" : "text-primary"}`}>{formatHeadline(r)}</td>
+                  <td data-label="Action" className="text-right"><Button variant="link" onClick={() => navigate(`/report/${r.id}`)}>Open <ChevronRight className="h-4 w-4" /></Button></td>
+                </tr>
+              );
+            })}</tbody>
+          </table>
+        )}
+      </main>
     </>
   );
 }

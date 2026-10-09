@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,8 +19,8 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 
 export const ShiftEntryRow = ({ shift, onUpdate, onRemove, calculation, allowances }: ShiftEntryRowProps) => {
   return (
-    <Card>
-      <CardContent className="pt-6">
+    <section className="checker-form border-t border-rule py-6">
+      <div className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <Label>Day</Label>
@@ -154,24 +153,24 @@ export const ShiftEntryRow = ({ shift, onUpdate, onRemove, calculation, allowanc
         </div>
 
         {calculation && (
-          <div className="mt-4 pt-4 border-t grid grid-cols-3 gap-4 text-sm">
+          <div className="mt-4 pt-4 border-t grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">Should earn</p>
-              <p className="font-semibold text-lg">${calculation.shouldEarn.toFixed(2)}</p>
+              <p className="font-mono tabular-nums font-semibold text-lg">${calculation.shouldEarn.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">You were paid</p>
-              <p className="font-semibold text-lg">${shift.actualPaid.toFixed(2)}</p>
+              <p className="font-mono tabular-nums font-semibold text-lg">${shift.actualPaid.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Difference</p>
-              <p className={`font-semibold text-lg ${calculation.difference > 0 ? 'text-primary' : 'text-destructive'}`}>
+              <p className={`font-semibold text-lg ${calculation.difference > 0 ? 'text-clay' : 'text-primary'}`}>
                 {calculation.difference >= 0 ? '+' : ''}${calculation.difference.toFixed(2)}
               </p>
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };
