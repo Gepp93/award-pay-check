@@ -71,7 +71,7 @@ const HowItWorks = () => {
                 <span
                   className="num shrink-0"
                   
-                >{i + 1}</span>
+                >{String(i + 1).padStart(2, "0")}</span>
                 <div><div className="ap-step-snippet">{i === 0 ? <Camera size={24} /> : i === 1 ? <Scale size={24} /> : <DollarSign size={24} />}</div><h3>{t}</h3></div>
               </li>
             ))}

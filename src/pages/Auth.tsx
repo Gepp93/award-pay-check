@@ -92,16 +92,16 @@ const Auth = () => {
       <header className="ap-nav">
         <div className="ap-wrap">
           <div className="flex justify-between items-center h-16">
-            <div 
+            <Button variant="ghost" size="sm"
               onClick={() => navigate("/")}
-              className="flex items-center gap-2 font-semibold text-xl cursor-pointer"
+              className="flex items-center gap-2 font-semibold text-xl cursor-pointer px-0"
             >
               <span className="ap-mark" />
               <span className="text-foreground">AwardPay</span>
-            </div>
+            </Button>
             
             <Button
-              variant="ghost"
+              variant="ghost" size="sm"
               onClick={() => navigate("/")}
               className="text-foreground/70 hover:text-foreground"
             >
@@ -112,10 +112,10 @@ const Auth = () => {
       </header>
 
       {/* Auth Card */}
-      <div className="checker-page flex items-center justify-center">
+      <div className="checker-page flex items-start justify-center">
         <section className="w-full max-w-[400px] checker-form">
         <header className="checker-heading">
-          <h1 className="text-[28px] leading-[34px]">
+          <h1 className="!text-[28px] !leading-[34px]">
             {isLogin ? "Welcome back" : "Create account"}
           </h1>
           <p>

@@ -1,3 +1,8 @@
+# Phase 5 final QA
+- [x] Sweep remaining styles, reveal safety, consistency and accessibility.
+- [x] Recheck every route and report print output with stubbed requests at 1280px/390px.
+- [x] Record before/after counts and final build diagnostics.
+
 # Phase 4 remaining pages
 - [x] Apply shared Ledger presentation without changing behaviour.
 - [x] Restrict debug classifications route to development only.

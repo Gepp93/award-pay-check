@@ -327,7 +327,7 @@ export default function NewCheck_Step1_WhoAreYou() {
                     <Label className="text-base font-medium">Select your Award</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="touch-manipulation p-1">
+                        <Button variant="ghost" size="icon" aria-label="About award selection" className="touch-manipulation p-1">
                           <HelpCircle className="w-5 h-5 md:w-4 md:h-4 text-muted-foreground" />
                         </Button>
                       </TooltipTrigger>
@@ -478,7 +478,7 @@ export default function NewCheck_Step1_WhoAreYou() {
                     <Label className="text-base font-medium">Employment Type</Label>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="touch-manipulation p-1">
+                        <Button variant="ghost" size="icon" aria-label="About employment types" className="touch-manipulation p-1">
                           <HelpCircle className="w-5 h-5 md:w-4 md:h-4 text-muted-foreground" />
                         </Button>
                       </TooltipTrigger>
@@ -551,7 +551,7 @@ export default function NewCheck_Step1_WhoAreYou() {
         <div className="checker-actions md:hidden">
           <Button 
             onClick={handleNext} 
-            className="w-full h-14 text-base font-semibold " 
+            className="w-full h-12 text-base font-semibold " 
             size="lg"
             disabled={!canProceed}
           >

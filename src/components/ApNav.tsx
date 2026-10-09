@@ -11,13 +11,13 @@ export const ApNav = () => {
   return (
     <header className="ap-nav">
       <div className="ap-nav-row">
-        <div className="ap-brand" onClick={() => go("/")}>
+        <Button variant="ghost" className="ap-brand" onClick={() => go("/")}>
           <span className="ap-mark" />
           AwardPay
-        </div>
+        </Button>
         <nav className="ap-links">
-          <a onClick={() => go("/how-it-works")} style={{ cursor: "pointer" }}>How it works</a>
-          <a onClick={() => go("/pricing")} style={{ cursor: "pointer" }}>Pricing</a>
+          <a href="/how-it-works" onClick={(event) => { event.preventDefault(); go("/how-it-works"); }}>How it works</a>
+          <a href="/pricing" onClick={(event) => { event.preventDefault(); go("/pricing"); }}>Pricing</a>
         </nav>
         <div className="ap-nav-cta">
           <a className="ap-sign-in" href="/auth" onClick={(event) => { event.preventDefault(); go("/auth"); }}>Sign in</a>
@@ -38,11 +38,11 @@ export const ApNav = () => {
           <Button onClick={() => go("/check")}>
             Check my payslip
           </Button>
-          <a onClick={() => go("/why-awardpay")}>Why AwardPay</a>
-          <a onClick={() => go("/how-it-works")}>How it works</a>
-          <a onClick={() => go("/pricing")}>Pricing</a>
-          <a onClick={() => go("/contact")}>Contact</a>
-          <a onClick={() => go("/auth")}>Sign in</a>
+          <a href="/why-awardpay" onClick={(event) => { event.preventDefault(); go("/why-awardpay"); }}>Why AwardPay</a>
+          <a href="/how-it-works" onClick={(event) => { event.preventDefault(); go("/how-it-works"); }}>How it works</a>
+          <a href="/pricing" onClick={(event) => { event.preventDefault(); go("/pricing"); }}>Pricing</a>
+          <a href="/contact" onClick={(event) => { event.preventDefault(); go("/contact"); }}>Contact</a>
+          <a href="/auth" onClick={(event) => { event.preventDefault(); go("/auth"); }}>Sign in</a>
         </div>
       )}
     </header>

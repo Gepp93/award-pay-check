@@ -136,20 +136,20 @@ export default function Report() {
     return (
       <>
         {user ? <NavBar /> : <PublicNavBar />}
-        <div className="min-h-screen flex items-center justify-center p-4 pt-24">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Report not available</CardTitle>
-              <CardDescription>
+        <div className="checker-page flex justify-center">
+          <section className="w-full max-w-[560px] checker-heading">
+            <header>
+              <h1>Report not available</h1>
+              <p>
                 This report doesn't exist or you don't have access to it.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </p>
+            </header>
+            <div>
               <Button onClick={() => navigate("/new-check-step-1")} className="w-full">
                 Start a new pay check
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </div>
       </>
     );
