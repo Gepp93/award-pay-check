@@ -551,7 +551,7 @@ export default function NewCheck_Step1_WhoAreYou() {
         <div className="checker-actions md:hidden">
           <Button 
             onClick={handleNext} 
-            className="w-full h-14 text-base font-semibold " 
+            className="w-full h-12 text-base font-semibold " 
             size="lg"
             disabled={!canProceed}
           >

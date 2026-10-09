@@ -374,3 +374,6 @@
 @media print { [data-reveal] { opacity: 1 !important; transform: none !important; } }
 
 @media print { body { color: hsl(var(--print-ink)); background: hsl(var(--card)); } .checker-heading { color: hsl(var(--print-ink)); } }
+
+.checker-actions.hidden { display: none; }
+@media (min-width: 768px) { .checker-actions.md\:hidden { display: none; } .checker-actions.hidden.md\:flex { display: flex; } }
