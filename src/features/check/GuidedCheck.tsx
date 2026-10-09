@@ -161,7 +161,7 @@ export default function GuidedCheck() {
     try {
       const state = await calculateAnswers(a, setStage);
       await new Promise(resolve => setTimeout(resolve, Math.max(0, 2500 - (Date.now() - start))));
-      resultMade.current = true; localStorage.removeItem(SAVE_KEY); setResultState(state); go("result");
+      resultMade.current = true; try { localStorage.removeItem(SAVE_KEY); } catch { /* Storage must not prevent results. */ } setResultState(state); go("result");
     } catch (e) { go("review"); setError(e instanceof Error ? e.message : "Your answers are saved. Please try again."); }
   }
 

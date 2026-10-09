@@ -34,7 +34,7 @@ export async function calculateAnswers(a: Answers, stage: (value: number) => voi
       paidAllowances: a.allowances.some(x => x.received) ? "yes" : "no",
       allowanceDetails: a.allowances.filter(x => x.received).map(x => `${x.type}: ${x.amount_per_period}`).join(", ") || null,
     };
-    const weekend = [0, 6].includes(new Date(`${shift.date}T12:00:00`).getDay());
+    const weekend = !a.usePayslipHours && [0, 6].includes(new Date(`${shift.date}T12:00:00`).getDay());
     // The existing engine subtracts clock hours directly. Represent next-day
     // finish hours above 24 without changing its input fields or rate math.
     const [startHour, startMinute] = shift.start.split(":").map(Number);
@@ -69,6 +69,7 @@ export async function calculateAnswers(a: Answers, stage: (value: number) => voi
       });
     }
     const complete = [...candidates.values()].filter(x => x.count === responses.length);
+    if (responses.length > 1 && !complete.length) throw new Error("We couldn't match the same levels across your shifts. Choose a classification or check one shift at a time.");
     result.overallMinUnderpayment = complete.length ? Math.min(...complete.map(x => x.possibleUnderpayment)) : sum("overallMinUnderpayment");
     result.overallMaxUnderpayment = complete.length ? Math.max(...complete.map(x => x.possibleUnderpayment)) : sum("overallMaxUnderpayment");
     result.likelyClassifications = complete;
