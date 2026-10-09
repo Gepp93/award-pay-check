@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles DROP CONSTRAINT profiles_subscription_status_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_subscription_status_check CHECK (subscription_status = ANY (ARRAY['free','active','canceled','yearly','three_month']));
