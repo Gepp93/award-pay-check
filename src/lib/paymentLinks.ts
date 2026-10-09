@@ -18,7 +18,7 @@ export function buildCheckoutUrl(link: string, reportId: string, email?: string)
 }
 
 /**
- * Start a 12-month unlimited access subscription purchase.
+ * Start a pass purchase, retaining support for legacy yearly purchases.
  * Creates a pending row, stores its id in localStorage, and redirects to Stripe.
  */
 export async function startSubscriptionCheckout(

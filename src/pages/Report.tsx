@@ -261,8 +261,7 @@ export default function Report() {
                   </Button>
                 </div>
                 <p className="text-[13px] text-center text-muted-foreground">
-                  One-off $10 payment · no account needed · no subscription · refunded if the
-                  report is wrong
+                  One payment · no subscription · secure checkout by Stripe
                 </p></aside>
               </>
             )}

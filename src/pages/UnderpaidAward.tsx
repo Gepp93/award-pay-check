@@ -290,7 +290,7 @@ const UnderpaidAward = () => {
       <section className="ap-wrap ap-home-section" >
         <div className="mx-auto" >
           <h2 className="ap-h2" data-reveal >
-            {body.cta_copy || "Check your payslip for $10"}
+            {THREE_MONTH_PASS.name}
           </h2>
           <div data-reveal>
             <Button
@@ -298,14 +298,14 @@ const UnderpaidAward = () => {
               onClick={handleCta}
               disabled={ctaLoading}
             >
-              {ctaLoading ? "Opening checkout…" : body.cta_copy || "Check your payslip — $10"}
+              {ctaLoading ? "Opening checkout…" : `Get ${THREE_MONTH_PASS.name} — ${THREE_MONTH_PASS.priceLabel}`}
             </Button>
           </div>
           <p
             data-reveal
             
           >
-            One-time payment. Unlimited checks for 12 months.
+            One payment. Unlimited payslip checks for 90 days.
           </p>
         </div>
       </section>

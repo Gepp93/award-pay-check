@@ -47,14 +47,15 @@ export function useSubscription() {
             .eq("id", user.id)
             .maybeSingle(),
           supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
-          supabase.from("subscription_purchases").select("product,expires_at").eq("user_id", user.id).eq("status", "paid").gt("expires_at", new Date().toISOString()).order("expires_at", { ascending: false }).limit(1).maybeSingle(),
+          supabase.from("subscription_purchases").select("product,expires_at").eq("user_id", user.id).eq("status", "paid").order("expires_at", { ascending: false }).limit(1).maybeSingle(),
         ]);
 
-        const activePass = purchaseResult.data;
+        const purchase = purchaseResult.data;
+        const activePass = purchase?.expires_at && new Date(purchase.expires_at).getTime() > Date.now() ? purchase : null;
         const subscriptionStatus = activePass?.product === "three_month_pass" ? "three_month" : activePass?.product === "yearly_access" ? "yearly" : profileResult.data?.subscription_status || "free";
         const isAdmin = adminResult.data === true;
         
-        const hasActiveSubscription = Boolean(activePass) || ["active", "monthly", "3month"].includes(subscriptionStatus) || (subscriptionStatus === "yearly" && !purchaseResult.data && !["three_month"].includes(profileResult.data?.subscription_status || ""));
+        const hasActiveSubscription = Boolean(activePass) || ["active", "monthly", "3month"].includes(subscriptionStatus) || (subscriptionStatus === "yearly" && !purchase);
         const isPremium = isAdmin || hasActiveSubscription;
 
         if (isMounted) {

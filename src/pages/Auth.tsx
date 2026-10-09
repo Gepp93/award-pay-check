@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Calculator } from "lucide-react";
 
-const STRIPE_URL = "https://buy.stripe.com/6oUeVe0kk9Zn4XZ5Nz6AM04";
+import { startSubscriptionCheckout } from "@/lib/paymentLinks";
+import { THREE_MONTH_PASS } from "@/lib/plans";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -36,10 +37,13 @@ const Auth = () => {
     }
   }, [modeFromState]);
 
-  const handlePostAuthRedirect = () => {
+  const handlePostAuthRedirect = async () => {
     if (isCheckoutRedirect) {
       // Redirect to Stripe checkout for 3-month pass
-      window.location.href = STRIPE_URL;
+      const { data: { user } } = await supabase.auth.getUser();
+      const url = await startSubscriptionCheckout("three_month_pass", user?.email || email, user?.id);
+      if (url) window.location.href = url;
+      else toast.error("Could not start checkout — please try again.");
     } else if (redirectParam) {
       // Generic redirect, e.g. app-dashboard after a subscription purchase
       navigate(redirectParam);
@@ -122,7 +126,7 @@ const Auth = () => {
             {isCheckoutRedirect
               ? `Sign ${isLogin ? "in" : "up"} to complete your 3-month access pass`
               : redirectParam
-                ? `Sign ${isLogin ? "in" : "up"} to activate your 12-month pass`
+                ? `Sign ${isLogin ? "in" : "up"} to keep your ${THREE_MONTH_PASS.name}`
                 : returnTo
                   ? `Sign ${isLogin ? "in" : "up"} to see your pay check results`
                   : isLogin

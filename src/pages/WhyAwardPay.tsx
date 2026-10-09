@@ -159,7 +159,7 @@ const WhyAwardPay = () => {
           <h2 className="ap-h2" data-reveal >See what you're owed</h2>
           <div data-reveal>
             <Button className="ap-btn ap-btn-primary ap-btn-lg" onClick={start}>
-              Check my payslip — free
+              Check my payslip
             </Button>
           </div>
         </div>
