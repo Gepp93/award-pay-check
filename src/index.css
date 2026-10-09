@@ -289,6 +289,7 @@
 .checker-locked-detail { display: flex; align-items: center; gap: 5px; font-size: 13px; line-height: 20px; color: hsl(var(--ink-3)); flex-shrink: 0; }
 .checker-unlock { background: hsl(var(--card)); border: 1px solid hsl(var(--rule)); border-radius: 6px; padding: 24px; }
 .checker-unlock h2 { font-size: 22px; line-height: 28px; margin-bottom: 20px; }
+.checker-unlock button { white-space: normal; height: auto; min-height: 48px; padding-top: 10px; padding-bottom: 10px; line-height: 22px; }
 .checker-includes { margin: 0 0 24px; padding: 0; list-style: none; }
 .checker-includes li { display: flex; align-items: start; gap: 8px; margin-bottom: 14px; font-size: 14px; line-height: 22px; color: hsl(var(--ink-2)); }
 .checker-includes svg { margin-top: 3px; }

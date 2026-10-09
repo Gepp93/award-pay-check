@@ -269,6 +269,7 @@ export type Database = {
           expires_at: string | null
           id: string
           product: string
+          report_id: string | null
           status: string
           stripe_session_id: string | null
           updated_at: string
@@ -280,6 +281,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           product?: string
+          report_id?: string | null
           status?: string
           stripe_session_id?: string | null
           updated_at?: string
@@ -291,12 +293,21 @@ export type Database = {
           expires_at?: string | null
           id?: string
           product?: string
+          report_id?: string | null
           status?: string
           stripe_session_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscription_purchases_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_credits: {
         Row: {
@@ -339,6 +350,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_pass_purchase: {
+        Args: {
+          p_email: string
+          p_product: string
+          p_purchase_id: string
+          p_session_id: string
+        }
+        Returns: undefined
+      }
       get_subscription_status: {
         Args: { purchase_id: string }
         Returns: {
@@ -361,6 +381,19 @@ export type Database = {
           count: number
           retry_after: number
         }[]
+      }
+      resolve_pass_purchase: {
+        Args: { p_purchase_id?: string; p_session_id?: string }
+        Returns: {
+          expires_at: string
+          product: string
+          report_id: string
+          status: string
+        }[]
+      }
+      unlock_report_with_pass: {
+        Args: { p_report_id: string }
+        Returns: boolean
       }
     }
     Enums: {

@@ -1,9 +1,6 @@
 import { guardPublicFunction } from "../_shared/guard.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { z } from "npm:zod@3";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -11,31 +8,33 @@ Deno.serve(async (req) => {
   }
 
   // Abuse protection: origin allow-list + per-IP rate limit (vision calls cost money).
-  const blocked = await guardPublicFunction(req, { fn: "ai-parse-payslip", limit: 8, windowSeconds: 300 });
+  const blocked = await guardPublicFunction(req, { fn: "ai-parse-payslip", limit: 20, windowSeconds: 600 });
   if (blocked) return blocked;
 
   try {
     // `image` is a base64 data URL, e.g. "data:image/jpeg;base64,/9j/4AAQ..."
-    const { image } = await req.json();
-    if (!image || typeof image !== "string") {
+    const parsed = z.object({ image: z.string().max(4_000_000).regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/) }).safeParse(await req.json());
+    if (!parsed.success) {
       return new Response(JSON.stringify({ error: "No payslip image provided" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const { image } = parsed.data;
 
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY not configured");
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
+      signal: AbortSignal.timeout(22_000),
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        max_tokens: 900,
+        max_tokens: 1800,
         messages: [
           {
             role: "system",
@@ -69,6 +68,9 @@ Deno.serve(async (req) => {
                     description: 'Job title / classification exactly as shown, e.g. "Level 3 Retail Employee".',
                   },
                   employment_type: { type: "string", enum: ["Full-time", "Part-time", "Casual"] },
+                  pay_frequency: { type: "string", enum: ["weekly", "fortnightly", "monthly"], description: "Only the frequency printed on the payslip; omit if absent." },
+                  award_name_or_code: { type: "string", description: "Modern award name or code exactly as printed; never infer from role." },
+                  employee_age: { type: "number", description: "Employee age only when explicitly printed. Never infer from name, role or rate." },
                   pay_period_start: { type: "string", description: "YYYY-MM-DD" },
                   pay_period_end: { type: "string", description: "YYYY-MM-DD" },
                   ordinary_hours: { type: "number" },
@@ -89,6 +91,7 @@ Deno.serve(async (req) => {
                         hours: { type: "number" },
                         rate: { type: "number" },
                         amount: { type: "number" },
+                        type: { type: "string", enum: ["ordinary", "penalty", "overtime", "allowance", "other"] },
                       },
                       required: ["description"],
                     },
@@ -108,8 +111,12 @@ Deno.serve(async (req) => {
     });
 
     if (!response.ok) {
-      const t = await response.text();
-      throw new Error(`OpenAI error ${response.status}: ${t}`);
+      await response.text();
+      console.error("Payslip provider failure", { status: response.status });
+      return new Response(JSON.stringify({ error: "reader_unavailable" }), {
+        status: response.status === 429 ? 429 : 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const data = await response.json();
@@ -125,8 +132,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("ai-parse-payslip error:", err);
-    return new Response(JSON.stringify({ error: String((err as Error)?.message || err) }), {
+    console.error("ai-parse-payslip failure", { reason: err instanceof Error ? err.name : "unknown" });
+    return new Response(JSON.stringify({ error: "reader_unavailable" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

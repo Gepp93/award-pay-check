@@ -6,6 +6,7 @@ import { NavBar } from "@/components/NavBar";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle } from "lucide-react";
+import { THREE_MONTH_PASS } from "@/lib/plans";
 
 type Phase = "resolving" | "polling" | "timeout";
 
@@ -28,7 +29,24 @@ export default function PaymentComplete() {
       setPhase("resolving");
 
       // 1) Check if this is a subscription purchase.
-      const pendingSubId = localStorage.getItem("pendingSubscriptionId");
+      let pendingSubId = localStorage.getItem("pendingSubscriptionId");
+      if (!pendingSubId && sessionId) {
+        const started = Date.now();
+        while (!cancelledRef.current && Date.now() - started < 20_000) {
+          const { data: resolved } = await supabase.rpc("resolve_pass_purchase", { p_session_id: sessionId }).maybeSingle();
+          if (resolved?.status === "paid") {
+            localStorage.removeItem("pendingReportId");
+            if (resolved.report_id) navigate(`/report/${resolved.report_id}`);
+            else if (user) navigate("/app-dashboard");
+            else { setSubscriptionId(sessionId); setSubscriptionPaid(true); setPhase("timeout"); }
+            return;
+          }
+          // The legacy report fallback may resolve before a purchase row exists.
+          const { data: legacy } = await supabase.from("reports").select("id,payment_status").eq("stripe_session_id", sessionId).maybeSingle();
+          if (legacy?.payment_status === "paid") { navigate(`/report/${legacy.id}`); return; }
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      }
       if (pendingSubId) {
         setSubscriptionId(pendingSubId);
         setPhase("polling");
@@ -36,14 +54,18 @@ export default function PaymentComplete() {
         const started = Date.now();
         while (!cancelledRef.current && Date.now() - started < 20_000) {
           const { data, error } = await (supabase as any)
-            .rpc("get_subscription_status", { purchase_id: pendingSubId })
+            .rpc("resolve_pass_purchase", { p_purchase_id: pendingSubId })
             .maybeSingle();
           if (error) {
             console.error("get_subscription_status error:", error);
           } else if (data?.status === "paid") {
             setSubscriptionPaid(true);
             localStorage.removeItem("pendingSubscriptionId");
-            if (user) {
+            const linkedReport = data.report_id || localStorage.getItem("pendingReportId");
+            if (linkedReport) {
+              localStorage.removeItem("pendingReportId");
+              navigate(`/report/${linkedReport}`);
+            } else if (user) {
               navigate("/app-dashboard");
             } else {
               setPhase("timeout");
@@ -112,10 +134,10 @@ export default function PaymentComplete() {
             <p className="text-ink-2 mb-6">
               {phase === "timeout"
                 ? subscriptionId
-                  ? "Your 12-month pass is ready — create your account to start using it."
+                   ? subscriptionPaid ? "Your pass is ready — create your account to keep checking your pay." : "We're still confirming your payment. Refresh in a moment."
                   : "Your full report is unlocking now and will appear under My Reports in a moment."
                 : subscriptionId
-                ? "Activating your 12-month pass…"
+                 ? `Activating your ${THREE_MONTH_PASS.name}…`
                 : "Unlocking your full report…"}
             </p>
           </header>

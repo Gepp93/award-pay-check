@@ -11,7 +11,9 @@ import { LockedTeaser, ReportIncludes } from "@/components/report/LockedTeaser";
 import { NavBar } from "@/components/NavBar";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { useUserCredits } from "@/hooks/useUserCredits";
-import { FULL_REPORT_LINK, BACKPAY_LINK, buildCheckoutUrl } from "@/lib/paymentLinks";
+import { startSubscriptionCheckout } from "@/lib/paymentLinks";
+import { THREE_MONTH_PASS } from "@/lib/plans";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface ReportRow {
   id: string;
@@ -20,7 +22,7 @@ interface ReportRow {
   result: any;
   inputs: any;
   owed_amount: number;
-  product: "full_report" | "backpay_pack";
+  product: "full_report" | "backpay_pack" | "three_month_pass";
   payment_status: "free" | "paid";
   stripe_session_id: string | null;
   created_at: string;
@@ -37,6 +39,11 @@ export default function Report() {
   const { credits, refetch: refetchCredits } = useUserCredits();
   const [redeeming, setRedeeming] = useState(false);
   const [claiming, setClaiming] = useState(false);
+  const { isPremium } = useSubscription();
+  useEffect(() => {
+    if (!isPremium || !user || !row || row.payment_status === "paid" || row.user_id !== user.id) return;
+    supabase.rpc("unlock_report_with_pass", { p_report_id: row.id }).then(({ data }) => { if (data) void fetchReport(); });
+  }, [isPremium, user, row]);
   const autoLaunchedRef = useRef(false);
 
   const fetchReport = async () => {
@@ -102,9 +109,11 @@ export default function Report() {
       console.error("redeem-credit failed:", error, data);
       toast.error("Couldn't redeem credit — sending you to checkout.");
     }
-    const link = product === "full_report" ? FULL_REPORT_LINK : BACKPAY_LINK;
+    setRedeeming(true);
     localStorage.setItem("pendingReportId", id);
-    window.location.href = buildCheckoutUrl(link, id, row?.email || user?.email || undefined);
+    const checkout = await startSubscriptionCheckout("three_month_pass", row?.email || user?.email || undefined, user?.id, id);
+    if (checkout) window.location.href = checkout;
+    else { setRedeeming(false); toast.error("Couldn't start checkout — please try again."); }
   };
 
   // Auto-launch checkout if we arrived here straight after sign-up with a pending product.
@@ -220,7 +229,7 @@ export default function Report() {
                           })
                         }
                       >
-                        Create a free account
+                        Create an account
                       </Button>
                     )}
                   </div>
@@ -235,7 +244,8 @@ export default function Report() {
                     credit{credits === 1 ? "" : "s"} left from your Back-Pay Pack.
                   </div>
                 )}
-                <aside className="checker-unlock"><h2>Get the full report</h2><ReportIncludes />
+                <aside className="checker-unlock"><h2>Get your full report</h2>
+                <p className="figure text-[32px] mb-4">{THREE_MONTH_PASS.priceLabel} · {THREE_MONTH_PASS.name}</p><ReportIncludes />
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     type="button"
@@ -247,12 +257,11 @@ export default function Report() {
                       ? "Unlocking…"
                       : user && credits > 0
                       ? `Unlock with 1 credit (${credits} left)`
-                      : "Unlock full report — $10"}
+                      : `Unlock with ${THREE_MONTH_PASS.name} — ${THREE_MONTH_PASS.priceLabel}`}
                   </Button>
                 </div>
                 <p className="text-[13px] text-center text-muted-foreground">
-                  One-off $10 payment · no account needed · no subscription · refunded if the
-                  report is wrong
+                  One payment · no subscription · secure checkout by Stripe
                 </p></aside>
               </>
             )}

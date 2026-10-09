@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { THREE_MONTH_PASS } from "@/lib/plans";
 
 // Stripe Payment Link URLs. Paste your Payment Links here.
 // Each link MUST be configured in Stripe to:
@@ -17,13 +18,14 @@ export function buildCheckoutUrl(link: string, reportId: string, email?: string)
 }
 
 /**
- * Start a 12-month unlimited access subscription purchase.
+ * Start a pass purchase, retaining support for legacy yearly purchases.
  * Creates a pending row, stores its id in localStorage, and redirects to Stripe.
  */
 export async function startSubscriptionCheckout(
-  product: "yearly_access" = "yearly_access",
+  product: "yearly_access" | "three_month_pass" = "three_month_pass",
   email?: string,
-  userId?: string | null
+  userId?: string | null,
+  reportId?: string | null
 ): Promise<string | null> {
   const { data, error } = await (supabase as any)
     .from("subscription_purchases")
@@ -32,6 +34,7 @@ export async function startSubscriptionCheckout(
       email: email || null,
       product,
       status: "pending",
+      report_id: reportId ?? null,
     })
     .select("id")
     .single();
@@ -44,7 +47,7 @@ export async function startSubscriptionCheckout(
   const purchaseId = data.id as string;
   localStorage.setItem("pendingSubscriptionId", purchaseId);
 
-  const u = new URL(FULL_REPORT_LINK);
+  const u = new URL(product === "three_month_pass" ? THREE_MONTH_PASS.link : FULL_REPORT_LINK);
   u.searchParams.set("client_reference_id", purchaseId);
   if (email) u.searchParams.set("prefilled_email", email);
   return u.toString();
