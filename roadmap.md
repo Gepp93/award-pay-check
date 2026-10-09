@@ -1,3 +1,10 @@
+# Phase 6 guided checker and single pass
+- [ ] Diagnose reader logs and production/iPhone compatibility; fix resilient parsing and fallback.
+- [ ] Build the one-route guided checker while preserving official calculation contracts and saved results.
+- [ ] Switch current offers to the $30 / 90-day 3 Month Pass and preserve legacy access.
+- [ ] Link purchases to reports, extend active passes, and preserve payment-complete fallback.
+- [ ] Verify all requested flows at 1280px/390px with stubbed requests and webhook unit tests; no live test writes/checkouts.
+
 # Phase 5 final QA
 - [x] Sweep remaining styles, reveal safety, consistency and accessibility.
 - [x] Recheck every route and report print output with stubbed requests at 1280px/390px.
