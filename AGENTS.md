@@ -8,3 +8,4 @@
 - Send printed hour buckets only in payslip-hours mode and next-day finish hours above 24 for overnight rosters; this preserves the engine's overtime logic and clock subtraction without altering it.
 - Define the current pass in `src/lib/plans.ts` and render shared offers; this prevents price, duration and link drift across pages.
 - Finalize pass payments through a service-role-only transactional function with purchase locking and report linking; this makes extension and report unlock idempotent.
+- Keep adapter and verified webhook routing tests in `tests/` using in-memory clients; this checks compatibility without live database rows or charges.

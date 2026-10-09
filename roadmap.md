@@ -1,9 +1,10 @@
 # Phase 6 guided checker and single pass
-- [ ] Diagnose reader logs and production/iPhone compatibility; fix resilient parsing and fallback.
-- [ ] Build the one-route guided checker while preserving official calculation contracts and saved results.
-- [ ] Switch current offers to the $30 / 90-day 3 Month Pass and preserve legacy access.
-- [ ] Link purchases to reports, extend active passes, and preserve payment-complete fallback.
-- [ ] Verify all requested flows at 1280px/390px with stubbed requests and webhook unit tests; no live test writes/checkouts.
+- [x] Investigate available reader logs; deploy bounded parsing/retry/fallback and verify PDF worker conversion. No logs returned, so the original live failure is unconfirmed.
+- [x] Build the one-route guided checker while preserving official calculation contracts and saved results.
+- [x] Switch current offers to the $30 / 90-day 3 Month Pass and preserve legacy access.
+- [x] Link purchases to reports, extend active passes, and preserve payment-complete fallback.
+- [x] Verify all requested flows at 1280px/390px with stubbed requests and eight in-memory unit tests; no live test rows/checkouts. Preview build OK.
+- [ ] Confirm the original iPhone/Safari upload on the owner's device; unavailable in the Chromium sandbox and no original failure logs.
 
 # Phase 5 final QA
 - [x] Sweep remaining styles, reveal safety, consistency and accessibility.
