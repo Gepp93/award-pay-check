@@ -59,147 +59,49 @@ const AppDashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="space-y-6">
-          <div className="text-center space-y-2">
-            <h1 className="text-4xl font-semibold">Welcome to AwardPay</h1>
-            <p className="text-muted-foreground text-lg">
-              Let's check if you're being paid correctly
-            </p>
-          </div>
-
-          <Card className="border-2 border-primary/20 ">
-            <CardHeader className="text-center pb-4">
-              <div className="mx-auto w-16 h-16 bg-primary rounded-md flex items-center justify-center mb-4">
-                <Calculator className="h-8 w-8 text-primary-foreground" />
-              </div>
-              <CardTitle className="text-2xl">Check My Pay</CardTitle>
-              <CardDescription className="text-base">
-                Answer a few questions and we'll compare your pay to Fair Work data
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center">
-              <Button
-                size="lg"
-                onClick={() => navigate("/check")}
-                className="bg-primary text-primary-foreground hover:opacity-90 text-lg px-8 py-6 h-14 font-semibold"
-              >
-                Start Pay Check
-              </Button>
-            </CardContent>
-          </Card>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card className=" transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Recent Checks
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <p className="text-sm text-muted-foreground">Loading...</p>
-                ) : calculations.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No checks yet. Start your first check to see results here.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {calculations.slice(0, 5).map((calc) => {
-                      const breakdown = calc.breakdown;
-                      const underpayment = breakdown.mode === 'unsure' 
-                        ? breakdown.overallMaxUnderpayment 
-                        : (breakdown.underpayment || 0);
-                      const isUnderpaid = underpayment > 0;
-
-                      return (
-                        <div
-                          key={calc.id}
-                          className="relative group border rounded-lg p-3 pr-10 space-y-1 hover:bg-accent  transition-all"
-                        >
-                          <button
-                            onClick={() => navigate('/new-check-step-3', { 
-                              state: { 
-                                result: calc.breakdown, 
-                                shiftDetails: calc.shift_data,
-                                fromDashboard: true
-                              } 
-                            })}
-                            className="w-full text-left"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-[13px] text-muted-foreground">
-                                {format(new Date(calc.created_at), 'MMM dd, yyyy')}
-                              </span>
-                              {isUnderpaid ? (
-                                <span className="flex items-center gap-1 text-[13px] text-destructive">
-                                  <TrendingDown className="h-3 w-3" />
-                                  Underpaid
-                                </span>
-                              ) : (
-                                <span className="flex items-center gap-1 text-[13px] text-primary">
-                                  <CheckCircle className="h-3 w-3" />
-                                  Correct
-                                </span>
-                              )}
-                            </div>
-                            {isUnderpaid && (
-                              <div className="text-sm font-semibold text-destructive">
-                                ${underpayment.toFixed(2)} underpayment
-                              </div>
-                            )}
-                          </button>
-                          <button
-                            onClick={(e) => handleDeleteCalculation(calc.id, e)}
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1.5 hover:bg-destructive/10 rounded-md transition-all"
-                            title="Delete check"
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className=" transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Calculator className="h-5 w-5 text-primary" />
-                  Quick Stats
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <p className="text-sm text-muted-foreground">Loading...</p>
-                ) : calculations.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Stats will appear here after you complete your first check.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Total Checks</span>
-                      <span className="text-2xl font-semibold">{calculations.length}</span>
-                    </div>
-                    {totalUnderpayment > 0 && (
-                      <div className="pt-3 border-t">
-                        <div className="text-[13px] text-muted-foreground mb-1">Total Potential Underpayment</div>
-                        <div className="text-2xl font-semibold text-destructive">
-                          ${totalUnderpayment.toFixed(2)}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+      <main className="checker-page">
+        <header className="checker-heading">
+          <div className="ledger-label">Your account</div>
+          <h1>Welcome to AwardPay</h1>
+          <p>Let's check if you're being paid correctly</p>
+        </header>
+        <div className="ap-final border-t border-rule py-6">
+          <div><h2 className="text-[19px] leading-[26px]">Check My Pay</h2><p>Answer a few questions and we'll compare your pay to Fair Work data</p></div>
+          <Button onClick={() => navigate("/check")}>Check a payslip</Button>
         </div>
-      </div>
+        {!loading && calculations.length > 0 && (
+          <div className="border-t-2 border-foreground py-6 mb-6">
+            <p className="ledger-label">Total Potential Underpayment</p>
+            <p className={`font-mono text-[40px] leading-[48px] font-medium ${totalUnderpayment > 0 ? "text-clay" : "text-primary"}`}>${totalUnderpayment.toFixed(2)}</p>
+            <p className="text-[13px] text-ink-3">Total Checks: {calculations.length}</p>
+          </div>
+        )}
+        <h2 className="text-[19px] leading-[26px] mb-5">Recent Checks</h2>
+        {loading ? <p className="text-ink-3">Loading...</p> : calculations.length === 0 ? (
+          <div className="border-t border-rule py-6 space-y-5"><p>No checks yet. Start your first check to see results here.</p><Button onClick={() => navigate("/check")}>Start Pay Check</Button></div>
+        ) : (
+          <table className="ledger-table ledger-mobile-rows">
+            <thead><tr><th>Period</th><th>Award</th><th>Result</th><th>Amount</th><th>Action</th></tr></thead>
+            <tbody>{calculations.slice(0, 5).map((calc) => {
+              const breakdown = calc.breakdown;
+              const underpayment = breakdown.mode === 'unsure' ? breakdown.overallMaxUnderpayment : (breakdown.underpayment || 0);
+              const isUnderpaid = underpayment > 0;
+              return (
+                <tr key={calc.id}>
+                  <td data-label="Period" className="font-mono text-[13px]">{format(new Date(calc.created_at), 'MMM dd, yyyy')}</td>
+                  <td data-label="Award">{calc.shift_data?.awardName || breakdown.awardName || "—"}</td>
+                  <td data-label="Result" className={isUnderpaid ? "text-clay" : "text-primary"}><span className="flex items-center gap-1">{isUnderpaid ? <TrendingDown className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}{isUnderpaid ? "Underpaid" : "Paid correctly"}</span></td>
+                  <td data-label="Amount" className={`font-mono text-right ${isUnderpaid ? "text-clay" : "text-primary"}`}>${underpayment.toFixed(2)}</td>
+                  <td data-label="Action"><div className="flex justify-end items-center gap-2">
+                    <Button variant="link" onClick={() => navigate('/new-check-step-3', { state: { result: calc.breakdown, shiftDetails: calc.shift_data, fromDashboard: true } })}>Open</Button>
+                    <Button variant="ghost" size="icon" onClick={(e) => handleDeleteCalculation(calc.id, e)} title="Delete check" aria-label="Delete check"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  </div></td>
+                </tr>
+              );
+            })}</tbody>
+          </table>
+        )}
+      </main>
     </div>
   );
 };
