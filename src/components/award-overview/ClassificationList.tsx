@@ -313,14 +313,14 @@ export const ClassificationList = ({
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <section className="checker-form border-t border-rule py-6">
+      <header>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Find Your Job Classification</CardTitle>
-            <CardDescription>
+            <h2 className="text-[19px] leading-[26px] mb-3">Find Your Job Classification</h2>
+            <p>
               Search by your job title or role to find your pay classification
-            </CardDescription>
+            </p>
           </div>
           <Button 
             variant="ghost" 
@@ -330,8 +330,8 @@ export const ClassificationList = ({
             <HelpCircle className="w-4 h-4" />
           </Button>
         </div>
-      </CardHeader>
-      <CardContent>
+      </header>
+      <div>
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -421,10 +421,10 @@ export const ClassificationList = ({
                             ? "default" 
                             : "outline"
                         }
-                        className="w-full justify-start h-auto py-4 px-5 whitespace-normal text-left hover:bg-accent"
+                        className={`checker-choice ${selectedClassification?.classification_fixed_id === classification.classification_fixed_id ? "is-selected" : ""}`}
                         onClick={() => onSelect(classification)}
                       >
-                        <div className="w-full space-y-2">
+                        <span className="choice-radio" /><div className="w-full space-y-2">
                           <div className="flex items-start justify-between gap-3">
                             <div className="font-semibold leading-relaxed break-words flex-1">
                               {classification.parent_classification_name}
@@ -436,8 +436,7 @@ export const ClassificationList = ({
                                   {rateInfo.loading ? (
                                     <span className="text-[13px] text-muted-foreground font-normal">Loading rate...</span>
                                   ) : rateInfo.hourlyRate ? (
-                                    <span className="text-base font-semibold text-primary">
-                                      ${rateInfo.hourlyRate.toFixed(2)}/hr
+                                    <span className="font-mono tabular-nums text-base font-semibold text-primary">${rateInfo.hourlyRate.toFixed(2)}/hr
                                     </span>
                                   ) : null}
                                 </div>
@@ -488,7 +487,7 @@ export const ClassificationList = ({
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

@@ -121,19 +121,19 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
   ];
 
   return (
-    <Card className="bg-card border-border ">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calculator className="h-5 w-5 text-accent" />
+    <section className="checker-form border-t border-rule py-6">
+      <header>
+        <h2 className="flex items-center gap-2">
+          <Calculator className="h-5 w-5 text-primary" />
           Shift Details
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+        </h2>
+      </header>
+      <div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Your Award</Label>
             {awardInfo ? (
-              <div className="p-3 bg-accent/10 border border-accent/20 rounded-md">
+              <div className="p-3 bg-primary/10 border border-rule/20 rounded-md">
                 <p className="font-semibold text-sm">{awardInfo.awardName}</p>
                 <p className="text-[13px] text-muted-foreground mt-1">
                   Code: {awardInfo.awardCode}
@@ -166,7 +166,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
                 onValueChange={handleClassificationChange}
                 disabled={loadingClassifications}
               >
-                <SelectTrigger id="classification" className="bg-secondary/50">
+                <SelectTrigger id="classification" className="bg-card">
                   <SelectValue placeholder="Select your classification level..." />
                 </SelectTrigger>
                 <SelectContent className="bg-popover">
@@ -198,7 +198,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
                 onChange={(e) =>
                   setFormData({ ...formData, startTime: e.target.value })
                 }
-                className="bg-secondary/50"
+                className="bg-card"
                 required
               />
             </div>
@@ -211,7 +211,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
                 onChange={(e) =>
                   setFormData({ ...formData, endTime: e.target.value })
                 }
-                className="bg-secondary/50"
+                className="bg-card"
                 required
               />
             </div>
@@ -225,7 +225,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
                 setFormData({ ...formData, dayOfWeek: value })
               }
             >
-              <SelectTrigger id="dayOfWeek" className="bg-secondary/50">
+              <SelectTrigger id="dayOfWeek" className="bg-card">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -248,7 +248,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
               onChange={(e) =>
                 setFormData({ ...formData, breakMinutes: Number(e.target.value) })
               }
-              className="bg-secondary/50"
+              className="bg-card"
               required
             />
           </div>
@@ -260,7 +260,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
                   <p className="text-sm font-semibold text-primary">Official FWC Rate</p>
                   <p className="text-[13px] text-muted-foreground">{selectedClassificationName}</p>
                 </div>
-                <p className="text-2xl font-semibold text-primary">${officialBaseRate.toFixed(2)}<span className="text-sm">/hr</span></p>
+                <p className="font-mono tabular-nums text-2xl font-semibold text-primary">${officialBaseRate.toFixed(2)}<span className="text-sm">/hr</span></p>
               </div>
               <div className="pt-2 border-t border-primary/20">
                 <Label htmlFor="actualRate" className="text-[13px]">What are you actually being paid? (Optional)</Label>
@@ -280,16 +280,15 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
                   }}>
                     {actualPayRate < officialBaseRate ? (
                       <div className="text-sm">
-                        <p className="font-semibold text-destructive">⚠️ You may be underpaid!</p>
+                        <p className="font-semibold text-destructive">You may be underpaid!</p>
                         <p className="text-[13px] text-muted-foreground mt-1">
                           Difference: ${(officialBaseRate - actualPayRate).toFixed(2)}/hr less than official rate
                         </p>
                       </div>
                     ) : (
                       <div className="text-sm">
-                        <p className="font-semibold text-success">✓ You're being paid correctly</p>
-                        <p className="text-[13px] text-muted-foreground mt-1">
-                          ${(actualPayRate - officialBaseRate).toFixed(2)}/hr above minimum rate
+                        <p className="font-semibold text-success">You're being paid correctly</p>
+                        <p className="font-mono tabular-nums text-[13px] text-muted-foreground mt-1">${(actualPayRate - officialBaseRate).toFixed(2)}/hr above minimum rate
                         </p>
                       </div>
                     )}
@@ -301,7 +300,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
 
           <Button
             type="submit"
-            className="w-full bg-accent hover:bg-accent/90 text-accent-foreground"
+            className="w-full"
             disabled={!officialBaseRate}
           >
             {officialBaseRate ? 'Calculate What You Should Earn' : 'Select Classification First'}
@@ -312,7 +311,7 @@ export const ShiftInputForm = ({ onCalculate, awardInfo }: ShiftInputFormProps) 
             </p>
           )}
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

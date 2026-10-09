@@ -11,23 +11,23 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
   const isUnderpaid = totalUnderpayment > 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <section className="checker-form border-t border-rule py-6">
+      <header>
+        <h2 className="flex items-center gap-2">
           <DollarSign className="w-5 h-5" />
           Weekly Summary
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+        </h2>
+      </header>
+      <div className="space-y-4">
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Total award pay</span>
-            <span className="text-xl font-semibold">${calculation.totalShouldEarn.toFixed(2)}</span>
+            <span className="font-mono tabular-nums text-xl font-semibold">${calculation.totalShouldEarn.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between items-center">
             <span className="text-muted-foreground">Total you were paid</span>
-            <span className="text-xl font-semibold">${calculation.totalActualPaid.toFixed(2)}</span>
+            <span className="font-mono tabular-nums text-xl font-semibold">${calculation.totalActualPaid.toFixed(2)}</span>
           </div>
 
           <div className="border-t pt-3">
@@ -92,7 +92,7 @@ export const WeeklySummary = ({ calculation }: WeeklySummaryProps) => {
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 };

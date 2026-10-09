@@ -146,21 +146,21 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
 
   if (!classification) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
+      <section className="checker-form border-t border-rule py-6">
+        <div className="flex items-center justify-center py-12">
           <p className="text-muted-foreground">Select a classification to view rates</p>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     );
   }
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
+      <section className="checker-form border-t border-rule py-6">
+        <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     );
   }
 
@@ -173,11 +173,11 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
   return (
     <div className="space-y-4">
       {/* Selected Classification Header */}
-      <Card className="bg-primary/5">
-        <CardContent className="pt-6">
+      <section className="checker-form border-t border-rule py-6">
+        <div className="pt-6">
           <div className="flex items-start gap-3">
-            <div className="bg-primary rounded-md p-2 flex-shrink-0">
-              <DollarSign className="w-4 h-4 text-primary-foreground" />
+            <div className="text-primary flex-shrink-0">
+              <DollarSign className="w-4 h-4 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-muted-foreground mb-1">Selected Classification</p>
@@ -187,35 +187,35 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
               )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
       
       {/* Base Rate Card */}
-      <Card>
-        <CardHeader>
+      <section className="checker-form border-t border-rule py-6">
+        <header>
           <div className="flex items-center gap-2">
             <DollarSign className="w-5 h-5" />
-            <CardTitle>Base Rate</CardTitle>
+            <h2 className="text-[19px] leading-[26px] mb-3">Base Rate</h2>
           </div>
-          <CardDescription>Your hourly rate{employmentType === "Casual" && " (including 25% casual loading)"}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+          <p>Your hourly rate{employmentType === "Casual" && " (including 25% casual loading)"}</p>
+        </header>
+        <div className="space-y-3">
           {displayRate && (
             <>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-muted-foreground">Your hourly rate</span>
-                <span className="text-lg font-semibold">${displayRate.toFixed(2)}/hr</span>
+                <span className="font-mono tabular-nums text-lg font-semibold">${displayRate.toFixed(2)}/hr</span>
               </div>
               
               {employmentType === "Casual" && baseRate && (
                 <div className="bg-primary-soft border border-rule-strong rounded-md p-3">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-ink-2">Base rate:</span>
-                    <span className="font-medium text-ink-2">${baseRate.toFixed(2)}/hr</span>
+                    <span className="font-mono tabular-nums font-medium text-ink-2">${baseRate.toFixed(2)}/hr</span>
                   </div>
                   <div className="flex justify-between items-center text-sm mt-1">
                     <span className="text-ink-2">Casual loading (25%):</span>
-                    <span className="font-medium text-ink-2">+${(baseRate * 0.25).toFixed(2)}/hr</span>
+                    <span className="font-mono tabular-nums font-medium text-ink-2">+${(baseRate * 0.25).toFixed(2)}/hr</span>
                   </div>
                 </div>
               )}
@@ -229,19 +229,19 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
               )}
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {/* Penalty Rates Card */}
-      <Card>
-        <CardHeader>
+      <section className="checker-form border-t border-rule py-6">
+        <header>
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5" />
-            <CardTitle>Penalty Rates</CardTitle>
+            <h2 className="text-[19px] leading-[26px] mb-3">Penalty Rates</h2>
           </div>
-          <CardDescription>Weekend, public holiday, and overtime penalties</CardDescription>
-        </CardHeader>
-        <CardContent>
+          <p>Weekend, public holiday, and overtime penalties</p>
+        </header>
+        <div>
           {usingFallbackData.penalties && (
             <Alert className="mb-4">
               <AlertCircle className="w-4 h-4" />
@@ -254,7 +254,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
             <Collapsible open={showAllPenalties} onOpenChange={setShowAllPenalties}>
               <div className="space-y-2">
                 {(showAllPenalties ? penalties.results : penalties.results.slice(0, 5)).map((penalty: any, idx: number) => (
-                  <div key={idx} className="bg-muted/30 rounded-md p-3">
+                  <div key={idx} className="border-b border-rule py-4">
                     <div className="flex justify-between items-start gap-2">
                       <div className="flex-1">
                         <span className="text-sm font-medium block">{penalty.penalty_description || penalty.description}</span>
@@ -280,21 +280,21 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
           ) : (
             <p className="text-sm text-muted-foreground">No penalty rate information available</p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {/* Allowances Card */}
-      <Card>
-        <CardHeader>
+      <section className="checker-form border-t border-rule py-6">
+        <header>
           <div className="flex items-center gap-2">
             <Gift className="w-5 h-5" />
-            <CardTitle>Allowances</CardTitle>
+            <h2 className="text-[19px] leading-[26px] mb-3">Allowances</h2>
           </div>
-          <CardDescription>
+          <p>
             Additional payments you may be entitled to based on your work conditions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </header>
+        <div>
           {usingFallbackData.allowances && (
             <Alert className="mb-4">
               <AlertCircle className="w-4 h-4" />
@@ -307,7 +307,7 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
             <Collapsible open={showAllAllowances} onOpenChange={setShowAllAllowances}>
               <div className="space-y-2">
                 {(showAllAllowances ? filteredAllowances : filteredAllowances.slice(0, 8)).map((allowance: any, idx: number) => (
-                  <div key={idx} className="bg-muted/30 rounded-md p-3">
+                  <div key={idx} className="border-b border-rule py-4">
                     <div className="font-medium text-sm mb-1">
                       {allowance.allowance_type_description || allowance.name}
                     </div>
@@ -338,29 +338,29 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
           ) : (
             <p className="text-sm text-muted-foreground">No specific allowances found for your award</p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       {/* Break Entitlements Card */}
-      <Card>
-        <CardHeader>
+      <section className="checker-form border-t border-rule py-6">
+        <header>
           <div className="flex items-center gap-2">
             <Coffee className="w-5 h-5" />
-            <CardTitle>Break Entitlements</CardTitle>
+            <h2 className="text-[19px] leading-[26px] mb-3">Break Entitlements</h2>
           </div>
-          <CardDescription>Rest breaks based on shift length</CardDescription>
-        </CardHeader>
-        <CardContent>
+          <p>Rest breaks based on shift length</p>
+        </header>
+        <div>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between items-center p-2 bg-muted/30 rounded-md">
+            <div className="flex justify-between items-center py-4 border-b border-rule gap-4">
               <span>4-5 hours</span>
               <span className="font-medium">One 10-minute paid rest break</span>
             </div>
-            <div className="flex justify-between items-center p-2 bg-muted/30 rounded-md">
+            <div className="flex justify-between items-center py-4 border-b border-rule gap-4">
               <span>5-7 hours</span>
               <span className="font-medium">One 30-minute unpaid meal break</span>
             </div>
-            <div className="flex justify-between items-center p-2 bg-muted/30 rounded-md">
+            <div className="flex justify-between items-center py-4 border-b border-rule gap-4">
               <span>7+ hours</span>
               <span className="font-medium">Additional 10-minute paid rest break</span>
             </div>
@@ -368,8 +368,8 @@ export const RateCards = ({ awardId, classification, employmentType }: RateCards
               Note: Specific break entitlements may vary by award. Check your award for exact requirements.
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 };

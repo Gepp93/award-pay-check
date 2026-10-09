@@ -328,3 +328,37 @@
   .checker-sheet, .checker-sheet * { color: black !important; background: transparent !important; }
   .ledger-table tr { break-inside: avoid; }
 }
+
+/* Shared Ledger marketing and saved-report layouts. */
+.ap-marketing .ap-h1 { font-size: 40px; line-height: 48px; }
+.ap-marketing .ap-lede { font-size: 19px; line-height: 30px; max-width: 760px; }
+.ap-marketing .ap-wrap.ap-home-section { max-width: none; padding-left: max(32px, calc((100% - 1056px) / 2)); padding-right: max(32px, calc((100% - 1056px) / 2)); }
+.ap-marketing ul:not(.ap-home-tier ul) > li { padding: 18px 0; border-bottom: 1px solid hsl(var(--rule)); }
+.ap-marketing .ap-home-price { display: inline-block; }
+.ap-marketing .ap-home-tier p { margin-top: 16px; }
+.ap-marketing .ap-home-tier .ap-home-price { margin-right: 8px; }
+.ap-marketing .ap-home-tier li svg { display: none; }
+.ap-marketing .ap-home-section h3 { font-size: 19px; line-height: 26px; margin-bottom: 12px; }
+.ap-marketing .ap-home-section > .mx-auto > p:not(.ap-lede) { color: hsl(var(--ink-2)); font-size: 16px; line-height: 26px; }
+.ap-marketing .ap-home-section li svg { color: hsl(var(--primary)); }
+.ap-marketing [data-reveal] { opacity: 1; transition: none; }
+.checker-form > header { margin-bottom: 24px; }
+.checker-form > header h2 { font-size: 19px; line-height: 26px; font-weight: 600; }
+.checker-form > header p { font-size: 16px; line-height: 26px; color: hsl(var(--ink-2)); margin-top: 8px; }
+.checker-form select { width: 100%; min-height: 48px; background: hsl(var(--card)); font-size: 16px; border-color: hsl(var(--rule-strong)); border-radius: 4px; }
+.checker-page > .checker-form h1 { font-size: 28px; line-height: 34px; }
+.checker-form .checker-choice { color: hsl(var(--foreground)); }
+.ledger-mobile-rows { table-layout: fixed; }
+.ledger-mobile-rows td { overflow-wrap: anywhere; }
+.ledger-mobile-rows td:last-child { white-space: normal; }
+.ledger-mobile-rows button { white-space: normal; }
+.ledger-mobile-rows th:nth-last-child(2) { text-align: right; }
+@media (max-width: 767px) {
+  .ap-marketing .ap-h1 { font-size: 32px; line-height: 38px; }
+  .ap-marketing .ap-wrap.ap-home-section { padding-left: 16px; padding-right: 16px; }
+  .ledger-mobile-rows, .ledger-mobile-rows tbody, .ledger-mobile-rows tr, .ledger-mobile-rows td { display: block; width: 100%; }
+  .ledger-mobile-rows thead { display: none; }
+  .ledger-mobile-rows tr { border-top: 2px solid hsl(var(--foreground)); padding: 16px 0; margin-bottom: 16px; }
+  .ledger-mobile-rows td { display: flex; justify-content: space-between; align-items: center; gap: 16px; height: auto; min-height: 44px; padding: 8px 0; text-align: right; }
+  .ledger-mobile-rows td::before { content: attr(data-label); font-family: "IBM Plex Sans", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; color: hsl(var(--ink-2)); text-align: left; flex-shrink: 0; }
+}
