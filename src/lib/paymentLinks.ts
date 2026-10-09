@@ -27,24 +27,24 @@ export async function startSubscriptionCheckout(
   userId?: string | null,
   reportId?: string | null
 ): Promise<string | null> {
-  const { data, error } = await (supabase as any)
+  // Generate the reference before INSERT: guests cannot SELECT purchase rows.
+  const purchaseId = crypto.randomUUID();
+  const { error } = await supabase
     .from("subscription_purchases")
     .insert({
+      id: purchaseId,
       user_id: userId ?? null,
       email: email || null,
       product,
       status: "pending",
       report_id: reportId ?? null,
-    })
-    .select("id")
-    .single();
+    });
 
-  if (error || !data) {
+  if (error) {
     console.error("startSubscriptionCheckout error:", error);
     return null;
   }
 
-  const purchaseId = data.id as string;
   localStorage.setItem("pendingSubscriptionId", purchaseId);
 
   const u = new URL(product === "three_month_pass" ? THREE_MONTH_PASS.link : FULL_REPORT_LINK);
