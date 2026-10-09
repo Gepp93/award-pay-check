@@ -16,3 +16,4 @@
 - Convert day-specific printed payslip hours into tagged, editable roster shifts; keep printed multiplier buckets exclusive to hours-only engine requests to avoid counting them twice.
 - Compare monthly manual rosters as a typical week and divide monthly gross by 4.33 only in the adapter; label the result weekly so engine overtime and annualization semantics remain unchanged.
 - Retry payslip reads only for transport errors or timeouts; provider rejection must immediately fall back to guided questions.
+- Link guest pass purchases to accounts only through the authenticated claim_my_passes RPC matching a confirmed auth email; clients never write purchase ownership directly.
