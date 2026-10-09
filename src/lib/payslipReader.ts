@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import pdfWorkerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 
 export interface ParsedPayslip {
+  employer_name?: string;
   classification_or_role?: string;
   employment_type?: "Full-time" | "Part-time" | "Casual";
   pay_frequency?: "weekly" | "fortnightly" | "monthly";
@@ -78,7 +79,7 @@ async function jpeg(file: File): Promise<string> {
   return payload;
 }
 
-/** One bounded read plus one retry; image data never enters storage or diagnostics. */
+/** Retry transport failures only; provider outages must not delay the questions. */
 export async function readPayslip(file: File, signal: AbortSignal): Promise<ParsedPayslip> {
   let image: string | undefined;
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -99,8 +100,13 @@ export async function readPayslip(file: File, signal: AbortSignal): Promise<Pars
         });
         if (error) {
           const status = "context" in error && error.context instanceof Response ? error.context.status : 0;
+          if ("context" in error && error.context instanceof Response) {
+            const body = await error.context.clone().json().catch(() => null);
+            if (body?.error === "reader_unavailable" || body?.error === "reader_429") throw new Error(body.error);
+          }
           throw new Error(status ? `reader_${status}` : "reader_network");
         }
+        if (data?.error) throw new Error(data.error);
         if (!data?.payslip) throw new Error("no_fields");
         return data.payslip as ParsedPayslip;
       };
@@ -108,7 +114,7 @@ export async function readPayslip(file: File, signal: AbortSignal): Promise<Pars
     } catch (error) {
       const reason = error instanceof Error ? error.message : "reader_failed";
       console.warn("Payslip reader", { reason: /^[a-z_0-9]+$/.test(reason) ? reason : "reader_failed", attempt: attempt + 1 });
-      if (attempt === 1 || signal.aborted) throw new Error(reason);
+      if (attempt === 1 || signal.aborted || !["reader_network", "timeout"].includes(reason)) throw new Error(reason);
     } finally {
       if (timer) clearTimeout(timer);
       signal.removeEventListener("abort", cancel);
