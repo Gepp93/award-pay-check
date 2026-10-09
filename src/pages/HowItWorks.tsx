@@ -21,21 +21,7 @@ function useReveal() {
 }
 
 const ulCls = "list-none pl-0 text-left space-y-2 mt-4";
-const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))" } as const;
-const h2Style = { fontSize: 28 } as const;
 
-const circle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  width: 44,
-  height: 44,
-  borderRadius: 6,
-  border: "1.5px solid hsl(var(--primary))",
-  color: "hsl(var(--primary))",
-  background: "hsl(var(--background))",
-  flexShrink: 0,
-};
 
 const HowItWorks = () => {
   const navigate = useNavigate();
@@ -76,25 +62,6 @@ const HowItWorks = () => {
         </div>
       </section>
 
-      {/* 3-step focal indicator */}
-      <section className="ap-wrap ap-home-section" >
-        <div className="mx-auto" >
-          <div >
-            <div data-reveal >
-              <span><Camera size={20} /></span>
-            </div>
-            <div data-reveal  />
-            <div data-reveal >
-              <span><Scale size={20} /></span>
-            </div>
-            <div data-reveal  />
-            <div data-reveal >
-              <span><DollarSign size={20} /></span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="ap-wrap ap-home-section" >
         <div className="mx-auto" >
           <h2 className="ap-h2" data-reveal>Three steps</h2>
@@ -105,7 +72,7 @@ const HowItWorks = () => {
                   className="num shrink-0"
                   
                 >{i + 1}</span>
-                <span>{t}</span>
+                <div><div className="ap-step-snippet">{i === 0 ? <Camera size={24} /> : i === 1 ? <Scale size={24} /> : <DollarSign size={24} />}</div><h3>{t}</h3></div>
               </li>
             ))}
           </ol>
@@ -128,7 +95,7 @@ const HowItWorks = () => {
 
       <section className="ap-wrap ap-home-section" >
         <div className="mx-auto" >
-          <p className="text-center" data-reveal >
+          <p className="text-left" data-reveal >
             AwardPay is an interpretation tool based on official Fair Work data, not legal advice.
           </p>
         </div>

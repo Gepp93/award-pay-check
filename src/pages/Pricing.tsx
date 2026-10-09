@@ -163,7 +163,7 @@ const Pricing = () => {
 
       <section className="ap-wrap ap-home-section" >
         <p
-          className="text-center"
+          className="text-left"
           data-reveal
           
         >

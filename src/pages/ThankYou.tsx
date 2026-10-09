@@ -1,5 +1,4 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, FileText, Shield } from "lucide-react";
 import { PublicNavBar } from "@/components/PublicNavBar";

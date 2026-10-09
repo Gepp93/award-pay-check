@@ -54,8 +54,6 @@ function CountUp({ to, duration = 1200 }: { to: number; duration?: number }) {
 const bullet = "flex items-start gap-2";
 const checkIcon = <Check className="h-4 w-4 mt-1 shrink-0"  />;
 const ulCls = "list-none pl-0 text-left space-y-2 mt-4";
-const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))" } as const;
-const h2Style = { fontSize: 28 } as const;
 
 const WhyAwardPay = () => {
   const navigate = useNavigate();
@@ -139,7 +137,7 @@ const WhyAwardPay = () => {
       <section className="ap-wrap ap-home-section" >
         <div className="mx-auto" >
           <h2 className="ap-h2" data-reveal>Where our data comes from</h2>
-          <p className="text-center" data-reveal >
+          <p className="text-left" data-reveal >
             Built on the Fair Work Commission's official Modern Award data, updated as rates change.
             AwardPay is an interpretation tool, not legal advice.
           </p>
@@ -149,7 +147,7 @@ const WhyAwardPay = () => {
       <section className="ap-wrap ap-home-section" >
         <div className="mx-auto" >
           <h2 className="ap-h2" data-reveal>Who it's for</h2>
-          <p className="text-center" data-reveal >
+          <p className="text-left" data-reveal >
             Any role under a Modern Award — retail, hospitality, construction, health, trades,
             cleaning, support work and more.
           </p>

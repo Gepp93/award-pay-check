@@ -55,8 +55,6 @@ interface AwardPage {
 const bullet = "flex items-start gap-2";
 const checkIcon = <Check className="h-4 w-4 mt-1 shrink-0"  />;
 const ulCls = "list-none pl-0 text-left space-y-2 mt-4";
-const ulStyle = { fontSize: 17, lineHeight: 1.6, color: "hsl(var(--ink-2))" } as const;
-const h2Style = { fontSize: 28 } as const;
 
 const formatCurrency = (n?: number) =>
   typeof n === "number"
@@ -236,22 +234,20 @@ const UnderpaidAward = () => {
                 </tbody>
               </table>
               {page.awards?.effective_date && (
-                <p
-                  
-                >
+                <p className="text-[13px] text-ink-3 mt-3">
                   Rates current from {new Date(page.awards.effective_date).toLocaleDateString("en-AU")}.
                 </p>
               )}
             </div>
           ) : (
-            <p className="text-center" data-reveal >
+            <p className="text-left" data-reveal >
               No specific rates are available for this award yet. Check your own payslip to compare your hourly rate.
             </p>
           )}
 
           {body.rates_note && (
             <p
-              className="text-left"
+              className="text-[13px] text-ink-3 mt-4"
               data-reveal
               
             >
