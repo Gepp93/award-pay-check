@@ -165,7 +165,7 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   doc.setFontSize(11);
   doc.setTextColor(110);
   doc.text(headline.label, 48, y);
-  if (owed > 0) doc.setTextColor(184, 134, 11);
+  if (owed > 0) doc.setTextColor(0);
   else doc.setTextColor(0);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(28);

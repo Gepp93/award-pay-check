@@ -372,3 +372,5 @@
 .ap-home-tier li:has(svg)::before { content: none; }
 .ap-home-tier li:has(svg) { padding-left: 0; display: flex; gap: 8px; }
 @media print { [data-reveal] { opacity: 1 !important; transform: none !important; } }
+
+@media print { body { color: hsl(var(--print-ink)); background: hsl(var(--card)); } .checker-heading { color: hsl(var(--print-ink)); } }
