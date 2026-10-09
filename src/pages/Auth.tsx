@@ -94,7 +94,7 @@ const Auth = () => {
           <div className="flex justify-between items-center h-16">
             <Button variant="ghost" size="sm"
               onClick={() => navigate("/")}
-              className="flex items-center gap-2 font-semibold text-xl cursor-pointer"
+              className="flex items-center gap-2 font-semibold text-xl cursor-pointer px-0"
             >
               <span className="ap-mark" />
               <span className="text-foreground">AwardPay</span>
