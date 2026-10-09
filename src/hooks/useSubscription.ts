@@ -7,6 +7,7 @@ interface SubscriptionState {
   loading: boolean;
   subscriptionStatus: string | null;
   userId: string | null;
+  expiresAt?: string | null;
 }
 
 export function useSubscription() {
@@ -39,19 +40,21 @@ export function useSubscription() {
         }
 
         // Fetch profile and admin status in parallel
-        const [profileResult, adminResult] = await Promise.all([
+        const [profileResult, adminResult, purchaseResult] = await Promise.all([
           supabase
             .from("profiles")
             .select("subscription_status")
             .eq("id", user.id)
             .maybeSingle(),
           supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }),
+          supabase.from("subscription_purchases").select("product,expires_at").eq("user_id", user.id).eq("status", "paid").gt("expires_at", new Date().toISOString()).order("expires_at", { ascending: false }).limit(1).maybeSingle(),
         ]);
 
-        const subscriptionStatus = profileResult.data?.subscription_status || "free";
+        const activePass = purchaseResult.data;
+        const subscriptionStatus = activePass?.product === "three_month_pass" ? "three_month" : activePass?.product === "yearly_access" ? "yearly" : profileResult.data?.subscription_status || "free";
         const isAdmin = adminResult.data === true;
         
-        const hasActiveSubscription = ["active", "monthly", "yearly", "3month"].includes(subscriptionStatus);
+        const hasActiveSubscription = Boolean(activePass) || ["active", "monthly", "3month"].includes(subscriptionStatus) || (subscriptionStatus === "yearly" && !purchaseResult.data && !["three_month"].includes(profileResult.data?.subscription_status || ""));
         const isPremium = isAdmin || hasActiveSubscription;
 
         if (isMounted) {
@@ -61,6 +64,7 @@ export function useSubscription() {
             loading: false,
             subscriptionStatus,
             userId: user.id,
+            expiresAt: activePass?.expires_at ?? null,
           });
         }
       } catch (error) {
