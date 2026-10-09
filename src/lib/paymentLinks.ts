@@ -46,6 +46,8 @@ export async function startSubscriptionCheckout(
   }
 
   localStorage.setItem("pendingSubscriptionId", purchaseId);
+  if (email) localStorage.setItem("pendingPassEmail", email);
+  else localStorage.removeItem("pendingPassEmail");
 
   const u = new URL(product === "three_month_pass" ? THREE_MONTH_PASS.link : FULL_REPORT_LINK);
   u.searchParams.set("client_reference_id", purchaseId);

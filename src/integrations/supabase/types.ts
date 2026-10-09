@@ -350,6 +350,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_my_passes: { Args: never; Returns: number }
       complete_pass_purchase: {
         Args: {
           p_email: string
