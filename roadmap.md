@@ -1,3 +1,8 @@
+# Phase 8 guided-flow polish
+- [ ] Fast reader-outage fallback, keyword award matching and printed penalty-hour roster defaults.
+- [ ] Casual/part-time shortcuts, monthly typical-week comparison and mobile sticky actions.
+- [ ] Check paywall/marketing wording; rerun network-stubbed guided paths, unit tests and build diagnostics.
+
 # Phase 7 payment security and reader diagnosis
 - [x] Harden paid-access policies, triggers and function privileges; role-based SQL checks passed and all fixtures rolled back.
 - [x] Diagnose one deployed synthetic reader call: HTTP 429 reader_unavailable, logs confirm OpenAI returned 429; origin guard passed. Published bundle lacks Phase 6 markers.
