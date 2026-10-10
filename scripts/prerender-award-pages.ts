@@ -17,6 +17,17 @@ import { createClient } from "@supabase/supabase-js";
 import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 
+
+function loadDotEnv() {
+  try {
+    const raw = readFileSync(resolve(process.cwd(), ".env"), "utf-8");
+    for (const line of raw.split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*"?([^"]*)"?\s*$/);
+      if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+    }
+  } catch { /* no .env; rely on the environment */ }
+}
+
 const BASE_URL = "https://www.awardpay.com.au";
 const MAX_PAGES = 1000;
 
@@ -185,12 +196,13 @@ function renderStaticAwardPage(page: AwardPage, appHtml: string): string {
 }
 
 async function main() {
+  loadDotEnv();
   const url = process.env.VITE_SUPABASE_URL;
-  const key = process.env.VITE_SUPABASE_ANON_KEY;
+  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    console.error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY");
-    process.exit(1);
+    console.warn("Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY; %s.", "skipping award page prerender");
+    process.exit(0);
   }
 
   const supabase = createClient(url, key, { auth: { persistSession: false } });
@@ -202,8 +214,8 @@ async function main() {
     .limit(MAX_PAGES);
 
   if (error) {
-    console.error("Supabase error:", error.message);
-    process.exit(1);
+    console.warn("Could not load award pages (%s); %s.", error.message, "skipping award page prerender");
+    process.exit(0);
   }
 
   const pages = (data || []) as unknown as AwardPage[];
