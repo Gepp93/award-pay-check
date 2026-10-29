@@ -1,33 +1,75 @@
-# Engine v2 — Independent Accuracy Verification and Safety Fixes
+# Connect Engine v2 to the AwardPay 2.0 preview (internal testing only)
 
-Scope: engine v2 only (`_shared/engine-v2`, its tests and report). v1 checker, Stripe, accounts, saved reports, database, AwardPay 2.0 frontend untouched. Nothing published.
+Scope: `/v2/*` preview only. The live `/check`, the old engine, Stripe, accounts, saved reports, database and the pass stay unchanged. Nothing gets published.
 
-## 1. Re-derive all 42 cases from official sources
-- For each case, recompute the expected amount by hand from the official Fair Work pay guide / award clause (Retail MA000004, Hospitality MA000009, Fast Food MA000003), not from the engine or prior expectations.
-- Record per case: award, classification, employment type, operative date and rate, ordinary/penalty conditions, overtime clause, expected dollars, source URL + clause/page.
-- Mark each case "Source-verified" or "Could not verify" (with reason). No claim of human audit.
-- Where a source contradicts the engine, fix the rule pack and note the correction.
+## 1. Backend function (`calculate-award-pay-v2`)
+- Bring the function's input checks up to date with the current engine. Right now they reject the newer fields: work arrangement (all shifts included, worked to roster, guaranteed hours, roster cycle), "pay lines cover all wages" and the casual loading pay line.
+- Keep it as pure calculation: no storage, and logs only count requests (no payslip values).
+- Add the same origin check and per-IP rate limit the scanner uses, plus a request size cap.
+- Deploy it so the preview can call it. No page outside `/v2` calls it.
 
-## 2. Breaks
-- Remove any automatic break deduction. If a break affects pay and its duration/timing is missing, result becomes Partial with a clarification request ("Enter break length and start time").
+## 2. Carrying answers between steps
+- Extend the preview's answers-only session store to hold:
+  - award and classification
+  - state, pay period and dated shifts (with break length and start time, and overtime minutes)
+  - the arrangement answers
+  - pay lines and gross, each tagged "from payslip (confirmed)" or "entered by you"
+  - local holiday confirmations
+  - the last engine response
+- The payslip file itself is never stored.
+- Scanned values carry forward only after the confirmation screen is confirmed. Unconfirmed scan values are never sent to the engine.
 
-## 3. Overtime detection
-- Implement only triggers derivable from dated shifts: daily maximum ordinary hours, outside span of hours, weekly 38h for full-time where the week is complete, casual/part-time triggers per award clause.
-- Triggers needing roster cycles, averaging or agreed part-time hours: ask for them or return Partial.
-- Hours are never assumed ordinary because the payslip lacks an overtime label.
+## 3. Short questionnaire (new screen after confirmation or manual start)
+One question at a time, showing only what the selected award and employment type need:
+1. **Award:** Retail, Hospitality or Fast Food. The Fast Food option appears inside the Hospitality industry. Any other industry or award goes straight to an Unsupported result that explains why, with a "change award" button.
+2. **Classification:** a picker limited to the engine's supported levels. "Not sure" leads to Unsupported. Never guessed from the job title.
+3. **Rate type:** adult, junior, apprentice or trainee. Anything other than adult leads to Unsupported with an explanation.
+4. **State or territory.**
+5. **Pay period start and end.** Prefilled from a confirmed payslip.
+6. **Shifts:** date, start and finish (with overnight handling), unpaid break length, and the break start time when the engine needs it.
+7. **"Are these all the shifts in this pay period?"**
+8. **Full-time and part-time:** "Apart from overtime, were these your rostered hours?" **Part-time (Retail and Fast Food):** guaranteed or agreed weekly hours.
+9. **Overtime minutes for a shift.** Asked when the payslip shows overtime or a shift goes over the award's daily limit.
+10. **Pay lines:** prefilled from confirmed payslip categories, then "Do these lines cover all your wages for these hours?" Gross only is allowed but leads to Partial.
+11. **Local holiday question:** asked only for dates the engine says need confirmation.
 
-## 4. 2026 public holidays
-- Build a dated holiday table from each state/territory government calendar (2024–2026), with source links.
-- National and state-wide days supported; regional days (e.g. show days) require location confirmation; part-day holidays (Christmas Eve / NYE evenings in SA, etc.) supported only where the hours rule is implemented, otherwise Partial.
+"I don't know" is offered wherever a fact is optional. It sends the check on to a Partial result rather than guessing.
 
-## 5. Actual-pay comparison audit
-- Compare by category (ordinary, penalties, overtime, casual loading, allowances) where the payslip splits them; gross only when nothing else is available, and labelled as approximate.
-- Guard against double-counting ordinary pay or casual loading; allowances never offset wages.
-- Missing paid categories → Partial, never a complete underpayment figure.
-- Worked examples: correctly paid, underpaid, overpaid component.
+## 4. Results screen (rebuilt on the real engine response)
+- **Complete:**
+  - the award minimum, comparable wages and each pay category's difference, plus any potential underpayment and category shortfalls
+  - award, classification, rate dates, and the Fair Work source for each line
+  - what the check covered and what it left out
+- **Partial:**
+  - which items were assessed, as itemised lines with no total
+  - what's missing, with buttons that jump back to the right question
+  - the indicative gross figure, labelled "not an underpayment"
+- **Unsupported:** the engine's reason and a "change award or classification" button. No dollar amounts.
+- A small "Preview — internal testing" banner. The pass/report unlock is never offered for Partial or Unsupported results. For Complete results the existing pass button shows unchanged, and no new report is generated.
 
-## 6. New regression tests
-Missing break times, unlabelled overtime, weekly overtime, midnight crossing, historical rate changes (pre/post 1 July), regional and part-day holidays, correctly paid, overpaid components, missing actual pay, Partial results. Expected values from official sources wherever possible.
+## 5. Testing
+- **Unit tests** for:
+  - scanned payslip to engine input (confirmed only, no double counting of loading or overtime)
+  - questionnaire branching by award and employment type
+  - results state handling
+- **End-to-end runs in the browser** against the deployed function for the 10 journeys in your brief. Each run captures the actual function response and a screenshot. The scanner-failure journey uses a deliberately unreadable file, then manual entry.
+- The existing engine tests must still pass.
 
-## 7. Final report (then stop for approval)
-Verified count and failures, sources, corrections, unsupported scenarios, limitations, complete vs partial examples, and a frontend-readiness verdict. Updated in `tests/engine-v2/REPORT.md`.
+## Technical details
+- **Files:**
+  - `supabase/functions/calculate-award-pay-v2/index.ts`
+  - `src/features/v2/store.tsx`, `UploadPayslip.tsx`, `Results.tsx`, `payslipFields.ts`
+  - new `src/features/v2/engine/` (input mapping, API call, questionnaire steps)
+  - new `/v2/questions` route
+  - tests under `tests/v2/`
+- **Mapping:** payslip categories map to engine pay lines like this:
+  - ordinary → ordinary
+  - weekend → saturday or sunday, only when the payslip says which; otherwise "other", which leads to Partial
+  - public holiday → public_holiday
+  - overtime → overtime
+  - allowances → allowance (left out of the comparison)
+  - casual loading → casual_loading
+- `AGENTS.md` gets one rule: the 2.0 preview calls only `calculate-award-pay-v2`, using confirmed answers, and production stays on v1.
+
+## Stop point
+I'll report the changed screens, the mapping, the questions added, which scenarios reach each state, and the real test results. Then I'll stop for your review.
