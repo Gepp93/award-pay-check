@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import { editField, fieldsFromPayslip } from "../src/features/v2/payslipFields";
 
 const get = (fs: ReturnType<typeof fieldsFromPayslip>, k: string) => fs.find(f => f.key === k)!;
