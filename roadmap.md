@@ -61,8 +61,8 @@
 - [x] 10 browser journeys desktop and mobile, scanner PDF and image, security regression, report
 
 ## 2.0 preview: award discovery fix
-- [ ] Verify diagnosis against real award/classification responses
-- [ ] 2.0 payslip intent stays in 2.0 (no /check redirect)
-- [ ] Evidence-based award discovery, confirm-only, unsupported stop
-- [ ] Classification dedupe/validation/clear on award change
-- [ ] Tests + desktop/mobile browser runs; live checker vulnerability report
+- [x] Verify diagnosis against real award/classification responses
+- [x] 2.0 payslip intent stays in 2.0 (no /check redirect)
+- [x] Evidence-based award discovery, confirm-only, unsupported stop
+- [x] Classification dedupe/validation/clear on award change
+- [x] Tests + desktop/mobile browser runs; live checker vulnerability report
