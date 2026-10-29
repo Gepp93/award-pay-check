@@ -44,3 +44,13 @@ Bugs fixed, all 10 browser results, scanner results, calculation discrepancies, 
 - `EngineQuestions.tsx` and `Results.tsx`: UI for the above.
 - Tests: `tests/v2/engine-model.test.ts` (no default category, weekend needs confirmation, unknown gives other) and `tests/engine-v2` (loading basis, unknown basis gives Partial, three extended-trading outcomes from cl 15.2). Each new case cites its clause.
 - Browser runs use Playwright scripts in /tmp/browser. Evidence and the report go in `tests/v2/BROWSER-REPORT.md`.
+
+## Additional safeguards (owner-approved)
+- An "Extra loading only" line is compared against the incremental loading only: penalty rate minus ordinary rate, for the same worked hours. The ordinary component for those hours is compared separately against the ordinary line. Neither is counted twice.
+- A combined ordinary-plus-loading amount stays as one total payment. No separate ordinary component is invented.
+- If several pay lines can't be reliably matched to their hours or entitlements, the result is Partial. No category allocation is forced.
+- Before building the question, I'll re-read the actual General Retail Award cl 15.2 extended-trading conditions. If they need more than a Yes/No (for example, conditions on trading hours or the type of business), every condition is asked or the result is Partial. A bare "Yes" never establishes the extended span on its own.
+- New paired test: one combined Saturday payment versus separate ordinary-pay-plus-Saturday-loading lines for the same wages. Both must give the same comparison. This is checked in the engine tests and in a browser journey.
+- Browser tests use the real preview screens at desktop and at mobile (390px). Any test that can't be completed is listed by name with the reason.
+- The preview stays limited to the authorised tester. Nothing is published, production calculations are not modified and customer payments are not enabled. I stop after the report.
+- The new tasks are recorded in roadmap.md once building starts.
