@@ -68,7 +68,7 @@
 - [x] Tests + desktop/mobile browser runs; live checker vulnerability report
 
 ## Live /check safety patch (preview only)
-- [ ] No auto award; evidence-only suggestions; neutral copy
-- [ ] Dedupe levels, clear on award change; remove "not sure" range
-- [ ] Preliminary notice/wording on result, saved report, Full Report, PDF, My Reports; unreliable parts excluded
-- [ ] Automated + desktop/mobile browser tests incl. saved report + PDF
+- [x] No auto award; evidence-only suggestions; neutral copy
+- [x] Dedupe levels, clear on award change; remove "not sure" range
+- [x] Preliminary notice/wording on result, saved report, Full Report, PDF, My Reports; unreliable parts excluded
+- [x] Automated + desktop/mobile browser tests incl. saved report + PDF
