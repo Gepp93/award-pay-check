@@ -71,7 +71,7 @@ export default function V2Home() {
                   className={cn("absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300", shown.id === i.id ? "opacity-100" : "opacity-0")} />
               ))}
             </div>
-            <div className="relative mt-4 rounded-lg border border-border bg-card p-4 shadow-sheet md:absolute md:-left-8 md:bottom-4 md:mt-0 md:w-[260px]" aria-live="polite">
+            <div className="relative mt-4 rounded-lg border border-border bg-card p-4 shadow-sheet md:absolute md:-left-8 md:bottom-4 md:mt-0 md:w-[260px] leading-snug" aria-live="polite">
               <div className="flex items-center justify-between text-xs"><span className="font-bold uppercase tracking-wide text-primary">Payslip check</span><span className="rounded-full bg-gold-soft px-2 py-0.5 font-bold">Illustrative example</span></div>
               <p className="mt-1 font-bold">{shown.label}</p>
               {shown.id !== "construction" && <p className="text-[11px] text-ink-3">Sample figures below are a construction example, not specific to {shown.label.toLowerCase()}.</p>}
