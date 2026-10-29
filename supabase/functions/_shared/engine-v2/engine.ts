@@ -107,7 +107,6 @@ export interface AssessmentResult {
 }
 
 // ---------- integer helpers ----------
-/** Base (100%) hourly cents a percentage line was built from. */
 function baseCentsOf(l: Line): number { return l.sources[0]?.type === "pay_rate" && l.hourlyCents != null && l.percent ? Math.round(l.hourlyCents * 100 / l.percent) : 0; }
 function divRound(num: number, den: number): number {
   return Math.floor((2 * num + den) / (2 * den));
@@ -487,7 +486,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
         const entitled = new Map<LineKind, number>(kinds.map(k => [k, 0]));
         for (const l of result.lines) {
           if (loadingKinds.includes(l.kind)) {
-            const base = l.percent != null ? divRound(baseCentsOf(l) * l.minutes, 60) : 0;
+            const base = l.percent != null ? divRound(baseCents * l.minutes, 60) : 0;
             entitled.set("ordinary", entitled.get("ordinary")! + base);
             entitled.set(l.kind, entitled.get(l.kind)! + l.amountCents - base);
           } else entitled.set(l.kind, entitled.get(l.kind)! + l.amountCents);
