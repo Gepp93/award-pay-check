@@ -72,3 +72,10 @@
 - [x] Dedupe levels, clear on award change; remove "not sure" range
 - [x] Preliminary notice/wording on result, saved report, Full Report, PDF, My Reports; unreliable parts excluded
 - [x] Automated + desktop/mobile browser tests incl. saved report + PDF
+
+## Final release checks (preview only)
+- [ ] Explain missing/zero award total in historical reports (page + PDF)
+- [ ] Reconcile headline vs breakdown only when comparable; otherwise explanatory note
+- [ ] Route audit for auto award selection
+- [ ] Authenticated My Reports → report → PDF test (separate real vs fixture)
+- [ ] Full tests + desktop/mobile regression
