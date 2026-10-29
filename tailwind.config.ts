@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["IBM Plex Sans", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-        mono: ["IBM Plex Mono", "ui-monospace", "SF Mono", "Menlo", "monospace"],
+        sans: ["Manrope", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+        mono: ["Manrope", "ui-monospace", "SF Mono", "Menlo", "monospace"],
       },
       colors: {
         "ink-2": "hsl(var(--ink-2))",
@@ -50,6 +50,8 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        forest: { DEFAULT: "hsl(var(--forest))", foreground: "hsl(var(--forest-foreground))" },
+        gold: { DEFAULT: "hsl(var(--gold))", press: "hsl(var(--gold-press))", foreground: "hsl(var(--gold-foreground))", soft: "hsl(var(--gold-soft))" },
         clay: {
           DEFAULT: "hsl(var(--clay))",
           soft: "hsl(var(--clay-soft))",
