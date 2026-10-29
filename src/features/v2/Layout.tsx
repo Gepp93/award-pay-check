@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { V2Provider, useV2 } from "./store";
 import { industryById } from "./industries";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Logo = () => (
   <Link to="/v2" className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-foreground">
@@ -16,39 +17,50 @@ export const Logo = () => (
 );
 
 const links = [
-  { to: "/why-awardpay", label: "Why AwardPay" },
-  { to: "/how-it-works", label: "How it works" },
-  { to: "/v2#calculators", label: "Check tools" },
-  { to: "/v2/pricing-preview", label: "Pricing" },
-  { to: "/contact", label: "Contact" },
+  { to: "/v2/how-it-works", label: "How it works" },
+  { to: "/v2/pricing", label: "Pricing" },
 ];
+
+function useSignedIn() {
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSignedIn(!!s));
+    return () => data.subscription.unsubscribe();
+  }, []);
+  return signedIn;
+}
 
 export function V2Nav() {
   const [open, setOpen] = useState(false);
+  const signedIn = useSignedIn();
+  const { answers } = useV2();
+  const start = answers.industry ? "/v2/check" : "/v2/industry";
+  const acct = signedIn ? { to: "/reports", label: "My reports" } : { to: "/v2/sign-in", label: "Sign in" };
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4 md:px-8">
         <Logo />
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav className="hidden items-center gap-6 md:flex">
           {links.map((l) => (
             <Link key={l.label} to={l.to} className="text-sm font-medium text-ink-2 hover:text-foreground">{l.label}</Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-4 lg:flex">
-          <Link to="/auth" className="text-sm font-medium text-foreground">Sign in</Link>
-          <Button asChild variant="gold" size="sm" className="h-10"><Link to="/v2/industry">Check my pay <ArrowRight className="h-4 w-4" /></Link></Button>
+        <div className="hidden items-center gap-4 md:flex">
+          <Link to={acct.to} className="text-sm font-medium text-foreground">{acct.label}</Link>
+          <Button asChild variant="gold" size="sm" className="h-10"><Link to={start}>Check my pay <ArrowRight className="h-4 w-4" /></Link></Button>
         </div>
-        <Button variant="ghost" size="icon" className="lg:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <Button variant="ghost" size="icon" className="md:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((v) => !v)}>
           {open ? <X /> : <Menu />}
         </Button>
       </div>
       {open && (
-        <div className="flex flex-col border-t border-border px-4 pb-4 lg:hidden">
+        <div className="flex flex-col border-t border-border px-4 pb-4 md:hidden">
           {links.map((l) => (
             <Link key={l.label} to={l.to} onClick={() => setOpen(false)} className="flex min-h-14 items-center border-b border-border font-medium">{l.label}</Link>
           ))}
-          <Link to="/auth" className="flex min-h-14 items-center font-medium">Sign in</Link>
-          <Button asChild variant="gold"><Link to="/v2/industry">Check my pay</Link></Button>
+          <Link to={acct.to} onClick={() => setOpen(false)} className="flex min-h-14 items-center font-medium">{acct.label}</Link>
+          <Button asChild variant="gold" className="mt-3"><Link to={start} onClick={() => setOpen(false)}>Check my pay</Link></Button>
         </div>
       )}
     </header>
@@ -108,9 +120,9 @@ export function V2Footer() {
           <p className="mt-2 text-sm opacity-80">Check your payslip against Australian award rates. AwardPay is independent and is not affiliated with or endorsed by the Fair Work Ombudsman or the Fair Work Commission.</p>
         </div>
         <nav className="flex flex-col gap-2 text-sm">
-          <Link to="/how-it-works" className="opacity-80 hover:opacity-100">How it works</Link>
+          <Link to="/v2/how-it-works" className="opacity-80 hover:opacity-100">How it works</Link>
           <Link to="/why-awardpay" className="opacity-80 hover:opacity-100">Why AwardPay</Link>
-          <Link to="/pricing" className="opacity-80 hover:opacity-100">Pricing</Link>
+          <Link to="/v2/pricing" className="opacity-80 hover:opacity-100">Pricing</Link>
           <Link to="/contact" className="opacity-80 hover:opacity-100">Contact</Link>
         </nav>
         <p className="text-xs opacity-70">General information only, not legal advice. For help with a dispute, contact the Fair Work Ombudsman on 13 13 94.</p>

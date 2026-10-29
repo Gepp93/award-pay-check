@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, ShieldCheck, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,7 @@ const IllResult = () => (
       <p className="text-xs font-bold">Pay comparison</p>
       <div className="mt-2 grid grid-cols-[1fr_auto_auto] items-center gap-x-3 gap-y-1.5 text-[10px] text-ink-3">
         <span>Item</span><span>Paid</span><span>Award</span>
-        {[0, 1, 2].map((i) => (<><Line key={`a${i}`} w="w-full" /><Line key={`b${i}`} w="w-6" /><Line key={`c${i}`} w="w-6" /></>))}
+        {[0, 1, 2].map((i) => (<Fragment key={i}><Line w="w-full" /><Line w="w-6" /><Line w="w-6" /></Fragment>))}
       </div>
     </div>
   </div>

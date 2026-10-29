@@ -36,7 +36,11 @@ import V2Industry from "./features/v2/IndustryPick";
 import V2Guided from "./features/v2/Guided";
 import V2Upload from "./features/v2/UploadPayslip";
 import V2Results from "./features/v2/Results";
-import V2Pricing from "./features/v2/PricingPreview";
+import V2PricingPreview from "./features/v2/PricingPreview";
+import V2Pricing from "./features/v2/Pricing";
+import V2SignIn from "./features/v2/SignIn";
+import V2HowItWorks from "./features/v2/HowItWorks";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +54,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/award-finder" element={<AwardFinder />} />
           <Route path="/award-overview" element={<AwardOverview />} />
@@ -79,7 +84,10 @@ const App = () => (
             <Route path="check" element={<V2Guided />} />
             <Route path="upload" element={<V2Upload />} />
             <Route path="results" element={<V2Results />} />
-            <Route path="pricing-preview" element={<V2Pricing />} />
+            <Route path="pricing-preview" element={<Navigate to="/v2/pricing" replace />} />
+            <Route path="pricing" element={<V2Pricing />} />
+            <Route path="sign-in" element={<V2SignIn />} />
+            <Route path="how-it-works" element={<V2HowItWorks />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
