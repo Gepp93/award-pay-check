@@ -77,10 +77,10 @@ export default function Guided() {
     { id: "review" as const, title: "Check your answers", tip: "Tap any answer to change it.", ok: true,
       body: (
         <dl className="divide-y divide-border rounded-lg border border-border bg-card">
-          {[["Industry", ind.label, -1], ["Role", answers.role, 0], ["Employment", answers.employment, 1], ["State", answers.state, 2], ["Extras", answers.extras.join(", ") || "None", 3], ["Hours & pay", `${answers.hoursPerWeek}h at $${answers.hourlyRate}`, 4]].map(([k, v, i]) => (
+          {([["Industry", ind.label, "industry"], ["Checking", intent.title, "intent"], ["Role", answers.role, "role"], ["Employment", answers.employment, "employment"], ["State", answers.state, "state"], ["Extras", answers.extras.join(", ") || "None", "extras"], ["Hours & pay", `${answers.hoursPerWeek}h at $${answers.hourlyRate}`, "pay"]] as const).filter(([, , i]) => i === "industry" || i === "intent" || intent.questions.includes(i as QuestionId)).map(([k, v, i]) => (
             <div key={k as string} className="flex items-center justify-between gap-4 p-4">
               <div><dt className="text-xs text-ink-3">{k}</dt><dd className="font-semibold">{v}</dd></div>
-              <Button variant="link" onClick={() => (i === -1 ? navigate("/v2/industry") : setStep(i as number))}>Change</Button>
+              <Button variant="link" onClick={() => (i === "industry" ? navigate("/v2/industry") : i === "intent" ? update({ intent: null }) : goTo(i))}>Change</Button>
             </div>
           ))}
         </dl>) },
@@ -103,11 +103,14 @@ export default function Guided() {
           <h1 className="mt-6 text-2xl font-extrabold md:text-3xl">{s.title}</h1>
           <div className="mt-6">{s.body}</div>
           <div className="mt-8 flex flex-wrap gap-3 border-t border-border pt-6 pb-[env(safe-area-inset-bottom)]">
-            <Button variant="outline" className="h-12" onClick={() => (step ? setStep(step - 1) : navigate("/v2/industry"))}><ArrowLeft /> Back</Button>
+            <Button variant="outline" className="h-12" onClick={() => (step ? setStep(step - 1) : update({ intent: null }))}><ArrowLeft /> {step ? "Back" : "Change check"}</Button>
             {last ? (
               <div className="ml-auto flex flex-wrap justify-end gap-3">
-                <Button variant="outline" className="h-12" onClick={() => navigate("/v2/upload")}><Upload /> Add my payslip</Button>
-                <Button className="h-12" onClick={() => navigate("/v2/results")}>See results <ArrowRight /></Button>
+                {intent.live ? (
+                  <Button asChild className="h-12"><Link to={intent.live.to}>{intent.live.label} <ArrowRight /></Link></Button>
+                ) : (
+                  <p role="status" className="rounded-md bg-gold-soft px-4 py-3 text-sm font-semibold text-gold-foreground">This check isn't connected in the preview yet — no result is shown.</p>
+                )}
               </div>
             ) : (
               <Button className="ml-auto h-12 px-8" disabled={!s.ok} onClick={() => setStep(step + 1)}>Next <ArrowRight /></Button>
