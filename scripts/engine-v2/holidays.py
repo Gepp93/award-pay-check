@@ -116,6 +116,10 @@ for d, n in (("2026-07-03", "Alice Springs Show Day"), ("2026-07-10", "Tennant C
 add("NT", "2026-12-24", "Christmas Eve - part day holiday (7pm to midnight)", "part_day", 19 * 60)
 add("NT", "2026-12-31", "New Year's Eve - part day holiday (7pm to midnight)", "part_day", 19 * 60)
 
+seen = {}
+for h in holidays:
+    seen[(h["date"], h["jurisdiction"], h["name"])] = h  # idempotent re-runs
+holidays = list(seen.values())
 holidays.sort(key=lambda h: (h["date"], h["jurisdiction"], h["name"]))
 data.update({
     "coveredYears": [2024, 2025, 2026],
