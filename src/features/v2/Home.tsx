@@ -7,13 +7,9 @@ import SEO from "@/components/SEO";
 import { INDUSTRIES, type IndustryId } from "./industries";
 import { THREE_MONTH_PASS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
+import { EXAMPLES, exampleTotalCents, rowDiffCents } from "./examples";
 
-const example = [
-  { l: "Ordinary hours", s: "38h at $32.50", v: "Correct", ok: true },
-  { l: "Saturday penalty (+50%)", s: "8h, should be $48.75/h", v: "+$130.00" },
-  { l: "Tool allowance", s: "Construction award", v: "+$25.00" },
-  { l: "RDO accrual", s: "2h per week", v: "+$65.00" },
-];
+const fmt = (c: number) => `$${(c / 100).toFixed(2)}`;
 
 const faqs = [
   ["Is AwardPay connected to Fair Work?", "No. AwardPay is independent. We use published Fair Work Commission award rates, but we're not affiliated with or endorsed by the Fair Work Ombudsman or the Fair Work Commission."],
@@ -32,6 +28,8 @@ export default function V2Home() {
   const [preview, setPreview] = useState<IndustryId | null>(null);
   const photoIndustries = INDUSTRIES.filter((i) => i.image);
   const shown = photoIndustries.find((i) => i.id === (preview ?? answers.industry)) ?? photoIndustries[0];
+  const ex = EXAMPLES[shown.id as keyof typeof EXAMPLES];
+  const total = exampleTotalCents(ex);
   return (
     <main>
       <SEO title="AwardPay 2.0 preview" description="Design preview of the new AwardPay pay checker." path="/v2"><meta name="robots" content="noindex" /></SEO>
@@ -71,23 +69,25 @@ export default function V2Home() {
                   className={cn("absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300", shown.id === i.id ? "opacity-100" : "opacity-0")} />
               ))}
             </div>
-            <div className="relative mt-4 rounded-lg border border-border bg-card p-4 shadow-sheet md:absolute md:-left-8 md:bottom-4 md:mt-0 md:w-[260px] leading-snug" aria-live="polite">
-              <div className="flex items-center justify-between text-xs"><span className="font-bold uppercase tracking-wide text-primary">Payslip check</span><span className="rounded-full bg-gold-soft px-2 py-0.5 font-bold">Illustrative example</span></div>
+            <div className="relative mt-4 rounded-lg border border-border bg-card p-4 shadow-sheet md:absolute md:-left-8 md:bottom-4 md:mt-0 md:w-[270px] leading-snug" aria-live="polite">
+              <div className="flex items-center justify-between text-xs"><span className="font-bold uppercase tracking-wide text-primary">Payslip check</span><span className="rounded-full bg-gold-soft px-2 py-0.5 font-bold">Example</span></div>
               <p className="mt-1 font-bold">{shown.label}</p>
-              {shown.id !== "construction" && <p className="text-[11px] text-ink-3">Sample figures below are a construction example, not specific to {shown.label.toLowerCase()}.</p>}
-              <ul className="mt-2 divide-y divide-border text-[13px]">
-                {example.map((r) => (
-                  <li key={r.l} className="flex items-center justify-between gap-3 py-1.5">
-                    <span><span className="block font-medium">{r.l}</span><span className="text-[11px] text-ink-3">{r.s}</span></span>
-                    <span className={r.ok ? "text-xs font-bold text-primary" : "tabular font-bold text-destructive"}>{r.v}</span>
+              <p className="text-[11px] text-ink-3">{ex.scenario} · {ex.award}</p>
+              <ul className="mt-2 min-h-[188px] divide-y divide-border text-[13px]">
+                {ex.rows.map((r) => (
+                  <li key={r.label} className="flex items-center justify-between gap-3 py-1.5">
+                    <span><span className="block font-medium">{r.label}</span><span className="text-[11px] text-ink-3">{r.detail}</span></span>
+                    {r.figures
+                      ? <span className="tabular font-bold text-destructive">+{fmt(rowDiffCents(r))}</span>
+                      : <span className="shrink-0 text-xs font-bold text-primary">We check</span>}
                   </li>
                 ))}
               </ul>
               <div className="mt-2 rounded-md bg-primary-soft p-2.5">
-                <p className="text-[11px] font-bold uppercase text-primary">Potential underpayment</p>
-                <p className="tabular text-2xl font-extrabold">$220.00</p>
+                <p className="text-[11px] font-bold uppercase text-primary">{total === null ? "Your result" : "Example difference"}</p>
+                <p className="text-sm font-bold">{total === null ? "Compared line by line with the award" : fmt(total)}</p>
               </div>
-              <p className="mt-2 text-[11px] text-ink-3">Illustration only — not a real payslip or customer result.</p>
+              <p className="mt-2 text-[11px] text-ink-3">Illustrative example — not a real payslip or customer result.</p>
             </div>
           </div>
         </div>
@@ -99,12 +99,12 @@ export default function V2Home() {
         <div className="mx-auto max-w-6xl px-4 py-10 md:px-8">
           <div className="grid gap-8 md:grid-cols-2">
             <div>
-              <p className="tabular text-4xl font-extrabold text-gold">$358 million</p>
-              <p className="mt-1 opacity-90">recovered by the Fair Work Ombudsman for more than 249,000 underpaid workers in 2024–25.</p>
+              <p className="tabular text-4xl font-extrabold text-gold">$358M <span className="text-2xl text-forest-foreground">— Recovered in 2024–25</span></p>
+              <p className="mt-1 opacity-90">by the Fair Work Ombudsman for more than 249,000 workers in the 2024–25 financial year.</p>
             </div>
             <div>
-              <p className="tabular text-4xl font-extrabold text-gold">More than $2 billion</p>
-              <p className="mt-1 opacity-90">back-paid to workers through the Fair Work Ombudsman across the five years to 2024–25.</p>
+              <p className="tabular text-4xl font-extrabold text-gold">$2B+ <span className="text-2xl text-forest-foreground">— Recovered over five years, July 2020–June 2025</span></p>
+              <p className="mt-1 opacity-90">by the Fair Work Ombudsman across the five financial years ending June 2025.</p>
             </div>
           </div>
           <p className="mt-6 text-xs opacity-75">These figures are money the Fair Work Ombudsman recovered — not the total currently owed to Australian workers. Sources:{" "}
