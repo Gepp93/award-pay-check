@@ -51,3 +51,12 @@ No changes to the live checker, v1 engine, Stripe, database, accounts or saved r
 - Discovery list entries for MA000020 and MA000025 hold only codes and official names, with no rates.
 - Tests: `tests/v2/award-discovery.test.ts` and extensions to `tests/v2/engine-model.test.ts`, run with `bun test`. Browser runs are reported in `tests/v2/BROWSER-REPORT.md`.
 - `AGENTS.md`: add one rule saying 2.0 award discovery is evidence-based and confirmation-only, and that only rule-pack awards proceed to calculation.
+
+## Additional requirements (owner approval)
+
+- Step 1 is mandatory. Call the real award and classification lookups for "Civil Crew Foreman" and record the responses. If they contradict the diagnosis, stop and report before changing any code.
+- Keep the selected industry, the confirmed occupation and the confirmed payslip fields through the 2.0 "Check my payslip" path. The 2.0 preview must never silently redirect to `/check`.
+- One generic shared word is never enough evidence, and no award is ever selected automatically.
+- MA000020 is a "possible" award only. MA000025 needs electrical duties or other supporting evidence.
+- Test every occupation listed above, plus switching awards, browser Back/Forward and refresh, on desktop and on a phone-sized screen.
+- The final report lists the live checker's matching weaknesses. The live checker is not changed.
