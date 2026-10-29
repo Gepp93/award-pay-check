@@ -1,97 +1,129 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { AlertTriangle, ArrowRight, CheckCircle2, FileText, HelpCircle, Mail, TrendingUp, XCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { AlertTriangle, ArrowLeft, CheckCircle2, HelpCircle, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { IndustryChip, Stepper } from "./Layout";
+import { Stepper, IndustryChip } from "./Layout";
 import { useV2 } from "./store";
-import { industryById } from "./industries";
+import { buildRequest } from "./engine/model";
+import { runEngine } from "./engine/api";
+import type { AssessmentResult } from "../../../supabase/functions/_shared/engine-v2/engine";
 
-type Kind = "under" | "ok" | "more" | "unsupported" | "error";
-const STATES: { id: Kind; label: string }[] = [
-  { id: "under", label: "Potential underpayment" }, { id: "ok", label: "No discrepancy" },
-  { id: "more", label: "More info needed" }, { id: "unsupported", label: "Unsupported" }, { id: "error", label: "Processing error" },
-];
-
-const EXAMPLE = [
-  ["Saturday penalty (+50%)", "+$130.00"], ["Tool allowance", "+$25.00"], ["RDO accrual", "+$65.00"],
-];
+const $ = (c: number | null | undefined) => (c == null ? "—" : `${c < 0 ? "−" : ""}$${(Math.abs(c) / 100).toFixed(2)}`);
+const KIND: Record<string, string> = { ordinary: "Ordinary hours", evening: "Evening / night", saturday: "Saturday", sunday: "Sunday", public_holiday: "Public holiday", overtime: "Overtime" };
+const STEP_FOR: Record<string, string> = { Break: "shifts", Overtime: "shifts", "Pay comparison": "pay", "Minimum engagement": "shifts", Shift: "shifts" };
 
 export default function Results() {
-  const [kind, setKind] = useState<Kind>("under");
-  const { answers } = useV2();
-  const ind = industryById(answers.industry);
+  const { answers, update } = useV2();
+  const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
+  const r = answers.result as AssessmentResult | null;
+
+  if (!r) {
+    return (
+      <main className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+        <Stepper current={2} />
+        <h1 className="text-3xl font-extrabold">No result yet</h1>
+        <p className="mt-2 text-ink-2">Answer the questions to run a check.</p>
+        <Button asChild className="mt-6"><Link to="/v2/questions">Answer questions</Link></Button>
+      </main>
+    );
+  }
+
+  const holidayQs = r.notAssessed.filter(n => n.item === "Public holiday" && n.question && /\d{4}-\d{2}-\d{2}/.test(n.question));
+  const answerHoliday = async (date: string, yes: boolean) => {
+    const engine = { ...answers.engine, holidayAnswers: { ...answers.engine.holidayAnswers, [date]: yes } };
+    setBusy(true);
+    const res = await runEngine(buildRequest(engine));
+    setBusy(false);
+    if (res.ok) update({ engine, result: res.result });
+  };
 
   const head = {
-    under: { icon: AlertTriangle, tone: "bg-clay-soft text-destructive", t: "Potential underpayment" },
-    ok: { icon: CheckCircle2, tone: "bg-primary-soft text-primary", t: "No discrepancy found in the checks we support" },
-    more: { icon: HelpCircle, tone: "bg-gold-soft text-gold-foreground", t: "We need a bit more information" },
-    unsupported: { icon: XCircle, tone: "bg-muted text-ink-2", t: "We can't calculate this yet" },
-    error: { icon: XCircle, tone: "bg-clay-soft text-destructive", t: "Something went wrong" },
-  }[kind];
+    complete: { icon: r.underpaymentCents ? AlertTriangle : CheckCircle2, tone: r.underpaymentCents ? "bg-clay-soft text-destructive" : "bg-primary-soft text-primary", t: r.underpaymentCents ? "Potential underpayment found" : "No shortfall identified in what we checked" },
+    partial: { icon: HelpCircle, tone: "bg-gold-soft text-gold-foreground", t: "Partial check — not your full entitlement" },
+    unsupported: { icon: XCircle, tone: "bg-muted text-ink-2", t: "We can't reliably assess this" },
+  }[r.status];
+  const Icon = head.icon;
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 md:px-8">
+    <main className="mx-auto max-w-4xl px-4 py-10 md:px-8">
       <Stepper current={2} />
       <IndustryChip />
-      <div className="rounded-lg border-2 border-dashed border-gold bg-gold-soft p-4 text-sm">
-        <p className="font-bold">Design preview — example data only</p>
-        <p className="mt-1 text-ink-2">These results are not calculated from your answers. For a real check against official award rates, use the live checker.</p>
-        <Button asChild size="sm" className="mt-3"><Link to="/check">Run my real check <ArrowRight /></Link></Button>
-      </div>
+      <p className="mb-6 rounded-md bg-gold-soft px-3 py-2 text-xs font-bold">Internal Engine v2 test — calculated by engine {r.engineVersion}. Reports and passes are switched off in this preview.</p>
 
-      <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Preview result state">
-        {STATES.map((s) => (
-          <button key={s.id} role="tab" aria-selected={kind === s.id} onClick={() => setKind(s.id)}
-            className={cn("rounded-full border px-4 py-2 text-sm font-semibold", kind === s.id ? "border-forest bg-forest text-forest-foreground" : "border-border bg-card")}>{s.label}</button>
-        ))}
-      </div>
+      <section className={`rounded-lg p-6 ${head.tone}`} data-status={r.status}>
+        <p className="flex items-center gap-2 text-xl font-extrabold"><Icon className="h-6 w-6" /> {head.t}</p>
+        {r.status === "complete" && r.underpaymentCents != null && (
+          <p className="mt-3 text-4xl font-extrabold" data-testid="underpayment">{$(r.underpaymentCents)}</p>
+        )}
+        {r.reasons.map((x, k) => <p key={k} className="mt-2 text-sm text-foreground">{x}</p>)}
+      </section>
 
-      <h1 className="mt-8 text-3xl font-extrabold">Your result</h1>
-      <p className="mt-1 text-ink-2">Example pay period: Mon 1 Jun – Sun 14 Jun 2026</p>
+      {r.status !== "unsupported" && (
+        <section className="mt-6 rounded-lg border border-border bg-card p-6">
+          <h2 className="text-lg font-extrabold">{r.rulePack?.name} ({r.rulePack?.awardCode})</h2>
+          <p className="text-sm text-ink-2">{r.classification} · base rate {$(r.rate?.hourlyCents)}/h from {r.rate?.operativeFrom} · {r.rate?.rule}</p>
+          <table className="mt-4 w-full text-sm">
+            <thead><tr className="text-left text-ink-3"><th className="py-1">Date</th><th>What</th><th>Working</th><th className="text-right">Award minimum</th></tr></thead>
+            <tbody>
+              {r.lines.map((l, k) => (
+                <tr key={k} className="border-t border-rule align-top">
+                  <td className="py-2 pr-2">{l.date}</td><td className="pr-2">{l.category}</td>
+                  <td className="pr-2 text-ink-2">{l.explanation}<br /><span className="text-xs text-ink-3">{l.sources.map(s => `${s.description}${s.clause ? ` (${s.clause})` : ""}`).join("; ")}</span></td>
+                  <td className="text-right font-semibold">{$(l.amountCents)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-3 text-right text-sm">{r.status === "complete" ? "Assessed award minimum" : "Assessed items only (not a total entitlement)"}: <strong>{$(r.assessedEntitlementCents)}</strong></p>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <section className={cn("rounded-lg p-6", head.tone)}>
-          <p className="flex items-center gap-2 font-bold"><head.icon className="h-5 w-5" /> {head.t}</p>
-          {kind === "under" && <><p className="tabular mt-3 text-5xl font-extrabold text-foreground">$220.00</p><p className="text-sm text-ink-2">for this pay period (example)</p></>}
-          {kind === "ok" && <p className="mt-3 text-sm text-ink-2">Your base rate, penalties and allowances matched the award for the items we check. Things we can't check are listed below.</p>}
-          {kind === "more" && <p className="mt-3 text-sm text-ink-2">Your hours or classification weren't clear. Answer two more questions to finish the check.</p>}
-          {kind === "unsupported" && <p className="mt-3 text-sm text-ink-2">Your award or arrangement (e.g. an enterprise agreement) isn't supported yet. Contact the Fair Work Ombudsman for help.</p>}
-          {kind === "error" && <p className="mt-3 text-sm text-ink-2">We couldn't finish the calculation. Your answers are saved — please try again.</p>}
+          {r.status === "complete" && r.paid.comparison === "complete" && (
+            <div className="mt-4 border-t border-rule pt-4 text-sm">
+              <p>Comparable wages paid: <strong>{$(r.paid.comparableCents)}</strong> · Net difference: <strong>{$(r.differenceCents)}</strong></p>
+              {r.paid.components && (
+                <table className="mt-3 w-full">
+                  <thead><tr className="text-left text-ink-3"><th>Category</th><th className="text-right">Award</th><th className="text-right">Paid</th><th className="text-right">Difference</th></tr></thead>
+                  <tbody>{r.paid.components.map(c => <tr key={c.kind} className="border-t border-rule"><td className="py-1">{KIND[c.kind]}</td><td className="text-right">{$(c.entitledCents)}</td><td className="text-right">{$(c.paidCents)}</td><td className="text-right font-semibold">{$(c.differenceCents)}</td></tr>)}</tbody>
+                </table>
+              )}
+              {r.componentShortfallCents != null && r.componentShortfallCents !== r.underpaymentCents && <p className="mt-2">Shortfalls in individual categories add up to {$(r.componentShortfallCents)}.</p>}
+              <p className="mt-2 text-ink-2">{r.paid.note}</p>
+            </div>
+          )}
+          {r.paid.indicativeDifferenceCents != null && <p className="mt-3 text-sm text-ink-2">Indicative only — not an underpayment: {$(r.paid.indicativeDifferenceCents)}. {r.paid.note}</p>}
         </section>
+      )}
 
-        <section className="rounded-lg border border-border bg-card p-6 shadow-soft">
-          <h2 className="font-bold">Breakdown</h2>
-          {kind === "under" ? (
-            <ul className="mt-3 divide-y divide-border text-sm">
-              {EXAMPLE.map(([l, v]) => <li key={l} className="flex justify-between py-3"><span>{l}</span><span className="tabular font-bold text-destructive">{v}</span></li>)}
-              <li className="flex justify-between py-3 font-bold"><span>Total potential underpayment</span><span className="tabular text-destructive">$220.00</span></li>
-            </ul>
-          ) : <p className="mt-3 text-sm text-ink-3">No itemised findings for this state.</p>}
+      {holidayQs.length > 0 && (
+        <section className="mt-6 rounded-lg border border-gold bg-card p-6">
+          {holidayQs.map((n, k) => { const date = n.question!.match(/\d{4}-\d{2}-\d{2}/)![0]; return (
+            <div key={k} className="mb-3"><p className="font-bold">{n.question}</p><p className="text-sm text-ink-2">{n.reason}</p>
+              <div className="mt-2 flex gap-3"><Button size="sm" disabled={busy} onClick={() => answerHoliday(date, true)}>Yes</Button><Button size="sm" variant="outline" disabled={busy} onClick={() => answerHoliday(date, false)}>No</Button>{busy && <Loader2 className="animate-spin" />}</div>
+            </div>); })}
         </section>
+      )}
 
-        <section className="rounded-lg border border-border bg-card p-6">
-          <h2 className="font-bold">Award and classification</h2>
-          <p className="mt-2 text-sm text-ink-2">Example: Electrical, Electronic and Communications Contracting Award 2020 · {answers.role || "Electrician Level 1"} · {answers.employment || "Full-time"}{ind ? ` · ${ind.label}` : ""}</p>
-          <h3 className="mt-4 text-sm font-bold">Sources</h3>
-          <a className="text-sm text-primary underline" href="https://www.fairwork.gov.au/pay-and-wages/minimum-wages/pay-guides" target="_blank" rel="noreferrer">Fair Work Ombudsman pay guides</a>
-          <h3 className="mt-4 text-sm font-bold">Assumptions and limitations</h3>
-          <ul className="mt-1 list-disc pl-5 text-sm text-ink-2">
-            <li>Based only on the information provided.</li>
-            <li>Doesn't cover enterprise agreements or superannuation.</li>
-            <li>Verification status: estimate — not checked by a person.</li>
+      {r.notAssessed.length > 0 && (
+        <section className="mt-6 rounded-lg border border-border bg-card p-6">
+          <h2 className="text-lg font-extrabold">Not assessed or needs more information</h2>
+          <ul className="mt-3 space-y-3 text-sm">
+            {r.notAssessed.filter(n => n.item !== "Public holiday" || !holidayQs.includes(n)).map((n, k) => (
+              <li key={k}><strong>{n.item}:</strong> {n.reason}{n.question && <> <span className="text-ink-2">{n.question}</span></>}
+                {STEP_FOR[n.item] && <> <Link className="font-semibold text-primary underline" to={`/v2/questions#${STEP_FOR[n.item]}`}>Add this</Link></>}</li>
+            ))}
           </ul>
         </section>
+      )}
 
-        <section className="rounded-lg border border-border bg-card p-6">
-          <h2 className="font-bold">Next steps</h2>
-          <ul className="mt-3 space-y-4 text-sm">
-            <li className="flex gap-3"><FileText className="h-5 w-5 text-primary" /><span><b>Get the full report</b><br />Itemised breakdown with award clauses.</span></li>
-            <li className="flex gap-3"><Mail className="h-5 w-5 text-primary" /><span><b>Talk to your employer</b><br />Use a template letter (optional).</span></li>
-            <li className="flex gap-3"><TrendingUp className="h-5 w-5 text-primary" /><span><b>Track your pay</b><br />Keep your evidence organised.</span></li>
-          </ul>
-          <Button asChild variant="gold" className="mt-6 w-full"><Link to="/v2/pricing">See the 3 Month Pass</Link></Button>
-        </section>
+      <section className="mt-6 text-sm text-ink-2">
+        {r.notes.map((x, k) => <p key={k} className="mt-1">{x}</p>)}
+        <p className="mt-3 font-bold text-foreground">Not included</p>
+        <ul className="list-disc pl-5">{r.exclusions.map((x, k) => <li key={k}>{x}</li>)}</ul>
+        <p className="mt-3">AwardPay is independent of the Fair Work Ombudsman. Results depend on award coverage and the information you gave.</p>
+      </section>
+
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Button variant="outline" onClick={() => navigate("/v2/questions")}><ArrowLeft /> {r.status === "unsupported" ? "Change award or classification" : "Change my answers"}</Button>
       </div>
     </main>
   );

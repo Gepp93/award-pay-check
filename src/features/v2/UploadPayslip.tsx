@@ -70,8 +70,8 @@ export default function UploadPayslip() {
   const confirm = () => {
     if (state.kind !== "done" || !confirmed) return;
     const val = (k: FieldKey) => state.fields.find(f => f.key === k)?.value ?? "";
-    if (!state.demo) update({ hoursPerWeek: val("ordinary_hours"), hourlyRate: val("base_hourly_rate") });
-    navigate("/v2/results");
+    if (!state.demo) update({ hoursPerWeek: val("ordinary_hours"), hourlyRate: val("base_hourly_rate"), payslip: state.fields, result: null });
+    navigate("/v2/questions");
   };
 
   const missing = state.kind === "done" ? state.fields.filter(f => f.source === "missing").length : 0;
@@ -99,7 +99,7 @@ export default function UploadPayslip() {
             <input ref={camRef} type="file" aria-label="Take a payslip photo" accept="image/*" capture="environment" className="sr-only" onChange={(e) => handle(e.target.files?.[0])} />
           </div>
           <p className="mt-3 flex items-start gap-2 text-xs text-ink-3"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Your file is read once and never stored. Only the first page of a PDF is read.</p>
-          <Button variant="link" className="mt-1 px-0" onClick={() => navigate("/v2/check")}>Skip — answer questions instead</Button>
+          <Button variant="link" className="mt-1 px-0" onClick={() => navigate("/v2/questions")}>Skip — answer questions instead</Button>
         </section>
 
         <section className="rounded-lg border border-border bg-card p-6 shadow-sheet" aria-live="polite">
@@ -121,7 +121,7 @@ export default function UploadPayslip() {
             <div role="alert">
               <p className="flex items-center gap-2 font-bold text-destructive"><AlertTriangle className="h-5 w-5" /> We couldn't read your payslip</p>
               <p className="mt-2 text-sm text-ink-2">{state.message}</p>
-              <div className="mt-4 flex flex-wrap gap-3"><Button onClick={() => navigate("/v2/check")}>Answer questions</Button><Button variant="outline" onClick={() => setState({ kind: "idle" })}>Try again</Button></div>
+              <div className="mt-4 flex flex-wrap gap-3"><Button onClick={() => navigate("/v2/questions")}>Answer questions</Button><Button variant="outline" onClick={() => setState({ kind: "idle" })}>Try again</Button></div>
             </div>
           )}
           {state.kind === "done" && (

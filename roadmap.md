@@ -51,3 +51,4 @@
 
 - [x] Engine v2 accuracy verification and safety fixes (breaks, roster-aware overtime, gross-only Partial, 2026 holidays, report)
 - [ ] Engine v2 frontend integration — waiting on owner approval
+- [ ] Connect Engine v2 to AwardPay 2.0 preview (internal only)

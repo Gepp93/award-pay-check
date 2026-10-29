@@ -36,6 +36,7 @@ import V2Industry from "./features/v2/IndustryPick";
 import V2Guided from "./features/v2/Guided";
 import V2Upload from "./features/v2/UploadPayslip";
 import V2Results from "./features/v2/Results";
+import V2Questions from "./features/v2/EngineQuestions";
 import V2Pricing from "./features/v2/Pricing";
 import V2SignIn from "./features/v2/SignIn";
 import V2HowItWorks from "./features/v2/HowItWorks";
@@ -82,6 +83,7 @@ const App = () => (
             <Route path="industry" element={<V2Industry />} />
             <Route path="check" element={<V2Guided />} />
             <Route path="upload" element={<V2Upload />} />
+            <Route path="questions" element={<V2Questions />} />
             <Route path="results" element={<V2Results />} />
             <Route path="pricing-preview" element={<Navigate to="/v2/pricing" replace />} />
             <Route path="pricing" element={<V2Pricing />} />
