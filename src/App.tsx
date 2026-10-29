@@ -36,7 +36,6 @@ import V2Industry from "./features/v2/IndustryPick";
 import V2Guided from "./features/v2/Guided";
 import V2Upload from "./features/v2/UploadPayslip";
 import V2Results from "./features/v2/Results";
-import V2PricingPreview from "./features/v2/PricingPreview";
 import V2Pricing from "./features/v2/Pricing";
 import V2SignIn from "./features/v2/SignIn";
 import V2HowItWorks from "./features/v2/HowItWorks";

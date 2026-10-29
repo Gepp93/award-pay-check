@@ -90,7 +90,7 @@ export default function Results() {
             <li className="flex gap-3"><Mail className="h-5 w-5 text-primary" /><span><b>Talk to your employer</b><br />Use a template letter (optional).</span></li>
             <li className="flex gap-3"><TrendingUp className="h-5 w-5 text-primary" /><span><b>Track your pay</b><br />Keep your evidence organised.</span></li>
           </ul>
-          <Button asChild variant="gold" className="mt-6 w-full"><Link to="/v2/pricing-preview">See report options</Link></Button>
+          <Button asChild variant="gold" className="mt-6 w-full"><Link to="/v2/pricing">See the 3 Month Pass</Link></Button>
         </section>
       </div>
     </main>
