@@ -69,11 +69,11 @@ export default {
         },
       },
       borderRadius: {
-        lg: "6px",
-        md: "4px",
-        sm: "2px",
+        lg: "16px",
+        md: "10px",
+        sm: "6px",
       },
-      boxShadow: { sheet: "var(--shadow-sheet)" },
+      boxShadow: { sheet: "var(--shadow-sheet)", soft: "var(--shadow-soft)" },
       keyframes: {
         "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
         "accordion-up": { from: { height: "var(--radix-accordion-content-height)" }, to: { height: "0" } },
