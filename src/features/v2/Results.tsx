@@ -80,8 +80,20 @@ export default function Results() {
           {r.paid.components && (
             <div className="mt-4 border-t border-rule pt-4 text-sm" data-testid="components">
               <h3 className="font-extrabold">By pay category</h3>
-              <div className="overflow-x-auto">
-                <table className="mt-2 w-full min-w-[30rem]">
+              <ul className="mt-2 space-y-2 sm:hidden">
+                {r.paid.components.map(c => (
+                  <li key={c.kind} className="rounded-md border border-rule p-3">
+                    <p className="font-bold">{KIND[c.kind]}{c.basis === "loading" ? " (extra loading only)" : ""}</p>
+                    <dl className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1">
+                      <dt className="text-ink-3">Actual paid</dt><dd className="text-right">{$(c.paidCents)}</dd>
+                      <dt className="text-ink-3">Award minimum</dt><dd className="text-right">{$(c.entitledCents)}</dd>
+                      <dt className="text-ink-3">Shortfall</dt><dd className="text-right font-semibold">{c.differenceCents > 0 ? $(c.differenceCents) : "—"}</dd>
+                      <dt className="text-ink-3">Overpayment</dt><dd className="text-right">{c.differenceCents < 0 ? $(-c.differenceCents) : "—"}</dd>
+                    </dl>
+                  </li>))}
+              </ul>
+              <div className="hidden sm:block">
+                <table className="mt-2 w-full">
                   <thead><tr className="text-left text-ink-3"><th>Category</th><th className="text-right">Actual paid</th><th className="text-right">Award minimum</th><th className="text-right">Shortfall</th><th className="text-right">Overpayment</th></tr></thead>
                   <tbody>{r.paid.components.map(c => (
                     <tr key={c.kind} className="border-t border-rule"><td className="py-1">{KIND[c.kind]}{c.basis === "loading" ? " (extra loading only)" : ""}</td>
