@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AlertTriangle, ArrowRight, CheckCircle2, FileText, HelpCircle, Mail, TrendingUp, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Stepper } from "./Layout";
+import { IndustryChip, Stepper } from "./Layout";
 import { useV2 } from "./store";
 import { industryById } from "./industries";
 
@@ -33,6 +33,7 @@ export default function Results() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 md:px-8">
       <Stepper current={2} />
+      <IndustryChip />
       <div className="rounded-lg border-2 border-dashed border-gold bg-gold-soft p-4 text-sm">
         <p className="font-bold">Design preview — example data only</p>
         <p className="mt-1 text-ink-2">These results are not calculated from your answers. For a real check against official award rates, use the live checker.</p>

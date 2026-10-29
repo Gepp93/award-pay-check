@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { industryById } from "./industries";
 import { useV2 } from "./store";
-import { Stepper } from "./Layout";
+import { IndustryChip, Stepper } from "./Layout";
 
 const STATES = ["NSW", "VIC", "QLD", "WA", "SA", "TAS", "ACT", "NT"];
 const EMPLOYMENT = ["Full-time", "Part-time", "Casual"] as const;
@@ -77,13 +77,14 @@ export default function Guided() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 md:px-8">
       <Stepper current={1} />
+      <IndustryChip />
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
         <section className="rounded-lg border border-border bg-card p-6 shadow-sheet md:p-8">
           <p className="text-xs font-bold uppercase tracking-wide text-ink-3">Question {step + 1} of {steps.length}</p>
           <div className="mt-2 h-1.5 rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${((step + 1) / steps.length) * 100}%` }} /></div>
           <h1 className="mt-6 text-2xl font-extrabold md:text-3xl">{s.title}</h1>
           <div className="mt-6">{s.body}</div>
-          <div className="sticky bottom-0 -mx-6 mt-8 flex gap-3 border-t border-border bg-card px-6 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:static md:mx-0 md:px-0 md:pb-0">
+          <div className="mt-8 flex flex-wrap gap-3 border-t border-border pt-6 pb-[env(safe-area-inset-bottom)]">
             <Button variant="outline" className="h-12" onClick={() => (step ? setStep(step - 1) : navigate("/v2/industry"))}><ArrowLeft /> Back</Button>
             {last ? (
               <div className="ml-auto flex flex-wrap justify-end gap-3">
