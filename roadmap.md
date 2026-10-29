@@ -59,3 +59,10 @@
 - [x] Retail cl 15.2 extended trading questions (verified conditions)
 - [x] Combined vs split Saturday payment equivalence test
 - [x] 10 browser journeys desktop and mobile, scanner PDF and image, security regression, report
+
+## 2.0 preview: award discovery fix
+- [x] Verify diagnosis against real award/classification responses
+- [x] 2.0 payslip intent stays in 2.0 (no /check redirect)
+- [x] Evidence-based award discovery, confirm-only, unsupported stop
+- [x] Classification dedupe/validation/clear on award change
+- [x] Tests + desktop/mobile browser runs; live checker vulnerability report

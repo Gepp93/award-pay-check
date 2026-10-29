@@ -11,6 +11,9 @@ import {
   type EngineDraft, type ShiftDraft, type StepId, type Tri,
 } from "./engine/model";
 import { runEngine, type EngineCallError } from "./engine/api";
+import { discoverAwards, isSupported, awardName } from "./engine/awardDiscovery";
+import { sanitizeDraft, withAward } from "./engine/model";
+import { industryById } from "./industries";
 
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
 const KINDS: [string, string][] = [
@@ -44,7 +47,13 @@ export default function EngineQuestions() {
   const { answers, update } = useV2();
   const navigate = useNavigate();
   const loc = useLocation();
-  const [d, setD] = useState<EngineDraft>(() => answers.payslip ? prefillFromPayslip(answers.engine, answers.payslip) : answers.engine);
+  const [d, setD] = useState<EngineDraft>(() => {
+    const base = answers.payslip ? prefillFromPayslip(answers.engine, answers.payslip) : answers.engine;
+    const withRole = !base.jobTitle && answers.role.trim() ? { ...base, jobTitle: answers.role.trim(), jobTitleSource: "user" as const } : base;
+    return sanitizeDraft(withRole);
+  });
+  const suggestions = useMemo(() => discoverAwards({ jobTitle: d.jobTitle, industry: answers.industry, duties: d.duties }), [d.jobTitle, d.duties, answers.industry]);
+  const unsupported = !!d.awardCode && d.awardCode !== OTHER_AWARD && !isSupported(d.awardCode);
   const steps = useMemo(() => stepsFor(d), [d]);
   const fromHash = steps.indexOf(loc.hash.slice(1) as StepId);
   const [i, setI] = useState(fromHash >= 0 ? fromHash : 0);
@@ -52,6 +61,9 @@ export default function EngineQuestions() {
   const [err, setErr] = useState<EngineCallError | null>(null);
   useEffect(() => { update({ engine: d }); }, [d]); // eslint-disable-line react-hooks/exhaustive-deps
   const step = steps[Math.min(i, steps.length - 1)];
+  // Keep the step in the URL hash so browser Back/Forward and refresh land on the same question.
+  useEffect(() => { const h = loc.hash.slice(1) as StepId; const k = steps.indexOf(h); if (k >= 0 && k !== i) setI(k); }, [loc.hash]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (loc.hash.slice(1) !== step) navigate({ hash: step }, { replace: !loc.hash }); }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
   const set = (p: Partial<EngineDraft>) => setD(x => ({ ...x, ...p }));
   const rules = d.awardCode && d.employmentType ? overtimeRules(d.awardCode, d.employmentType) : null;
   const fromPayslip = (v: string, src?: string) => v && src === "payslip" ? <span className="ml-2 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-bold text-primary">From your confirmed payslip</span> : null;
@@ -59,7 +71,7 @@ export default function EngineQuestions() {
 
   // Required to continue (input completeness only — never decides the assessment result).
   const canNext: Record<StepId, boolean> = {
-    award: !!d.awardCode && (d.awardCode === OTHER_AWARD || !!d.enterpriseAgreement),
+    award: !!d.awardCode && !unsupported && (d.awardCode === OTHER_AWARD || !!d.enterpriseAgreement),
     classification: d.classificationFixedId !== null, employment: !!d.employmentType, rate: !!d.rateType, state: !!d.state,
     period: true, shifts: d.shifts.some(s => s.date && s.start && s.finish), allShifts: !!d.allShifts, roster: !!d.workedToRoster,
     guaranteed: true, cycle: true, extended: d.spanExceptions !== undefined, pay: d.payLines.every(lineReady),
@@ -86,10 +98,33 @@ export default function EngineQuestions() {
       <section aria-live="polite" className="space-y-5">
         {step === "award" && (<>
           <h1 className="text-3xl font-extrabold">Which award covers you?</h1>
-          <p className="text-ink-2">We only check these three awards for now. We never pick an award for you.</p>
-          <Choice label="Award" value={d.awardCode} onChange={v => set({ awardCode: v, classificationFixedId: null })}
-            options={[...AWARDS.map(a => [a.code, `${a.label} (${a.code})`] as [string, string]), [OTHER_AWARD, "A different award / not sure"]]} />
-          {d.awardCode && d.awardCode !== OTHER_AWARD && (<>
+          <dl className="grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-3">
+            <div className="sm:col-span-3"><dt className="text-xs font-bold uppercase tracking-wide text-ink-3">Your job title</dt>
+              <dd className="text-xl font-extrabold">{d.jobTitle || "Not entered yet"}{fromPayslip(d.jobTitle, d.jobTitleSource)}</dd></div>
+            <div><dt className="text-xs text-ink-3">Industry</dt><dd className="font-semibold">{industryById(answers.industry)?.label ?? "Not chosen"}</dd></div>
+            <div className="sm:col-span-2"><dt className="text-xs text-ink-3">Award</dt><dd className="font-semibold">{d.awardCode === OTHER_AWARD ? "A different award / not sure" : d.awardCode ? `${awardName(d.awardCode)} (${d.awardCode})` : "Not confirmed"}</dd></div>
+          </dl>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="text-sm font-bold">Job title<Input className="mt-1 h-12 text-base" value={d.jobTitle} onChange={e => set({ jobTitle: e.target.value, jobTitleSource: "user" })} placeholder="As printed on your payslip" /></label>
+            <label className="text-sm font-bold">Main duties (optional)<Input className="mt-1 h-12 text-base" value={d.duties} onChange={e => set({ duties: e.target.value })} placeholder="e.g. electrical wiring, serving coffee" /></label>
+          </div>
+          <p className="text-ink-2">Awards depend on your employer's industry and your actual duties, not just your job title. We never pick an award for you.</p>
+          {suggestions.length > 0 ? (<>
+            <p className="font-bold">Possible awards — please confirm</p>
+            <Choice label="Possible awards" value={d.awardCode} onChange={v => setD(x => withAward(x, v))}
+              options={suggestions.map(a => [a.code, `${a.name} (${a.code}) — matched “${a.evidence.join("”, “")}”${a.supported ? "" : " · calculation not available yet"}`] as [string, string])} />
+          </>) : <p role="status" className="rounded-md bg-secondary px-3 py-2 text-sm">We couldn't suggest an award from your job title{d.duties ? " and duties" : ""}. Choose one below if you know it.</p>}
+          <p className="pt-2 font-bold">Awards we can calculate today</p>
+          <Choice label="Award" value={d.awardCode} onChange={v => setD(x => withAward(x, v))}
+            options={[...AWARDS.filter(a => !suggestions.some(s => s.code === a.code)).map(a => [a.code, `${a.label} (${a.code})`] as [string, string]), [OTHER_AWARD, "A different award / not sure"]]} />
+          {unsupported && (
+            <div role="alert" className="space-y-3 rounded-lg border-2 border-gold bg-gold-soft p-4">
+              <p className="font-bold">We've identified your selected award, but detailed pay calculations for this award aren't available yet.</p>
+              <p className="text-sm">{awardName(d.awardCode)} ({d.awardCode}). We won't calculate it under a different award.</p>
+              <Button variant="outline" onClick={() => setD(x => withAward(x, ""))}>Change award</Button>
+            </div>
+          )}
+          {d.awardCode && d.awardCode !== OTHER_AWARD && !unsupported && (<>
             <p className="pt-2 font-bold">Are you covered by an enterprise agreement instead?</p>
             <Choice label="Enterprise agreement" value={d.enterpriseAgreement} onChange={v => set({ enterpriseAgreement: v as Tri })} options={[["no", "No — the award applies"], ["yes", "Yes, an enterprise agreement"], ["unknown", "I'm not sure"]]} />
           </>)}
@@ -97,9 +132,10 @@ export default function EngineQuestions() {
 
         {step === "classification" && (<>
           <h1 className="text-3xl font-extrabold">Your classification level</h1>
+          <p className="text-sm font-semibold">{awardName(d.awardCode)} ({d.awardCode})</p>
           <p className="text-ink-2">Find it on your payslip, contract or ask your employer. Choose "Not sure" rather than guessing.</p>
           <Choice label="Classification" value={String(d.classificationFixedId ?? "")} onChange={v => set({ classificationFixedId: Number(v) })}
-            options={[...classificationsFor(d.awardCode).map(c => [String(c.id), c.label] as [string, string]), ["0", "Not sure"]]} />
+            options={[...classificationsFor(d.awardCode).map(c => [String(c.id), c.label] as [string, string]), ["0", "Not sure — I'll check my contract"]]} />
         </>)}
 
         {step === "employment" && (<>
