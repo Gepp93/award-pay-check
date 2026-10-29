@@ -1,56 +1,53 @@
-# AwardPay 2.0 preview: fix pay mapping, then full end-to-end testing
+# Fix incorrect award and classification suggestions (2.0 preview)
 
-Preview only. Live checker, Stripe, accounts, saved reports, database structure and v1 calculations stay untouched. Nothing published.
+## What the code shows (diagnosis)
 
-## 1. Pay-category mapping fix
-- Remove the "Ordinary" default on "Add a pay line". New lines start as "Choose a category" and the user can't continue until every line has one.
-- Category list: Ordinary pay, Saturday pay, Sunday pay, Public holiday pay, Overtime, Casual loading, Allowance, Other / Not sure.
-- For Saturday, Sunday, Public holiday and Overtime lines, ask: "Is this the whole payment for those hours, or only the extra loading on top of ordinary pay?" (Whole payment / Extra loading only / Not sure).
-- Scanned payslips: keep a category only when the payslip line clearly names it (ordinary, public holiday, overtime). A combined "weekend" line, or anything unclear, is marked "Please confirm" and has no category until the user picks one. The current automatic weekend-to-Saturday/Sunday guess is removed.
-- "Other / Not sure", or "Not sure" on whole vs loading, is sent to the engine as unidentified. The engine then returns Partial and doesn't allocate the amount.
+The screens you saw ("Most people in this job are covered by…", "Not sure — check across all levels", repeated cabin crew levels) are not part of the 2.0 preview. That text only exists in the **live checker** (`/check`). Choosing "Check my payslip" on the 2.0 intent screen sends you to the live checker, which loses your 2.0 industry and job and runs the old matching.
 
-## 2. Results breakdown
-- For each category, a table shows: actual paid, award minimum, shortfall, overpayment.
-- Net comparable difference appears only when the engine marks the comparison reliable (Complete). Otherwise the result reads: "Category differences shown; these may offset each other, so no total underpayment is stated."
-- A shortfall in one category is never labelled recoverable on its own.
-- Award rules are not changed unless testing finds a real error. Any error found is reported before it is fixed.
+Within the live checker, the code shows three faults:
 
-## 3. Retail extended trading question
-- When a Retail shift falls outside the cl 15.1 ordinary span, ask whether the store's trading hours extend the span under cl 15.2 (Yes / No / Not sure).
-- Yes: the extended span from cl 15.2 applies. No: those hours count as outside the span (overtime trigger). Not sure: Partial, with the question shown in the results.
-- No other awards are affected.
+1. **Word-overlap matching.** Awards are scored by shared words. "Civil **Crew** Foreman" matches "Aircraft Cabin **Crew**" and the "Fast food **crew**" job. Employer-name words also count, which is how something like "Queensland Newspapers" can appear. The top three scores are shown even when the only evidence is one shared word.
+2. **Silent auto-selection.** When a payslip is read, the top-scoring award is applied automatically, with no confirmation.
+3. **No de-duplication of levels.** The official classifications list can return several rows per level (for example, one per rate date). These are shown as returned, which produces repeated entries. Nothing checks that each row belongs to the selected award.
 
-## 4. Ten browser journeys
-- Run all 10 journeys through the actual preview screens, signed in as the tester: the 4 earlier ones again, plus the 6 that were only tested by direct calls.
-- Each journey records: inputs, the actual engine response captured from the page, the displayed result, the expected result with its source, pass/fail, and desktop and mobile screenshots.
-- A direct call is never counted as a browser pass.
+No request logs were captured from your test. Step 1 of the build is to confirm points 1–3 using the real award and classification responses for "Civil Crew Foreman". If those responses point to a different cause, I'll stop and report it before changing anything.
 
-## 5. Scanner to engine
-- Synthetic payslip as PDF, then as an image (JPG or PNG).
-- Steps: upload, AI reading, confirm or correct, carry into the questions, add shifts and employment details, calculate, check the results breakdown.
-- Each amount is checked to appear exactly once in the request and the results, with nothing lost or double-counted.
+## The fix (2.0 preview only)
 
-## 6. Security regression
-- Engine v2 call signed out: rejected. Signed in as a non-admin: rejected. Tester: allowed.
-- Function and AI usage logs are checked for payslip images, names or amounts.
-- The live `/check` and the v1 function are confirmed unchanged (no diff to their files).
+Your brief says to keep the live checker unchanged, so the fix keeps 2.0 users inside the 2.0 preview.
 
-## 7. Stop and report
-Bugs fixed, all 10 browser results, scanner results, calculation discrepancies, remaining Partial/Unsupported scenarios, security results, and whether the preview is ready for final human review.
+- **Stop the hand-off to the live checker.** "Check my payslip" in 2.0 goes to the 2.0 upload/questions flow and keeps your industry and confirmed job title.
+- **New 2.0 award discovery step**, placed before calculation:
+  - Shows the confirmed job title prominently, with the industry and award as separate items.
+  - Suggestions come only from a short curated list of roles, industries and duty keywords. One shared generic word ("crew", "worker", "level") or an employer name is never enough.
+  - For civil construction roles, Building and Construction (MA000020) appears as a candidate. Electrical (MA000025) appears only when the role or duties mention electrical work. Both are labelled "possible — please confirm", never as a default.
+  - Unknown occupations get no suggestion. You choose from the industry's list or search, and you can mark "covered by an enterprise agreement".
+  - Nothing looks selected until you confirm, and the phrase "Most people in this job are covered by" is removed.
+- **Discovery separate from calculation.** Only Retail (MA000004), Hospitality (MA000009) and Fast Food (MA000003) continue to the v2 calculation. Any other confirmed award shows: "We've identified your selected award, but detailed pay calculations for this award aren't available yet." It offers a "Change award" button and no substitute award. The classification picker never opens for unsupported awards.
+- **Strict classifications.** Levels come only from the confirmed supported award's rule pack. They are de-duplicated by stable ID, and the selected level is cleared when the award changes. No "check across all levels" option.
+- **Session.** The confirmed award and job are saved in the existing answers-only 2.0 session, so Back/Forward and refresh keep the right award and never show a previous award's levels.
+
+## Live checker (not changed; needs your decision)
+
+The live checker at `/check` has the same matching and duplicate-level bugs, so real customers can see the same wrong suggestions today. I won't change it without your separate approval. I'll report the exact fix it needs.
+
+## Tests
+
+Automated tests, plus real browser runs on desktop and phone screens:
+- Civil Crew Foreman: no cabin crew, fast food or newspaper suggestion; MA000020 offered only as a candidate; unsupported message shown.
+- Electrician: MA000025 offered as a candidate, then unsupported message.
+- Retail assistant, Barista, Fast food worker: the right supported award is suggested but not preselected; levels belong only to that award, with no duplicates.
+- Unknown occupation: no suggestion.
+- Switching awards: old levels cleared.
+- Back/forward and refresh mid-flow: award, job and level stay consistent.
+
+## Safety
+
+No changes to the live checker, v1 engine, Stripe, database, accounts or saved reports. The 2.0 calculator stays tester-only. Nothing is published.
 
 ## Technical details
-- `model.ts`: `PayLineDraft.kind` can be empty, and lines get a new `basis: "total" | "loading" | "unknown"`. Remove `resolveKind`. Unchosen, "other" or unknown-basis lines map to `other` with a flag. Add `extendedTrading: Tri`, and add a step `"extended"` when the Retail award applies and a shift falls outside `pack.span`.
-- `engine.ts` (v2 only, an input contract addition): optional `PaidLine.basis` and `arrangement.extendedTrading`. A loading-basis line is compared against the penalty portion only, and unknown basis gives Partial. `extendedTrading === true` uses `span.extendedEnd`, false keeps the standard span, undefined gives the existing Partial question. Per-category actual/minimum/shortfall/overpayment comes from the existing comparison output, plus `netComparableCents` only when Complete.
-- `EngineQuestions.tsx` and `Results.tsx`: UI for the above.
-- Tests: `tests/v2/engine-model.test.ts` (no default category, weekend needs confirmation, unknown gives other) and `tests/engine-v2` (loading basis, unknown basis gives Partial, three extended-trading outcomes from cl 15.2). Each new case cites its clause.
-- Browser runs use Playwright scripts in /tmp/browser. Evidence and the report go in `tests/v2/BROWSER-REPORT.md`.
 
-## Additional safeguards (owner-approved)
-- An "Extra loading only" line is compared against the incremental loading only: penalty rate minus ordinary rate, for the same worked hours. The ordinary component for those hours is compared separately against the ordinary line. Neither is counted twice.
-- A combined ordinary-plus-loading amount stays as one total payment. No separate ordinary component is invented.
-- If several pay lines can't be reliably matched to their hours or entitlements, the result is Partial. No category allocation is forced.
-- Before building the question, I'll re-read the actual General Retail Award cl 15.2 extended-trading conditions. If they need more than a Yes/No (for example, conditions on trading hours or the type of business), every condition is asked or the result is Partial. A bare "Yes" never establishes the extended span on its own.
-- New paired test: one combined Saturday payment versus separate ordinary-pay-plus-Saturday-loading lines for the same wages. Both must give the same comparison. This is checked in the engine tests and in a browser journey.
-- Browser tests use the real preview screens at desktop and at mobile (390px). Any test that can't be completed is listed by name with the reason.
-- The preview stays limited to the authorised tester. Nothing is published, production calculations are not modified and customer payments are not enabled. I stop after the report.
-- The new tasks are recorded in roadmap.md once building starts.
+- Files: `src/features/v2/intents.tsx` (payslip intent goes to `/v2/upload` instead of `/check`); a new `src/features/v2/engine/awardDiscovery.ts` (curated evidence table and pure ranking with reasons); `EngineQuestions.tsx` (job-title display, a discovery step before the award/classification steps, the unsupported-award stop, and clearing `classificationFixedId` when the award changes); `classificationsFor` de-duplicates by ID and validates against the rule pack code; `store.tsx` keeps the job title in the answers-only state.
+- Discovery list entries for MA000020 and MA000025 hold only codes and official names, with no rates.
+- Tests: `tests/v2/award-discovery.test.ts` and extensions to `tests/v2/engine-model.test.ts`, run with `bun test`. Browser runs are reported in `tests/v2/BROWSER-REPORT.md`.
+- `AGENTS.md`: add one rule saying 2.0 award discovery is evidence-based and confirmation-only, and that only rule-pack awards proceed to calculation.
