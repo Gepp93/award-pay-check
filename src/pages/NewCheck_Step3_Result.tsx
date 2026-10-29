@@ -5,6 +5,7 @@ import { CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LockedTeaser, ReportIncludes } from "@/components/report/LockedTeaser";
+import PreliminaryNotice, { ESTIMATE_LABEL, MULTI_LEVEL_LABEL } from "@/components/report/PreliminaryNotice";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { NavBar } from "@/components/NavBar";
 import { ProgressIndicator } from "@/components/wizard/ProgressIndicator";
@@ -181,8 +182,9 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
         <header className="checker-heading">
           <ProgressIndicator currentStep={3} />
           <h1>Your pay check</h1>
-          <p>{result.comparisonScope === "typical-week" ? "One typical week, compared with 1/4.33 of your monthly gross pay." : "Based on official Fair Work modern award rates."}</p>
+          <p>{result.comparisonScope === "typical-week" ? "One typical week, compared with 1/4.33 of your monthly gross pay." : "A preliminary estimate using official Fair Work rates and simplified pay rules."}</p>
         </header>
+        <PreliminaryNotice className="mb-6" />
         <div className="checker-result-layout">
           <article className="checker-sheet">
             <div className="checker-sheet-header">
@@ -192,11 +194,7 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
             {isUnderpaid ? (
               <div className="checker-result-headline">
                 <div className="ledger-label mb-3">
-                  {showRange
-                    ? "Estimated range"
-                    : isUnsureMode
-                    ? "You may be owed up to"
-                    : "You may be owed"}
+                  {isUnsureMode ? `${ESTIMATE_LABEL} · ${MULTI_LEVEL_LABEL}` : ESTIMATE_LABEL}
                 </div>
                 <div className={`checker-owed figure ${showRange ? "checker-owed-range" : ""}`}>
                   {showRange
@@ -218,12 +216,11 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
                 </div>
                 {isUnsureMode ? (
                   <div className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
-                    This is an estimate across the likely classification levels for your
-                    role. For an exact figure, go back and select your classification.
+                    {MULTI_LEVEL_LABEL}. Confirm your classification and check again before relying on this figure.
                   </div>
                 ) : (
                   <div className="mt-4 text-[17px] text-foreground">
-                    We found {issueCount || 1} problem{(issueCount || 1) === 1 ? "" : "s"} with this pay period.
+                    We found {issueCount || 1} possible issue{(issueCount || 1) === 1 ? "" : "s"} with this pay period. Allowances are listed as possible issues and are not included in this figure.
                   </div>
                 )}
               </div>
@@ -232,9 +229,9 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
                 <div className="mb-4">
                   <CheckCircle className="h-7 w-7 text-primary" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-semibold">Looks like you were paid correctly</h2>
+                <h2 className="text-2xl md:text-3xl font-semibold">No shortfall found in this preliminary estimate</h2>
                 <p className="text-muted-foreground mt-2">
-                  We didn't find any underpayment for this pay period.
+                  Our simplified check didn't find an underpayment for this pay period.
                 </p>
               </div>
             )}

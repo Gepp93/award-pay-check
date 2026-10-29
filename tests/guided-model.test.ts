@@ -13,8 +13,8 @@ describe("guided payslip suggestions", () => {
     test(role, () => expect(matchAwards(role, awards)[0]?.code).toBe(code));
   }
   test("printed code outranks employer and role guesses", () => expect(matchAwards("Clerk Level 1", awards, "MA000004", "Retail shop")[0]?.code).toBe("MA000004"));
-  test("employer keywords work and generic levels suggest nothing", () => {
-    expect(matchAwards("Level 3 Employee", awards, "", "Retail store")[0]?.code).toBe("MA000004");
+  test("employer names are not evidence and generic levels suggest nothing", () => {
+    expect(matchAwards("Level 3 Employee", awards, "", "Retail store")).toEqual([]);
     expect(matchAwards("Level 3 Employee", awards)).toEqual([]);
     expect(industryAwards("Healthcare", awards).map(x => x.code)).toEqual(["MA000018", "MA000100"]);
     expect(industryAwards("Other", awards)).toEqual([]);

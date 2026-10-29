@@ -47,14 +47,14 @@ export default function MyReports() {
     const isUnsure = r.result?.mode === "unsure";
     const min = Number(r.result?.overallMinUnderpayment || 0);
     const owed = Number(r.owed_amount || 0);
-    if (owed <= 0 && min <= 0) return "Paid correctly";
+    if (owed <= 0 && min <= 0) return "Preliminary estimate: no shortfall found";
     if (isUnsure && min > 0) {
-      return `Owed at least ~$${min.toLocaleString("en-AU", {
+      return `Preliminary estimate (several levels) from ~$${min.toLocaleString("en-AU", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`;
     }
-    return `Owed $${owed.toLocaleString("en-AU", {
+    return `Preliminary estimate $${owed.toLocaleString("en-AU", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;

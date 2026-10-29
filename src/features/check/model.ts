@@ -48,26 +48,46 @@ export function industryAwards(industry: string, awards: Award[]): Award[] {
   const keywords = INDUSTRY_WORDS[industry] ?? [];
   return awards.filter(a => overlap(words(a.name), keywords) > 0);
 }
-/** Suggestions only: the worker always confirms the official award. */
-export function matchAwards(role: string, awards: Award[], hint = "", employer = ""): Award[] {
-  const roleWords = words(role), hintWords = words(hint), employerWords = words(employer);
-  const all = [...roleWords, ...hintWords, ...employerWords];
+/** Words that never establish award coverage on their own. */
+export const GENERIC_WORDS = new Set(["crew", "worker", "workers", "foreman", "forewoman", "level", "grade", "employee", "employees", "staff", "member", "team", "leader",
+  "supervisor", "manager", "senior", "junior", "general", "assistant", "operator", "officer", "hand", "casual", "full", "part", "time", "award", "industry",
+  "the", "and", "of", "in", "a", "services", "service", "pty", "ltd", "group", "australia", "australian", "2020", "2010", "1", "2", "3", "4", "5", "6"]);
+const evidenceWords = (text: string) => words(text).filter(w => !GENERIC_WORDS.has(w) && !/^\d+$/.test(w) && w.length > 2);
+/**
+ * Possible awards only — the worker always confirms. Evidence is a printed award
+ * code/name, a curated job title, or a specific (non-generic) role word. Employer
+ * names are never evidence. Returns at most three, and only credible matches.
+ */
+export function matchAwards(role: string, awards: Award[], hint = "", _employer = ""): Award[] {
+  const roleWords = evidenceWords(role), hintWords = evidenceWords(hint);
   const scored = awards.map(award => {
-    const nameWords = words(award.name);
-    let score = overlap(nameWords, roleWords) * 5 + overlap(nameWords, hintWords) * 8 + overlap(nameWords, employerWords);
-    if (hint.toLowerCase().includes(award.code.toLowerCase()) || (hint && hint.toLowerCase() === award.name.toLowerCase())) score += 1000;
-    for (const job of JOBS) if (job.codes.includes(award.code)) score += overlap(words(job.title), roleWords) * 4;
-    for (const [industry, keywords] of Object.entries(INDUSTRY_WORDS)) {
-      if (industryAwards(industry, [award]).length) score += overlap(all, keywords) * 2;
+    const nameWords = evidenceWords(award.name);
+    let score = overlap(nameWords, roleWords) * 5 + overlap(nameWords, hintWords) * 8;
+    if (hint && (hint.toLowerCase().includes(award.code.toLowerCase()) || hint.toLowerCase() === award.name.toLowerCase())) score += 1000;
+    for (const job of JOBS) {
+      if (!job.codes.includes(award.code)) continue;
+      const jw = evidenceWords(job.title);
+      if (jw.length && jw.every(w => roleWords.includes(w))) score += 20 + jw.length * 4 - job.codes.indexOf(award.code);
     }
-    if (all.some(w => ["clerk", "clerks", "admin", "administration", "office"].includes(w)) && award.code === "MA000002") score += 40;
-    if (all.some(w => ["schads", "social", "community", "disability"].includes(w)) && award.code === "MA000100") score += 60;
-    if (all.includes("aged") && award.code === "MA000018") score += 70;
-    // Generic classification words do not establish an industry.
-    if (!all.some(w => !["level", "grade", "employee", "worker", "award", "the", "and", "of"].includes(w) && !/^\d+$/.test(w))) score = 0;
+    if (score > 0) for (const [industry, keywords] of Object.entries(INDUSTRY_WORDS)) {
+      if (industryAwards(industry, [award]).length) score += overlap(roleWords, keywords) * 2;
+    }
+    if (roleWords.some(w => ["clerk", "clerks", "admin", "administration", "office"].includes(w)) && award.code === "MA000002") score += 40;
+    if (roleWords.some(w => ["schads", "social", "community", "disability"].includes(w)) && award.code === "MA000100") score += 60;
+    if (roleWords.includes("aged") && award.code === "MA000018") score += 70;
+    if (roleWords.some(w => ["food", "beverage"].includes(w)) && roleWords.some(w => ["beverage", "bar", "waiter", "waiting"].includes(w)) && award.code === "MA000009") score += 30;
     return { award, score };
   }).filter(x => x.score > 0).sort((a, b) => b.score - a.score);
-  return scored.slice(0, 3).map(x => x.award);
+  const top = scored[0]?.score ?? 0;
+  // Weak matches far below the best one are noise, not alternatives.
+  return scored.filter(x => x.score >= top * 0.5).slice(0, 3).map(x => x.award);
+}
+
+/** One row per classification ID: the official list repeats a level for each rate date. Different IDs stay separate. */
+export function dedupeClassifications<T extends { classification_fixed_id: string | number }>(rows: T[]): T[] {
+  const seen = new Map<string, T>();
+  for (const r of rows) { const k = String(r.classification_fixed_id); if (!seen.has(k)) seen.set(k, r); }
+  return [...seen.values()];
 }
 
 export function typicalShifts(start: string, count = 5): RosterShift[] {
@@ -116,7 +136,7 @@ export function dateOffset(start: string, days: number): string {
 export function defaults(): Answers {
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const state = zone.includes("Perth") ? "WA" : zone.includes("Adelaide") ? "SA" : zone.includes("Brisbane") ? "QLD" : zone.includes("Darwin") ? "NT" : zone.includes("Melbourne") ? "VIC" : zone.includes("Hobart") ? "TAS" : "NSW";
-  return { job: "", industry: "", awardCode: "", awardName: "", employmentType: "Full-time", classificationId: null, classificationName: "Not sure — check across all levels", workArea: "", state, frequency: "weekly", rate: "", gross: "", hours: "", hours150: 0, hours200: 0, usePayslipHours: false, weekStart: weekStartDate(), shifts: [], conditions: {}, allowances: [], fromPayslip: [] };
+  return { job: "", industry: "", awardCode: "", awardName: "", employmentType: "Full-time", classificationId: null, classificationName: "", workArea: "", state, frequency: "weekly", rate: "", gross: "", hours: "", hours150: 0, hours200: 0, usePayslipHours: false, weekStart: weekStartDate(), shifts: [], conditions: {}, allowances: [], fromPayslip: [] };
 }
 export function shiftHours(s: RosterShift): number {
   const [a, b] = s.start.split(":").map(Number), [c, d] = s.finish.split(":").map(Number);
@@ -135,8 +155,7 @@ export function applyPayslip(a: Answers, p: ParsedPayslip, awards: Award[], touc
   if (typeof p.ordinary_hours === "number") { put("hours", String(p.ordinary_hours)); put("usePayslipHours", true); }
   if (p.pay_period_start && /^\d{4}-\d{2}-\d{2}$/.test(p.pay_period_start)) put("weekStart", p.pay_period_start);
   if (typeof p.employee_age === "number") put("age", p.employee_age);
-  const award = matchAwards(p.classification_or_role ?? "", awards, p.award_name_or_code, p.employer_name)[0];
-  if (award) { put("awardCode", award.code); put("awardName", award.name); }
+  // The award is never applied from a payslip: the worker confirms it on the award step.
   // Only printed multipliers are bucketed; a generic "penalty" is never guessed as 150%.
   let h150 = 0, h200 = 0;
   for (const line of p.line_items ?? []) {
