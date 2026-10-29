@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Download, CheckCircle, AlertCircle } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { toast } from "@/hooks/use-toast";
+import { reconcile } from "./reconcile";
 import PreliminaryNotice, { PRELIMINARY_NOTICE, ESTIMATE_LABEL, MULTI_LEVEL_LABEL, UNRELIABLE_LABEL } from "./PreliminaryNotice";
 
 type Props = {
@@ -208,15 +209,13 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
     line(`Overtime 1.5x (${Number(bd.overtimeAt150Hours).toFixed(2)} hrs)`, fmt(Number(bd.overtimeAt150Hours) * rate * 1.5));
   if (bd.overtimeAt200Hours)
     line(`Overtime 2x (${Number(bd.overtimeAt200Hours).toFixed(2)} hrs)`, fmt(Number(bd.overtimeAt200Hours) * rate * 2));
-  if (isUnsure) {
-    const min = Number(result?.overallMinUnderpayment) || 0;
-    const max = Number(result?.overallMaxUnderpayment) || 0;
-    line("Award pay estimate (range)", min && min !== max ? `${fmt(min)} – ${fmt(max)}` : `~${fmt(max)}`, { bold: true });
-  } else {
-    line("Award pay total", fmt(Number(result?.awardPayTotal) || 0), { bold: true });
-  }
+  const rec = reconcile(result, shiftDetails?.actualPaid, owed);
+  line("Award pay total", rec.awardTotal != null ? fmt(rec.awardTotal) : "Not available", { bold: true });
+  if (rec.totalNote) para(rec.totalNote, 9, 110);
   line("Actually paid", shiftDetails?.actualPaid ? fmt(parseFloat(shiftDetails.actualPaid)) : "—");
   if (owed > 0) line("Preliminary estimated shortfall", `${isUnsure ? "up to ~" : ""}${fmt(owed)}`, { bold: true });
+  if (rec.note) para(rec.note, 9, 110);
+  if (allowancesCount(result)) para("Potential allowances below are not included in the award pay total or the shortfall.", 9, 110);
 
   // Reasons
   const reasons: string[] = Array.isArray(result?.reasons) ? result.reasons : [];
@@ -255,10 +254,13 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   doc.save(`awardpay-report-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
+function allowancesCount(r: any) { return Array.isArray(r?.potentialAllowances) ? r.potentialAllowances.length : 0; }
+
 export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
   const owed = getOwed(result);
   const headline = getHeadline(result);
   const isUnderpaid = owed > 0;
+  const rec = reconcile(result, shiftDetails?.actualPaid, owed);
   const period = getPeriod(shiftDetails);
   const jobInfo = shiftDetails?.jobInfo || {};
   const reasons: string[] = Array.isArray(result?.reasons) ? result.reasons : [];
@@ -387,9 +389,10 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
               )}
               <Row
                 label="Award pay total"
-                value={fmt(Number(result?.awardPayTotal) || 0)}
+                value={rec.awardTotal != null ? fmt(rec.awardTotal) : "Not available"}
                 bold
               />
+              {rec.totalNote && <tr><td colSpan={2} className="text-sm text-muted-foreground">{rec.totalNote}</td></tr>}
               <Row
                 label="Actually paid"
                 value={
@@ -410,6 +413,9 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
             </tbody>
           </table>
         </div>
+
+        {rec.note && <p className="mt-3 text-sm text-muted-foreground">{rec.note}</p>}
+        {allowances.length > 0 && <p className="mt-2 text-sm text-muted-foreground">Potential allowances below are not included in the award pay total or the shortfall.</p>}
 
         {reasons.length > 0 && (
           <div className="mt-4">
