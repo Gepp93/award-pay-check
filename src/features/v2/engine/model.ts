@@ -88,6 +88,12 @@ export function prefillFromPayslip(draft: EngineDraft, fields: Field[]): EngineD
   };
 }
 
+export const RETAIL_EXCEPTIONS = [
+  { id: "late_trading", text: "My store trades past 9 pm on a weekday, or past 6 pm on a Saturday or Sunday", clause: "cl 15.2(c): ordinary hours until 11 pm on all days" },
+  { id: "newsagency", text: "I work in a newsagency", clause: "cl 15.2(a): ordinary hours from 5 am" },
+  { id: "video_shop", text: "I work in a video shop", clause: "cl 15.2(b): ordinary hours until midnight" },
+];
+
 /** Shifts with ordinary-span exposure for awards whose span has confirmable exceptions (Retail cl 15.2). */
 export function outsideStandardSpan(d: EngineDraft): boolean {
   const span = RULE_PACKS[d.awardCode]?.span;
