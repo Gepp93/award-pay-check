@@ -48,3 +48,6 @@
 - [x] Update section order, mockup, upload, pricing, FAQ, sources and footer.
 - [x] Verify desktop layout, FAQ expansion and upload handoff with a network-stubbed parsing response; live parsing and payment were not re-tested.
 - [ ] Real source URLs, Privacy Policy, Terms and ABN: awaiting owner-supplied details.- [x] Phase 9: guest pass claiming after sign-up
+
+- [x] Engine v2 accuracy verification and safety fixes (breaks, roster-aware overtime, gross-only Partial, 2026 holidays, report)
+- [ ] Engine v2 frontend integration — waiting on owner approval

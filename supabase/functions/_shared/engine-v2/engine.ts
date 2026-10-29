@@ -5,9 +5,9 @@ import retail from "./data/MA000004.json" with { type: "json" };
 import hospitality from "./data/MA000009.json" with { type: "json" };
 import fastFood from "./data/MA000003.json" with { type: "json" };
 import holidaysData from "./data/public-holidays.json" with { type: "json" };
-import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules, type RulePack } from "./rulepacks.ts";
+import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules } from "./rulepacks.ts";
 
-export const ENGINE_VERSION = "v2.0.0";
+export const ENGINE_VERSION = "v2.1.0";
 
 type Snapshot = typeof retail;
 const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot };
@@ -18,14 +18,28 @@ export interface ShiftInput {
   date: string; // YYYY-MM-DD the shift starts
   start: string; // HH:MM
   finish: string; // HH:MM; at or before start means next day
-  breakMinutes?: number; // unpaid
-  breakStart?: string; // HH:MM, optional; without it the break is removed from the highest-rate minutes (conservative)
+  /** Unpaid break minutes. Undefined = not stated (0 = no unpaid break). */
+  breakMinutes?: number;
+  /** HH:MM the unpaid break started. Needed whenever the break's position changes the pay. */
+  breakStart?: string;
   /** Minutes of this shift the employer treated as overtime (last minutes of the shift). Undefined = not stated. */
   overtimeMinutes?: number;
 }
 
-export type PaidKind = "ordinary" | "saturday" | "sunday" | "public_holiday" | "evening" | "overtime" | "allowance" | "leave" | "other";
+export type PaidKind = "ordinary" | "casual_loading" | "saturday" | "sunday" | "public_holiday" | "evening" | "overtime" | "allowance" | "leave" | "other";
 export interface PaidLine { kind: PaidKind; amountCents: number; label?: string }
+
+/** Facts about the work arrangement that decide whether overtime can be ruled out. */
+export interface Arrangement {
+  /** Every shift worked in the pay period is included. */
+  allShiftsInPeriodIncluded?: boolean;
+  /** Every hour not listed as overtime was rostered ordinary time (no extra or changed hours). */
+  workedToRoster?: boolean;
+  /** Part-time guaranteed/agreed hours per week, in minutes. */
+  guaranteedMinutesPerWeek?: number;
+  /** Roster cycle length in weeks when hours are averaged (1 = no averaging). */
+  rosterCycleWeeks?: number;
+}
 
 export interface AssessmentInput {
   awardCode: string;
@@ -35,21 +49,31 @@ export interface AssessmentInput {
   state: State;
   payPeriod?: { start: string; end: string };
   shifts: ShiftInput[];
-  paid?: { grossCents?: number; lines?: PaidLine[]; grossCoversOnlyTheseShifts?: boolean };
-  /** For years the official holiday list doesn't cover: the user's confirmed list of public holiday dates in their state (empty = none). */
+  arrangement?: Arrangement;
+  paid?: {
+    grossCents?: number; lines?: PaidLine[];
+    /** The user confirmed the lines are every wage payment for these hours. */
+    linesCoverAllWages?: boolean;
+    /** The user confirmed gross covers only these hours (no allowances, leave or other pay). Gives an indicative figure only. */
+    grossCoversOnlyTheseShifts?: boolean;
+  };
+  /** For years the official holiday list doesn't cover, or regional holidays: the user's confirmed public holiday dates where they work. */
   holidayConfirmation?: { publicHolidayDates: string[] };
   flags?: { enterpriseAgreement?: boolean; awardFree?: boolean; shiftworker?: boolean; casinoGaming?: boolean; managerial?: boolean };
 }
 
 export interface Source { type: "penalty" | "pay_rate" | "wage_allowance" | "public_holiday"; id: number | string; description: string; operativeFrom?: string; clause?: string; url?: string }
 
+export type LineKind = "ordinary" | "evening" | "saturday" | "sunday" | "public_holiday" | "overtime";
 export interface Line {
-  shiftIndex: number; date: string; category: string; minutes: number;
+  shiftIndex: number; date: string; category: string; kind: LineKind; minutes: number;
   percent?: number; hourlyCents?: number; units?: number; unitCents?: number; amountCents: number;
   sources: Source[]; explanation: string;
 }
 
-export interface NotAssessed { item: string; reason: string; shiftIndex?: number; material: boolean }
+export interface NotAssessed { item: string; reason: string; shiftIndex?: number; material: boolean; question?: string }
+
+export interface Component { kind: LineKind; entitledCents: number; paidCents: number; differenceCents: number }
 
 export interface AssessmentResult {
   engine: "v2"; engineVersion: string;
@@ -63,21 +87,26 @@ export interface AssessmentResult {
   notAssessed: NotAssessed[];
   exclusions: string[];
   assessedEntitlementCents: number;
-  paid: { grossCents: number | null; comparableCents: number | null; excludedCents: number; note: string };
-  /** Only when status is complete and a comparable paid amount exists. */
+  paid: {
+    grossCents: number | null; comparableCents: number | null; excludedCents: number; note: string;
+    comparison: "none" | "complete" | "partial";
+    /** Gross-only figure the user said covers only these hours. Never an underpayment total. */
+    indicativeDifferenceCents: number | null;
+    components: Component[] | null;
+  };
+  /** Only when status is complete and a reliable comparable paid amount exists. */
   differenceCents: number | null;
   underpaymentCents: number | null;
+  /** Sum of component shortfalls, ignoring overpaid components (whether overpayments offset shortfalls depends on the arrangement). */
+  componentShortfallCents: number | null;
   notes: string[];
 }
 
 // ---------- integer helpers ----------
-/** Round half up for non-negative rationals num/den, integer inputs only. */
 function divRound(num: number, den: number): number {
   return Math.floor((2 * num + den) / (2 * den));
 }
-/** Percent from the API (e.g. 137.5) as hundredths of a percent (13750). */
 const pctHundredths = (rate: number) => Math.round(rate * 100);
-/** Hourly rate in cents at `percent` of `baseCents`, rounded to the nearest cent. */
 export function penaltyRateCents(baseCents: number, percent: number): number {
   return divRound(baseCents * pctHundredths(percent), 10000);
 }
@@ -87,44 +116,44 @@ const dateValid = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(
 function addDays(d: string, n: number) {
   const t = new Date(`${d}T00:00:00Z`); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10);
 }
+const daysBetween = (a: string, b: string) => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000);
 const dowOf = (d: string) => new Date(`${d}T00:00:00Z`).getUTCDay() as Dow;
-function isoWeek(d: string) { const t = new Date(`${d}T00:00:00Z`); const day = (t.getUTCDay() + 6) % 7; t.setUTCDate(t.getUTCDate() - day); return t.toISOString().slice(0, 10); }
+const hrs = (m: number) => (m / 60).toFixed(2);
 
-// ---------- dated record selection ----------
-/** Latest record whose operativeFrom <= ref (Fair Work: applies from the first full pay period starting on or after operativeFrom). */
 function pick<T extends { operativeFrom: string; operativeTo: string | null }>(records: T[], ref: string): T | undefined {
   return records.filter(r => r.operativeFrom <= ref).sort((a, b) => b.operativeFrom.localeCompare(a.operativeFrom))[0];
 }
 
 // ---------- public holidays ----------
-type Holiday = { date: string; name: string; jurisdiction: string; info: string; source: string };
+type Scope = "statewide" | "part_day" | "regional" | "restricted";
+type Holiday = { date: string; name: string; jurisdiction: string; info: string; source: string; scope: Scope; fromMinute?: number };
 const HOLIDAYS = holidaysData.holidays as Holiday[];
 const COVERED_YEARS = new Set(holidaysData.coveredYears.map(String));
-interface HolidayStatus { kind: "none" | "full" | "part" | "uncertain" | "unknown_year"; fromMinute?: number; holiday?: Holiday }
+interface HolidayStatus { kind: "none" | "full" | "part" | "regional" | "restricted" | "unknown_year"; fromMinute?: number; holiday?: Holiday }
 export function holidayStatus(date: string, state: State): HolidayStatus {
   if (!COVERED_YEARS.has(date.slice(0, 4))) return { kind: "unknown_year" };
-  const h = HOLIDAYS.find(x => x.date === date && x.jurisdiction === state);
+  const list = HOLIDAYS.filter(x => x.date === date && x.jurisdiction === state);
+  const h = list.find(x => x.scope === "statewide") ?? list.find(x => x.scope === "part_day") ?? list.find(x => x.scope === "regional") ?? list[0];
   if (!h) return { kind: "none" };
-  const text = `${h.name} ${h.info}`;
-  const part = text.match(/(\d{1,2})\s*pm\s*(?:to|-|–)\s*midnight/i);
-  if (part) return { kind: "part", fromMinute: (Number(part[1]) % 12 + 12) * 60, holiday: h };
-  if (/\b(only|some areas|regional|region|parts? of)\b/i.test(text.replace(/part of easter/ig, ""))) return { kind: "uncertain", holiday: h };
-  return { kind: "full", holiday: h };
+  if (h.scope === "statewide") return { kind: "full", holiday: h };
+  if (h.scope === "part_day") return { kind: "part", fromMinute: h.fromMinute ?? 1440, holiday: h };
+  if (h.scope === "regional") return { kind: "regional", holiday: h };
+  return { kind: "restricted", holiday: h };
 }
 
 // ---------- main ----------
 const EXCLUSIONS = [
   "Allowances (for example meal, laundry, travel or tool allowances) are not assessed by engine v2.",
   "Leave, leave loading, superannuation and termination payments are not assessed.",
-  "Minimum engagement and break entitlements are not assessed.",
+  "Paid rest-break entitlements and penalties for missed meal breaks are not assessed.",
 ];
 
 function base(input: Partial<AssessmentInput>): AssessmentResult {
   return {
     engine: "v2", engineVersion: ENGINE_VERSION, status: "unsupported", reasons: [], lines: [], notAssessed: [],
     exclusions: EXCLUSIONS, assessedEntitlementCents: 0,
-    paid: { grossCents: input.paid?.grossCents ?? null, comparableCents: null, excludedCents: 0, note: "" },
-    differenceCents: null, underpaymentCents: null, notes: [],
+    paid: { grossCents: input.paid?.grossCents ?? null, comparableCents: null, excludedCents: 0, note: "", comparison: "none", indicativeDifferenceCents: null, components: null },
+    differenceCents: null, underpaymentCents: null, componentShortfallCents: null, notes: [],
   };
 }
 function unsupported(input: Partial<AssessmentInput>, ...reasons: string[]): AssessmentResult {
@@ -155,13 +184,16 @@ export function assess(input: AssessmentInput): AssessmentResult {
   if (!input.shifts?.length) return unsupported(input, "Add at least one dated shift.");
   for (const s of input.shifts) {
     if (!dateValid(s.date) || !/^\d{2}:\d{2}$/.test(s.start) || !/^\d{2}:\d{2}$/.test(s.finish)) return unsupported(input, "Every shift needs a date, a start time and a finish time.");
+    if (s.breakStart != null && !/^\d{2}:\d{2}$/.test(s.breakStart)) return unsupported(input, "Break start times must be HH:MM.");
   }
 
   const result = base(input);
   result.rulePack = { awardCode: pack.awardCode, name: pack.name, version: pack.version };
   result.snapshot = { fetched: snap.fetched, source: snap.source };
   result.classification = cls.label;
-  const material = (item: string, reason: string, shiftIndex?: number) => result.notAssessed.push({ item, reason, shiftIndex, material: true });
+  const material = (item: string, reason: string, shiftIndex?: number, question?: string) => result.notAssessed.push({ item, reason, shiftIndex, material: true, question });
+  const emp = input.employmentType;
+  const arr = input.arrangement ?? {};
 
   // ---- rate reference date (full pay period rule) ----
   const dates = input.shifts.map(s => s.date).sort();
@@ -174,7 +206,6 @@ export function assess(input: AssessmentInput): AssessmentResult {
     ref = input.payPeriod.start;
     rule = `Rates in force at the start of the pay period (${ref}); a new rate applies from the first full pay period starting on or after its operative date.`;
   } else {
-    // Without the period start we only proceed when every possible start (up to 31 days before the first shift) gives the same rate.
     const a = pick(adultRates, addDays(dates[0], -31)); const b = pick(adultRates, dates[dates.length - 1]);
     if (!a || !b || a.operativeFrom !== b.operativeFrom) {
       return { ...result, status: "unsupported", reasons: ["A pay rate change happened near these dates. Enter the pay period start date so the right rate can be used."] };
@@ -193,12 +224,16 @@ export function assess(input: AssessmentInput): AssessmentResult {
     if (!rec) throw new Error(`Missing penalty ${id} for ${ref}`);
     return rec;
   };
-  const isCasual = input.employmentType === "casual";
+  const isCasual = emp === "casual";
   const ord: OrdinaryRules = isCasual ? pack.ordinary.casual : pack.ordinary.ftpt;
   const ot: OvertimeRules | null = isCasual ? pack.overtime.casual : pack.overtime.ftpt;
-
   const sundayId = typeof ord.sunday === "number" ? ord.sunday : ord.sunday.byGroup[cls.sundayGroup ?? ""];
-  const weeklyOrdinary = new Map<string, number>();
+  const dailyMax = pack.dailyMaxByEmployment?.[emp] ?? pack.dailyMaxOrdinaryMinutes;
+
+  // Weeks: 7-day blocks from the pay period start.
+  const weekOf = (d: string) => input.payPeriod ? Math.floor(daysBetween(input.payPeriod.start, d) / 7) : -1;
+  const weeklyOrdinary = new Map<number, number>();
+  const longDays = new Map<number, number>(); // week -> days with ordinary hours above the normal daily max (Retail cl 15.5)
 
   input.shifts.forEach((s, si) => {
     const start = parseHm(s.start); let finish = parseHm(s.finish);
@@ -207,95 +242,118 @@ export function assess(input: AssessmentInput): AssessmentResult {
     const breakMin = Math.max(0, Math.round(s.breakMinutes ?? 0));
     if (breakMin >= total) { material("Shift", "The break is as long as the shift.", si); return; }
 
-    // Per-minute classification, then grouped into lines.
     type M = { date: string; tod: number; dow: Dow; day: "weekday" | "saturday" | "sunday" | "ph"; paid: boolean };
     const mins: M[] = [];
     const holidayNotes = new Set<string>();
     for (let m = start; m < finish; m++) {
       const date = m >= 1440 ? addDays(s.date, 1) : s.date; const tod = m % 1440; const dow = dowOf(date);
       const hs = holidayStatus(date, input.state);
+      const confirmed = input.holidayConfirmation?.publicHolidayDates;
       let ph = false;
       if (hs.kind === "full") ph = true;
       else if (hs.kind === "part") ph = tod >= (hs.fromMinute ?? 1440);
-      else if (hs.kind === "uncertain") {
-        holidayNotes.add(`uncertain:${date}:${hs.holiday?.name}`);
-      } else if (hs.kind === "unknown_year") {
-        if (input.holidayConfirmation) { ph = input.holidayConfirmation.publicHolidayDates.includes(date); holidayNotes.add(`user:${date}:${ph ? "yes" : "no"}`); }
-        else holidayNotes.add(`unknown:${date}`);
+      else if (hs.kind === "regional") {
+        if (confirmed) { ph = confirmed.includes(date); holidayNotes.add(`regconf|${date}|${hs.holiday?.name}|${ph ? "yes" : "no"}`); }
+        else holidayNotes.add(`regional|${date}|${hs.holiday?.name}`);
+      } else if (hs.kind === "restricted") holidayNotes.add(`restricted|${date}|${hs.holiday?.name}`);
+      else if (hs.kind === "unknown_year") {
+        if (confirmed) { ph = confirmed.includes(date); holidayNotes.add(`user|${date}|${ph ? "yes" : "no"}`); }
+        else holidayNotes.add(`unknown|${date}`);
       }
-      if (ph && hs.holiday) holidayNotes.add(`official:${date}:${hs.holiday.name}:${hs.holiday.source}`);
+      if (ph && hs.holiday) holidayNotes.add(`official|${date}|${hs.holiday.name}|${hs.holiday.source}${hs.kind === "part" ? ` (from ${hrs(hs.fromMinute ?? 0).replace(".00", "")}:00 to midnight)` : ""}`);
       const day = ph ? "ph" : dow === 0 ? "sunday" : dow === 6 ? "saturday" : "weekday";
       mins.push({ date, tod, dow, day, paid: true });
     }
     for (const n of holidayNotes) {
-      const [k, d, name, src] = n.split(":");
-      if (k === "uncertain") material("Public holiday", `${name} on ${d} applies only in part of ${input.state}. Confirm whether it applied where you work.`, si);
-      if (k === "unknown") material("Public holiday", `AwardPay's official public holiday list doesn't cover ${d.slice(0, 4)} yet, so ${d} couldn't be checked.`, si);
+      const [k, d, name, extra] = n.split("|");
+      if (k === "regional") material("Public holiday", `${name} on ${d} applies only in part of ${input.state}.`, si, `Was ${d} a public holiday where you work?`);
+      if (k === "regconf") result.notes.push(`Shift ${si + 1}: ${name} on ${d} is a regional holiday; you confirmed it ${extra === "yes" ? "applied" : "did not apply"} where you work.`);
+      if (k === "restricted") result.notes.push(`Shift ${si + 1}: ${name} on ${d} is not a general public holiday (it applies only to some employers or employees), so it was treated as a normal day.`);
+      if (k === "unknown") material("Public holiday", `AwardPay's official public holiday list doesn't cover ${d.slice(0, 4)} yet, so ${d} couldn't be checked.`, si, `Was ${d} a public holiday in ${input.state}?`);
       if (k === "user") result.notes.push(`Shift ${si + 1}: AwardPay's official list doesn't cover ${d.slice(0, 4)}; you confirmed ${d} ${name === "yes" ? "was" : "was not"} a public holiday in ${input.state}.`);
-      if (k === "official") result.notes.push(`Shift ${si + 1}: ${d} is ${name} in ${input.state} (source: ${n.slice(n.indexOf("http"))}).`);
-      void src;
+      if (k === "official") result.notes.push(`Shift ${si + 1}: ${d} is ${name} in ${input.state} (source: ${extra}).`);
     }
 
-    // Ordinary percentage per minute (overtime handled later).
-    const ordId = (x: M): { id: number; label: string } => {
-      if (x.day === "ph") return { id: ord.publicHoliday, label: "Public holiday" };
-      if (x.day === "sunday") return { id: sundayId, label: "Sunday" };
-      if (x.day === "saturday") return { id: ord.saturday, label: "Saturday" };
+    const ordId = (x: M): { id: number; label: string; kind: LineKind } => {
+      if (x.day === "ph") return { id: ord.publicHoliday, label: "Public holiday", kind: "public_holiday" };
+      if (x.day === "sunday") return { id: sundayId, label: "Sunday", kind: "sunday" };
+      if (x.day === "saturday") return { id: ord.saturday, label: "Saturday", kind: "saturday" };
       const band = ord.weekdayBands.find(b => x.tod >= b.from && x.tod < b.to);
-      return band ? { id: band.penaltyId, label: band.label } : { id: ord.weekday, label: "Weekday ordinary hours" };
+      return band ? { id: band.penaltyId, label: band.label, kind: "evening" } : { id: ord.weekday, label: "Weekday ordinary hours", kind: "ordinary" };
     };
+    const inAddition = (x: M) => pack.additions.some(a => x.day === "weekday" && x.tod >= a.from && x.tod < a.to);
 
-    // Unpaid break.
+    // ---- breaks: never guessed ----
+    const otStated = s.overtimeMinutes != null ? Math.max(0, Math.round(s.overtimeMinutes)) : null;
+    if (s.breakMinutes == null && total > pack.unpaidBreakAfterMinutes) {
+      material("Break", `Shift ${si + 1} is ${hrs(total)} hours, so an unpaid meal break may apply (${pack.breakClause}), but no break was entered. It was assessed as if no unpaid break was taken, which overstates the entitlement if one was.`, si, `How long was your unpaid break on ${s.date} (0 if none), and when did it start?`);
+    }
     if (breakMin > 0) {
-      if (s.breakStart && /^\d{2}:\d{2}$/.test(s.breakStart)) {
+      if (s.breakStart) {
         let b = parseHm(s.breakStart); if (b < start) b += 1440;
-        for (let m = b; m < b + breakMin; m++) { const i = m - start; if (i >= 0 && i < mins.length) mins[i].paid = false; }
+        if (b + breakMin > finish) { material("Break", `The break on ${s.date} runs past the end of the shift.`, si); return; }
+        for (let m = b; m < b + breakMin; m++) mins[m - start].paid = false;
       } else {
-        // Conservative: remove the break from the highest-rate minutes so the entitlement is never overstated.
-        const order = mins.map((x, i) => ({ i, r: Number(penalty(ordId(x).id).rate) })).sort((a, b) => b.r - a.r || a.i - b.i);
-        let removed = 0;
-        for (const { i, r } of order) {
-          if (removed >= breakMin) break;
-          // only take from the highest-rate group of a contiguous kind
-          void r; mins[i].paid = false; removed++;
+        const keys = new Set(mins.map(x => `${ordId(x).id}|${inAddition(x) ? pack.additions.find(a => x.tod >= a.from && x.tod < a.to)?.wageAllowanceId : ""}|${x.date}`));
+        const uniform = keys.size === 1 && !(otStated && otStated > 0);
+        if (uniform) {
+          // Every minute of the shift is paid the same way, so the break's position can't change the result.
+          for (let i = mins.length - 1, r = 0; r < breakMin; i--, r++) mins[i].paid = false;
+        } else {
+          material("Break", `Shift ${si + 1} has different pay rates at different times, so the start time of the ${breakMin}-minute unpaid break changes the result.`, si, `What time did your unpaid break start on ${s.date}?`);
+          // Lower-bound figure only: remove the break from the highest-paid minutes.
+          const order = mins.map((x, i) => ({ i, r: Number(penalty(ordId(x).id).rate) })).sort((a, b) => b.r - a.r || a.i - b.i);
+          for (let r = 0; r < breakMin; r++) mins[order[r].i].paid = false;
+          result.notes.push(`Shift ${si + 1}: until the break time is known, the figure shown removes the break from the highest-paid time, so it's a lower-bound estimate.`);
         }
-        result.notes.push(`Shift ${si + 1}: break time not given, so the ${breakMin}-minute unpaid break was taken from the highest-paid part of the shift (this can only lower the entitlement).`);
       }
     }
     const worked = mins.filter(x => x.paid);
 
-    // Overtime: the last N worked minutes, as stated by the employee/payslip.
-    let otMinutes = 0;
-    if (s.overtimeMinutes != null) otMinutes = Math.min(Math.max(0, Math.round(s.overtimeMinutes)), worked.length);
+    // ---- minimum engagement ----
+    const minEng = pack.minimumEngagement[emp];
+    const phMin = worked.some(x => x.day === "ph") ? pack.publicHolidayMinimum?.[emp] : undefined;
+    const needed = Math.max(minEng ?? 0, phMin ?? 0);
+    if (needed && worked.length < needed) material("Minimum engagement", `Shift ${si + 1} is ${hrs(worked.length)} hours; the award's minimum payment for this shift may be ${hrs(needed)} hours (${pack.minimumClause}). AwardPay doesn't calculate minimum-engagement top-ups yet.`, si);
+
+    // ---- overtime: stated minutes are the last N worked minutes ----
+    const otMinutes = otStated == null ? 0 : Math.min(otStated, worked.length);
     const ordinaryWorked = worked.slice(0, worked.length - otMinutes);
     const otWorked = worked.slice(worked.length - otMinutes);
 
-    if (s.overtimeMinutes == null && ordinaryWorked.length > pack.dailyMaxOrdinaryMinutes) {
-      material("Overtime", `Shift ${si + 1} has ${(ordinaryWorked.length / 60).toFixed(2)} hours, more than the award's daily maximum ordinary hours (${pack.dailyMaxClause}). Tell us how many hours were paid as overtime.`, si);
+    // Daily maximum (stated overtime does not excuse ordinary minutes still above the maximum).
+    if (ordinaryWorked.length > dailyMax) {
+      const long = pack.oneLongDayMinutes;
+      const wk = weekOf(s.date);
+      if (long && ordinaryWorked.length <= long && wk >= 0 && (longDays.get(wk) ?? 0) === 0) {
+        longDays.set(wk, 1);
+        result.notes.push(`Shift ${si + 1}: ${hrs(ordinaryWorked.length)} ordinary hours is allowed on one day a week (${pack.dailyMaxClause}).`);
+      } else {
+        material("Overtime", `Shift ${si + 1} has ${hrs(ordinaryWorked.length)} ordinary hours, more than the award's daily maximum (${pack.dailyMaxClause}). The extra hours are likely overtime.`, si, `How many hours on ${s.date} were paid as overtime?`);
+      }
     }
-    if (pack.span && !isCasual && s.overtimeMinutes == null) {
+    // Span of hours.
+    if (pack.span && (pack.spanAppliesTo ?? ["full_time", "part_time"]).includes(emp)) {
       const outside = ordinaryWorked.filter(x => { const [a, b] = pack.span!.byDow[x.dow]; return x.tod < a || x.tod >= b; });
-      if (outside.length) material("Overtime", `Shift ${si + 1} includes ${(outside.length / 60).toFixed(2)} hours outside the span of ordinary hours (${pack.span.clause}). These may be overtime unless your store's trading hours extend the span. Tell us how many hours were paid as overtime.`, si);
+      if (outside.length) material("Overtime", `Shift ${si + 1} includes ${hrs(outside.length)} hours outside the span of ordinary hours (${pack.span.clause}). These are overtime unless your workplace's trading hours extend the span.`, si, `Were the hours outside ${s.date}'s span paid as overtime, or does your store trade beyond 9 pm weekdays / 6 pm weekends?`);
     }
-    for (const x of ordinaryWorked) weeklyOrdinary.set(isoWeek(x.date), (weeklyOrdinary.get(isoWeek(x.date)) ?? 0) + 1);
+    for (const x of ordinaryWorked) { const w = weekOf(x.date); weeklyOrdinary.set(w, (weeklyOrdinary.get(w) ?? 0) + 1); }
 
-    // Group ordinary minutes by penalty id.
-    const groups = new Map<string, { id: number; label: string; minutes: number; date: string }>();
+    // ---- ordinary lines ----
+    const groups = new Map<string, { id: number; label: string; kind: LineKind; minutes: number; date: string }>();
     for (const x of ordinaryWorked) {
       const o = ordId(x); const key = `${o.id}|${x.date}`;
-      const g = groups.get(key) ?? { id: o.id, label: o.label, minutes: 0, date: x.date }; g.minutes++; groups.set(key, g);
+      const g = groups.get(key) ?? { ...o, minutes: 0, date: x.date }; g.minutes++; groups.set(key, g);
     }
     for (const g of groups.values()) {
       const rec = penalty(g.id); const rate = penaltyRateCents(baseCents, Number(rec.rate));
       result.lines.push({
-        shiftIndex: si, date: g.date, category: g.label, minutes: g.minutes, percent: Number(rec.rate), hourlyCents: rate,
+        shiftIndex: si, date: g.date, category: g.label, kind: g.kind, minutes: g.minutes, percent: Number(rec.rate), hourlyCents: rate,
         amountCents: divRound(rate * g.minutes, 60),
         sources: [rateSource, { type: "penalty", id: rec.penaltyFixedId, description: `${rec.clauseDescription}: ${rec.penaltyDescription}`, operativeFrom: rec.operativeFrom, clause: pack.clauses.penalties, url: pack.awardUrl }],
-        explanation: `${(g.minutes / 60).toFixed(2)} h × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`,
+        explanation: `${hrs(g.minutes)} h × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`,
       });
     }
-
-    // Flat per-hour additions (Hospitality cl 29.2): Mon–Fri ordinary minutes in each band, paid per hour or part of an hour.
     for (const add of pack.additions) {
       const inBand = ordinaryWorked.filter(x => x.day === "weekday" && x.tod >= add.from && x.tod < add.to);
       if (!inBand.length) continue;
@@ -303,13 +361,13 @@ export function assess(input: AssessmentInput): AssessmentResult {
       if (!rec || rec.amount == null) { material(add.label, "The Fair Work amount for this period isn't in AwardPay's snapshot.", si); continue; }
       const units = Math.ceil(inBand.length / 60); const unit = toCents(Number(rec.amount));
       result.lines.push({
-        shiftIndex: si, date: inBand[0].date, category: add.label, minutes: inBand.length, units, unitCents: unit, amountCents: units * unit,
+        shiftIndex: si, date: inBand[0].date, category: add.label, kind: "evening", minutes: inBand.length, units, unitCents: unit, amountCents: units * unit,
         sources: [{ type: "wage_allowance", id: rec.wageAllowanceFixedId, description: rec.allowance, operativeFrom: rec.operativeFrom, clause: `${pack.clauses.penalties}${rec.clauses ? `, cl ${rec.clauses}` : ""}`, url: pack.awardUrl }],
-        explanation: `${units} × $${(unit / 100).toFixed(2)} (per hour or part of an hour, ${(inBand.length / 60).toFixed(2)} h)`,
+        explanation: `${units} × $${(unit / 100).toFixed(2)} (per hour or part of an hour, ${hrs(inBand.length)} h)`,
       });
     }
 
-    // Overtime lines.
+    // ---- overtime lines ----
     if (otWorked.length) {
       if (!ot) { material("Overtime", (isCasual && pack.overtimeMissingReason?.casual) || "Overtime isn't assessed for this employment type.", si); }
       else {
@@ -323,7 +381,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
             tierUsed++;
           } else {
             const flat = x.dow === 0 ? ot.flat.sunday : ot.flat.saturday;
-            if (flat == null) { material("Overtime", `No overtime rate mapped for this day.`, si); continue; }
+            if (flat == null) { material("Overtime", "No overtime rate mapped for this day.", si); continue; }
             id = flat; label = x.dow === 0 ? "Overtime — Sunday" : "Overtime — Saturday";
           }
           const key = `${id}|${x.date}`; const g = og.get(key) ?? { id, label, minutes: 0, date: x.date }; g.minutes++; og.set(key, g);
@@ -331,40 +389,93 @@ export function assess(input: AssessmentInput): AssessmentResult {
         for (const g of og.values()) {
           const rec = penalty(g.id); const rate = penaltyRateCents(baseCents, Number(rec.rate));
           result.lines.push({
-            shiftIndex: si, date: g.date, category: g.label, minutes: g.minutes, percent: Number(rec.rate), hourlyCents: rate,
+            shiftIndex: si, date: g.date, category: g.label, kind: "overtime", minutes: g.minutes, percent: Number(rec.rate), hourlyCents: rate,
             amountCents: divRound(rate * g.minutes, 60),
             sources: [rateSource, { type: "penalty", id: rec.penaltyFixedId, description: `${rec.clauseDescription}: ${rec.penaltyDescription}`, operativeFrom: rec.operativeFrom, clause: pack.clauses.overtime, url: pack.awardUrl }],
-            explanation: `${(g.minutes / 60).toFixed(2)} h × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`,
+            explanation: `${hrs(g.minutes)} h × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`,
           });
         }
       }
     }
   });
 
-  if (isCasual) for (const [wk, m] of weeklyOrdinary) if (m > 38 * 60) material("Overtime", `More than 38 ordinary hours in the week starting ${wk}. Casual overtime may apply (${pack.clauses.overtime}); tell us which hours were paid as overtime.`);
-  if (input.employmentType === "part_time") result.notes.push("Part-time overtime also applies to hours beyond your agreed guaranteed hours. AwardPay only counts the overtime hours you tell us about.");
-
-  result.assessedEntitlementCents = result.lines.reduce((t, l) => t + l.amountCents, 0);
-  result.status = result.notAssessed.some(n => n.material) ? "partial" : "complete";
-  if (result.status === "partial") result.reasons.push("Some hours or entitlements couldn't be assessed, so this is not your full entitlement and no underpayment total is shown.");
-
-  // ---- paid comparison ----
-  const comparableKinds: PaidKind[] = ["ordinary", "saturday", "sunday", "public_holiday", "evening", "overtime"];
-  const lines = input.paid?.lines ?? [];
-  if (lines.length) {
-    const comp = lines.filter(l => comparableKinds.includes(l.kind)).reduce((t, l) => t + l.amountCents, 0);
-    const excl = lines.filter(l => !comparableKinds.includes(l.kind)).reduce((t, l) => t + l.amountCents, 0);
-    result.paid = { grossCents: input.paid?.grossCents ?? null, comparableCents: comp, excludedCents: excl, note: excl ? "Allowances, leave and other payments were left out of the comparison because they aren't assessed." : "Only wage lines for these hours were compared." };
-  } else if (input.paid?.grossCents != null) {
-    if (input.paid.grossCoversOnlyTheseShifts) {
-      result.paid = { grossCents: input.paid.grossCents, comparableCents: input.paid.grossCents, excludedCents: 0, note: "You confirmed your gross pay covers only these hours, with no allowances, leave or other payments." };
-    } else {
-      result.paid = { grossCents: input.paid.grossCents, comparableCents: null, excludedCents: 0, note: "Gross pay can include allowances, leave and other payments, so it wasn't compared. Enter the pay lines for these hours to compare." };
+  // ---- weekly and arrangement-based overtime: only ruled out when the facts are known ----
+  const needs = pack.overtimeNeeds[emp];
+  const clause = pack.overtimeNeedsClause[emp];
+  if (needs.includes("roster") && arr.workedToRoster !== true) {
+    material("Overtime", `For ${emp.replace("_", "-")} employees, overtime also depends on your roster (${clause}). AwardPay can't tell from shift times alone whether any hours were outside your rostered ordinary hours.`, undefined, "Apart from any hours listed as overtime, were all of these hours your normal rostered hours?");
+  }
+  if (needs.includes("guaranteed") && arr.guaranteedMinutesPerWeek == null) {
+    material("Overtime", `Part-time hours beyond your agreed or guaranteed hours are overtime (${clause}).`, undefined, "How many hours a week are you guaranteed or agreed to work?");
+  }
+  if (!input.payPeriod || arr.allShiftsInPeriodIncluded !== true) {
+    material("Overtime", "Weekly overtime (more than 38 ordinary hours a week) can't be ruled out without the pay period dates and every shift in it.", undefined, "Are these all the shifts you worked in this pay period?");
+  } else {
+    const days = daysBetween(input.payPeriod.start, input.payPeriod.end) + 1;
+    if (days % 7 !== 0) material("Overtime", `The pay period is ${days} days, not whole weeks, so weekly overtime can't be checked reliably.`);
+    for (const [w, m] of weeklyOrdinary) {
+      const wkStart = addDays(input.payPeriod.start, w * 7);
+      if (m > 38 * 60) {
+        material("Overtime", `${hrs(m)} ordinary hours in the week starting ${wkStart}, more than 38 (${clause}). Some of these hours are likely overtime${(arr.rosterCycleWeeks ?? 1) > 1 ? " unless hours are averaged across your roster cycle" : ""}.`, undefined, `How many hours in the week starting ${wkStart} were paid as overtime?`);
+      }
+      if (needs.includes("guaranteed") && arr.guaranteedMinutesPerWeek != null && m > arr.guaranteedMinutesPerWeek) {
+        material("Overtime", `${hrs(m)} ordinary hours in the week starting ${wkStart}, more than your ${hrs(arr.guaranteedMinutesPerWeek)} guaranteed hours. Hours beyond guaranteed hours are overtime (${clause}).`, undefined, `How many hours in the week starting ${wkStart} were paid as overtime?`);
+      }
     }
   }
-  if (result.status === "complete" && result.paid.comparableCents != null) {
+
+  result.assessedEntitlementCents = result.lines.reduce((t, l) => t + l.amountCents, 0);
+
+  // ---- paid comparison ----
+  const wageKinds: PaidKind[] = ["ordinary", "casual_loading", "saturday", "sunday", "public_holiday", "evening", "overtime"];
+  const lines = input.paid?.lines ?? [];
+  const gross = input.paid?.grossCents ?? null;
+  if (lines.length) {
+    const comp = lines.filter(l => wageKinds.includes(l.kind)).reduce((t, l) => t + l.amountCents, 0);
+    const excl = lines.filter(l => !wageKinds.includes(l.kind)).reduce((t, l) => t + l.amountCents, 0);
+    result.paid = { ...result.paid, grossCents: gross, comparableCents: comp, excludedCents: excl, comparison: "complete", note: excl ? "Allowances, leave and other payments were left out of the comparison because they aren't assessed." : "Only wage lines for these hours were compared." };
+    const problems: string[] = [];
+    if (input.paid?.linesCoverAllWages !== true) problems.push("It isn't confirmed that these lines are every wage payment for these hours, so a missing pay line could make the shortfall look bigger than it is.");
+    if (lines.some(l => l.kind === "other")) problems.push("Some pay lines couldn't be identified as wages or allowances.");
+    if (lines.some(l => l.kind === "casual_loading") && !isCasual) problems.push("A casual loading line was entered for a non-casual employee.");
+    if (gross != null && comp + excl > gross) problems.push("The pay lines add up to more than the gross pay, so a line may have been counted twice.");
+    if (lines.some(l => l.amountCents < 0)) problems.push("Negative pay lines (adjustments) can't be matched to these hours.");
+    if (problems.length) {
+      result.paid.comparison = "partial";
+      material("Pay comparison", problems.join(" "), undefined, "Please check the pay lines on your payslip for these hours.");
+    } else if (!lines.some(l => l.kind === "casual_loading")) {
+      // Per-category comparison, only when every wage line has a specific category.
+      const kinds: LineKind[] = ["ordinary", "evening", "saturday", "sunday", "public_holiday", "overtime"];
+      const components = kinds.map(k => {
+        const entitledCents = result.lines.filter(l => l.kind === k).reduce((t, l) => t + l.amountCents, 0);
+        const paidCents = lines.filter(l => l.kind === k).reduce((t, l) => t + l.amountCents, 0);
+        return { kind: k, entitledCents, paidCents, differenceCents: entitledCents - paidCents };
+      }).filter(c => c.entitledCents || c.paidCents);
+      result.paid.components = components;
+      result.componentShortfallCents = components.reduce((t, c) => t + Math.max(0, c.differenceCents), 0);
+      if (components.some(c => c.differenceCents < 0) && components.some(c => c.differenceCents > 0)) {
+        result.notes.push("Some pay categories were paid above the award and others below. Whether an overpayment can make up for a shortfall depends on your employment arrangement, so both the net difference and the category shortfalls are shown.");
+      }
+    } else {
+      result.notes.push("Casual loading was paid as a separate line, so only the total of wage lines is compared (not each category).");
+    }
+  } else if (gross != null) {
+    result.paid = { ...result.paid, grossCents: gross, comparableCents: null, comparison: "partial",
+      note: "Only gross pay is known. Gross pay can include allowances, leave and other payments, so it can't establish an underpayment." };
+    if (input.paid?.grossCoversOnlyTheseShifts) {
+      result.paid.indicativeDifferenceCents = result.assessedEntitlementCents - gross;
+      result.paid.note = "You said gross pay covers only these hours. The difference shown is indicative only, not an underpayment total, because the pay categories can't be checked from gross pay.";
+    }
+    material("Pay comparison", "Only gross pay was given, so the wage components can't be matched to the award.", undefined, "Enter the wage lines from your payslip (ordinary, penalty and overtime amounts).");
+  }
+
+  result.status = result.notAssessed.some(n => n.material) ? "partial" : "complete";
+  if (result.status === "partial") result.reasons.push("Some hours or entitlements couldn't be assessed, so this is not your full entitlement and no underpayment total is shown.");
+  if (result.status === "complete" && result.paid.comparison === "complete" && result.paid.comparableCents != null) {
     result.differenceCents = result.assessedEntitlementCents - result.paid.comparableCents;
     result.underpaymentCents = Math.max(0, result.differenceCents);
+  } else {
+    result.componentShortfallCents = result.status === "complete" ? result.componentShortfallCents : null;
   }
   return result;
 }
