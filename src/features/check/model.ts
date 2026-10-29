@@ -136,7 +136,7 @@ export function dateOffset(start: string, days: number): string {
 export function defaults(): Answers {
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const state = zone.includes("Perth") ? "WA" : zone.includes("Adelaide") ? "SA" : zone.includes("Brisbane") ? "QLD" : zone.includes("Darwin") ? "NT" : zone.includes("Melbourne") ? "VIC" : zone.includes("Hobart") ? "TAS" : "NSW";
-  return { job: "", industry: "", awardCode: "", awardName: "", employmentType: "Full-time", classificationId: null, classificationName: "Not sure — check across all levels", workArea: "", state, frequency: "weekly", rate: "", gross: "", hours: "", hours150: 0, hours200: 0, usePayslipHours: false, weekStart: weekStartDate(), shifts: [], conditions: {}, allowances: [], fromPayslip: [] };
+  return { job: "", industry: "", awardCode: "", awardName: "", employmentType: "Full-time", classificationId: null, classificationName: "", workArea: "", state, frequency: "weekly", rate: "", gross: "", hours: "", hours150: 0, hours200: 0, usePayslipHours: false, weekStart: weekStartDate(), shifts: [], conditions: {}, allowances: [], fromPayslip: [] };
 }
 export function shiftHours(s: RosterShift): number {
   const [a, b] = s.start.split(":").map(Number), [c, d] = s.finish.split(":").map(Number);

@@ -13,7 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { takePreloadedPayslip } from "@/lib/pendingPayslip";
 import { readPayslip, PAYSLIP_ACCEPT, type ParsedPayslip } from "@/lib/payslipReader";
 import { calculateAnswers } from "./calculate";
-import { applyPayslip, dateOffset, defaults, INDUSTRIES, JOBS, SAVE_KEY, shiftHours, matchAwards, industryAwards, typicalShifts, type Answers, type Award, type Classification, type Step } from "./model";
+import PreliminaryNotice from "@/components/report/PreliminaryNotice";
+import { applyPayslip, dateOffset, defaults, INDUSTRIES, JOBS, SAVE_KEY, shiftHours, matchAwards, industryAwards, dedupeClassifications, typicalShifts, type Answers, type Award, type Classification, type Step } from "./model";
 
 const TITLES: Partial<Record<Step, [string, string]>> = {
   start: ["Let's check your pay", "Takes about 60 seconds. Official Fair Work rates."],
