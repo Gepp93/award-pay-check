@@ -18,8 +18,7 @@ export const Logo = () => (
 const links = [
   { to: "/why-awardpay", label: "Why AwardPay" },
   { to: "/how-it-works", label: "How it works" },
-  { to: "/v2#calculators", label: "Calculators" },
-  { to: "/v2#pay-pulse", label: "Pay Pulse" },
+  { to: "/v2#calculators", label: "Check tools" },
   { to: "/v2/pricing-preview", label: "Pricing" },
   { to: "/contact", label: "Contact" },
 ];
