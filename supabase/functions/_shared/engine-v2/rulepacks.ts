@@ -57,6 +57,22 @@ export interface RulePack {
   dailyMaxOrdinaryMinutes: number;
   dailyMaxClause: string;
   span?: SpanRule;
+  /** Daily ordinary-hours maximum by employment type (minutes). Above it, hours are overtime. */
+  dailyMaxByEmployment?: Partial<Record<Employment, number>>;
+  /** Some awards allow one longer day per week (Retail cl 15.5: 11 hours on one day). */
+  oneLongDayMinutes?: number;
+  /** Employment types the span-of-hours overtime trigger applies to. */
+  spanAppliesTo?: Employment[];
+  /** Information needed before AwardPay can rule out overtime: "roster" = every non-overtime hour was rostered ordinary time; "guaranteed" = agreed/guaranteed weekly hours. */
+  overtimeNeeds: Record<Employment, Array<"roster" | "guaranteed">>;
+  overtimeNeedsClause: Record<Employment, string>;
+  /** Unpaid meal breaks may apply to shifts longer than this many minutes. */
+  unpaidBreakAfterMinutes: number;
+  breakClause: string;
+  /** Minimum paid engagement per shift (minutes), and on public holidays where the award sets one. */
+  minimumEngagement: Partial<Record<Employment, number>>;
+  publicHolidayMinimum?: Partial<Record<Employment, number>>;
+  minimumClause: string;
   /** Situations the pack refuses to assess. */
   unsupportedFlags: Array<"shiftworker" | "casinoGaming" | "managerial">;
 }
@@ -66,7 +82,7 @@ const h = (hh: number, mm = 0) => hh * 60 + mm;
 export const RETAIL: RulePack = {
   awardCode: "MA000004",
   name: "General Retail Industry Award 2020",
-  version: "2026-10-29.1",
+  version: "2026-10-30.1",
   awardUrl: "https://awards.fairwork.gov.au/MA000004.html",
   classifications: {
     112: { label: "Retail Employee Level 1" }, 113: { label: "Retail Employee Level 2" },
@@ -87,10 +103,16 @@ export const RETAIL: RulePack = {
     ftpt: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 180, first: 1941, after: 1942, flat: { sunday: 1943 }, publicHoliday: 1944 },
     casual: null,
   },
-  overtimeMissingReason: { casual: "The Fair Work pay database has no casual overtime records for this award (Table 11 column 3), so casual overtime is not assessed." },
+  overtimeMissingReason: { casual: "The award sets casual overtime rates (cl 21.2 Table 11 column 3), but the Fair Work pay database has no records for them, so AwardPay doesn't calculate casual overtime for this award yet." },
   additions: [],
   dailyMaxOrdinaryMinutes: h(9),
-  dailyMaxClause: "cl 15.4–15.5 (9 ordinary hours a day; 11 on one day a week)",
+  dailyMaxClause: "cl 15.4–15.5 (9 ordinary hours a day; 11 on one day a week); Table 10 casual (iii)",
+  oneLongDayMinutes: h(11),
+  spanAppliesTo: ["full_time", "part_time", "casual"],
+  overtimeNeeds: { full_time: ["roster"], part_time: ["guaranteed"], casual: [] },
+  overtimeNeedsClause: { full_time: "cl 21.2 Table 10 (hours in excess of ordinary hours or outside roster conditions)", part_time: "cl 10.8 and Table 10 (hours beyond guaranteed hours)", casual: "Table 10 (more than 38 ordinary hours a week, averaged over a roster cycle if rostered)" },
+  unpaidBreakAfterMinutes: h(5), breakClause: "cl 16 Table 3 (unpaid meal break for shifts of more than 5 hours)",
+  minimumEngagement: { part_time: h(3), casual: h(3) }, minimumClause: "cl 10.9 (part-time 3 hours), cl 11.2 (casual 3 hours, 1.5 hours in limited circumstances)",
   span: {
     byDow: { 0: [h(9), h(18)], 1: [h(7), h(21)], 2: [h(7), h(21)], 3: [h(7), h(21)], 4: [h(7), h(21)], 5: [h(7), h(21)], 6: [h(7), h(18)] },
     extendedEnd: h(23), clause: "cl 15.1–15.2 and Table 10",
@@ -101,7 +123,7 @@ export const RETAIL: RulePack = {
 export const HOSPITALITY: RulePack = {
   awardCode: "MA000009",
   name: "Hospitality Industry (General) Award 2020",
-  version: "2026-10-29.1",
+  version: "2026-10-30.1",
   awardUrl: "https://awards.fairwork.gov.au/MA000009.html",
   classifications: {
     242: { label: "Introductory level" },
@@ -113,8 +135,8 @@ export const HOSPITALITY: RulePack = {
     282: { label: "Level 6 (cook (tradesperson) grade 5)" },
   },
   clauses: {
-    minimumRates: "cl 18", penalties: "cl 29 (Table 12—Penalty rates; cl 29.2 additional rate)",
-    overtime: "cl 28 (cl 28.4 overtime rates)", hours: "cl 15", casual: "cl 11", schedule: "Schedule B—Summary of Hourly Rates of Pay",
+    minimumRates: "cl 18", penalties: "cl 29.2 (Table 14—Penalty rates, including the per-hour additional amount Mon–Fri 7.00 pm to 7.00 am)",
+    overtime: "cl 28 (cl 28.4 Table 13—Overtime rates)", hours: "cl 15", casual: "cl 11", schedule: "Schedule B—Summary of Hourly Rates of Pay",
   },
   ordinary: {
     ftpt: { weekday: 2053, weekdayBands: [], saturday: 2054, sunday: 2055, publicHoliday: 2056 },
@@ -129,14 +151,20 @@ export const HOSPITALITY: RulePack = {
     { from: h(0), to: h(7), wageAllowanceId: 11954, label: "Monday to Friday midnight to 7.00 am (per hour or part)" },
   ],
   dailyMaxOrdinaryMinutes: h(11, 30),
-  dailyMaxClause: "cl 15 (maximum 11.5 ordinary hours on any day)",
+  dailyMaxClause: "cl 15.1–15.2 (maximum 11.5 ordinary hours a day); cl 11.2 (casual maximum 12 hours a day)",
+  dailyMaxByEmployment: { casual: h(12) },
+  overtimeNeeds: { full_time: ["roster"], part_time: ["roster"], casual: [] },
+  overtimeNeedsClause: { full_time: "cl 28.2(a) (time in excess of ordinary hours)", part_time: "cl 10.13(b) (beyond 38 a week, daily maximum, or rostered hours)", casual: "cl 11.2/11.4 (more than 12 hours a day or 38 a week, averaged over a roster cycle of up to 4 weeks)" },
+  unpaidBreakAfterMinutes: h(5), breakClause: "cl 16 Table 2 (elective unpaid break over 5 hours; required over 6 hours)",
+  minimumEngagement: { part_time: h(3), casual: h(2) }, publicHolidayMinimum: { full_time: h(4), part_time: h(4), casual: h(2) },
+  minimumClause: "cl 15.2(a) (part-time 3 hours), cl 11.3 (casual 2 hours), cl 29.4 (public holiday 4 hours; casual 2 hours)",
   unsupportedFlags: ["casinoGaming", "managerial"],
 };
 
 export const FAST_FOOD: RulePack = {
   awardCode: "MA000003",
   name: "Fast Food Industry Award 2010",
-  version: "2026-10-29.1",
+  version: "2026-10-30.1",
   awardUrl: "https://awards.fairwork.gov.au/MA000003.html",
   classifications: {
     108: { label: "Fast food employee level 1", sundayGroup: "level1" },
@@ -172,7 +200,11 @@ export const FAST_FOOD: RulePack = {
   },
   additions: [],
   dailyMaxOrdinaryMinutes: h(11),
-  dailyMaxClause: "cl 13.5 (maximum 11 ordinary hours on any day)",
+  dailyMaxClause: "cl 13.5 (maximum 11 ordinary hours on any day); cl 20.2–20.4",
+  overtimeNeeds: { full_time: ["roster"], part_time: ["roster", "guaranteed"], casual: [] },
+  overtimeNeedsClause: { full_time: "cl 20.2 (beyond 38 a week, 5 days, 11 hours a day, or outside rostered start/finish)", part_time: "cl 20.3 and cl 10.9 (beyond agreed hours or rostered start/finish)", casual: "cl 20.4 (more than 38 ordinary hours a week, averaged over a roster cycle if rostered, or 11 hours a day)" },
+  unpaidBreakAfterMinutes: h(5) - 1, breakClause: "cl 14 (unpaid meal break for shifts of 5 hours or more)",
+  minimumEngagement: { part_time: h(3), casual: h(3) }, minimumClause: "cl 10.2 (part-time 3 hours), cl 11.3 (casual 3 hours)",
   unsupportedFlags: [],
 };
 

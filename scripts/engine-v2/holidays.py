@@ -46,6 +46,8 @@ for h in data["holidays"]:
     if h["date"] >= "2026":
         continue
     s, f = scope_of(h)
+    if h["name"].startswith("Western Australia Day"):
+        s = "statewide"  # correction: statewide day, regex mis-tagged it from descriptive text
     holidays.append({**h, "scope": s, **({"fromMinute": f} if f is not None else {})})
 
 def add(state, date, name, scope="statewide", from_minute=None, info="", source=None):

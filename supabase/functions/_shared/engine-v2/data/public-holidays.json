@@ -144,6 +144,14 @@
    "scope": "regional"
   },
   {
+   "date": "2024-02-12",
+   "name": "Royal Hobart Regatta",
+   "jurisdiction": "TAS",
+   "info": "South of and including Oatlands and Swansea (regional)",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays",
+   "scope": "regional"
+  },
+  {
    "date": "2024-03-04",
    "name": "Labour Day",
    "jurisdiction": "WA",
@@ -509,7 +517,7 @@
    "jurisdiction": "WA",
    "info": "Held on the first Monday in June each year and is a state holiday only.",
    "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia",
-   "scope": "regional"
+   "scope": "statewide"
   },
   {
    "date": "2024-06-10",
@@ -630,6 +638,14 @@
    "info": "Always on a Monday creating a long weekend. It celebrates the eight-hour working day a victory for workers in the mid-late 19th century.",
    "source": "https://www.safework.sa.gov.au/resources/public-holidays",
    "scope": "statewide"
+  },
+  {
+   "date": "2024-11-04",
+   "name": "Recreation Day",
+   "jurisdiction": "TAS",
+   "info": "Parts of the state that do not observe Royal Hobart Regatta (regional)",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays",
+   "scope": "regional"
   },
   {
    "date": "2024-11-04",
@@ -947,6 +963,14 @@
    "info": "",
    "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia",
    "scope": "statewide"
+  },
+  {
+   "date": "2025-02-10",
+   "name": "Royal Hobart Regatta",
+   "jurisdiction": "TAS",
+   "info": "South of and including Oatlands and Swansea (regional)",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays",
+   "scope": "regional"
   },
   {
    "date": "2025-02-10",
@@ -1445,6 +1469,14 @@
    "scope": "statewide"
   },
   {
+   "date": "2025-09-26",
+   "name": "Friday before the AFL Grand Final",
+   "jurisdiction": "VIC",
+   "info": "",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025",
+   "scope": "statewide"
+  },
+  {
    "date": "2025-09-29",
    "name": "King's Birthday",
    "jurisdiction": "WA",
@@ -1483,6 +1515,14 @@
    "info": "",
    "source": "https://www.safework.sa.gov.au/resources/public-holidays",
    "scope": "statewide"
+  },
+  {
+   "date": "2025-11-03",
+   "name": "Recreation Day",
+   "jurisdiction": "TAS",
+   "info": "Parts of the state that do not observe Royal Hobart Regatta (regional)",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays",
+   "scope": "regional"
   },
   {
    "date": "2025-11-03",
