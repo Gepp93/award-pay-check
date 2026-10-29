@@ -132,7 +132,7 @@ export default function V2Home() {
         <div className="mx-auto max-w-6xl px-4 md:px-8">
           <h2 className="text-3xl font-extrabold">Check tools</h2>
           <p className="mt-2 text-ink-2">One checker covers your hours, penalties and allowances. More focused tools will be listed here once they're working.</p>
-          <Link to="/check" className="mt-6 flex items-start gap-4 rounded-lg border border-border bg-card p-5 shadow-soft hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:max-w-xl">
+          <Link to="/v2/industry" className="mt-6 flex items-start gap-4 rounded-lg border border-border bg-card p-5 shadow-soft hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:max-w-xl">
             <Calculator className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
             <span className="flex-1"><span className="block font-bold">Payslip check</span>
               <span className="mt-1 block text-sm text-ink-2">Answer a few questions about your award, hours and pay (or upload a payslip) and we compare what you were paid with the award minimum for each shift.</span></span>
