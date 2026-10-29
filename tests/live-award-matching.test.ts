@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { applyPayslip, defaults, dedupeClassifications, matchAwards } from "../src/features/check/model";
 import awards from "./fixtures/fwc-awards-2026-10.json";
 
+// Classification rows mirror the real get-classifications response for MA000047 (36 rows, 3 IDs).
 // Snapshot of the official Fair Work award list (156 awards) fetched 2026-10-30.
 const codes = (role: string, hint = "", employer = "") => matchAwards(role, awards, hint, employer).map(a => a.code);
 const UNRELATED = ["MA000047", "MA000128"]; // Aircraft Cabin Crew, Queensland Newspapers
@@ -40,12 +41,12 @@ describe("classification de-duplication", () => {
   test("rows repeated across operative dates collapse by ID; distinct IDs stay", () => {
     const rows = [
       ...Array.from({ length: 12 }, () => ({ classification_fixed_id: 1783, classification: "Cabin crew member" })),
-      ...Array.from({ length: 12 }, () => ({ classification_fixed_id: 1784, classification: "Cabin crew manager (wide-bodied aircraft)" })),
-      ...Array.from({ length: 7 }, () => ({ classification_fixed_id: 1785, classification: "Cabin crew supervisor (narrow-bodied aircraft, 4 or more crew)" })),
-      ...Array.from({ length: 5 }, () => ({ classification_fixed_id: 1785, classification: "Cabin crew supervisor (narrow-bodied aircraft, four or more crew)" })),
+      ...Array.from({ length: 12 }, () => ({ classification_fixed_id: 1785, classification: "Cabin crew manager (wide-bodied aircraft)" })),
+      ...Array.from({ length: 7 }, () => ({ classification_fixed_id: 1784, classification: "Cabin crew supervisor (narrow-bodied aircraft, 4 or more crew)" })),
+      ...Array.from({ length: 5 }, () => ({ classification_fixed_id: 1784, classification: "Cabin crew supervisor (narrow-bodied aircraft, four or more crew)" })),
     ];
     expect(rows.length).toBe(36);
-    expect(dedupeClassifications(rows).map(r => r.classification_fixed_id)).toEqual([1783, 1784, 1785]);
+    expect(dedupeClassifications(rows).map(r => r.classification_fixed_id)).toEqual([1783, 1785, 1784]);
   });
   test("junior and adult levels with different IDs are kept separate", () => {
     const rows = [{ classification_fixed_id: 1, classification: "Retail Employee Level 1" }, { classification_fixed_id: 2, classification: "Retail Employee Level 1 - junior 16 years" }];
