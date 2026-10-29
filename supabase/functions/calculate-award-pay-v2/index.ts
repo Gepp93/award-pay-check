@@ -14,13 +14,14 @@ const Body = z.object({
   classificationFixedId: z.number().int(),
   employmentType: z.enum(["full_time", "part_time", "casual"]),
   rateType: z.enum(["adult", "junior", "apprentice", "trainee"]),
-  state: z.enum(["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"]),
+  // "" and no shifts are accepted so the ENGINE (not the client) returns Unsupported for e.g. another award.
+  state: z.union([z.enum(["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"]), z.literal("")]),
   payPeriod: z.object({ start: day, end: day }).optional(),
   shifts: z.array(z.object({
     date: day, start: hm, finish: hm,
     breakMinutes: z.number().int().min(0).max(600).optional(), breakStart: hm.optional(),
     overtimeMinutes: z.number().int().min(0).max(1440).optional(),
-  })).min(1).max(62),
+  })).max(62),
   arrangement: z.object({
     allShiftsInPeriodIncluded: z.boolean().optional(), workedToRoster: z.boolean().optional(),
     guaranteedMinutesPerWeek: z.number().int().min(0).max(38 * 60).optional(),
@@ -71,7 +72,7 @@ Deno.serve(async (req) => {
   const parsed = Body.safeParse(body);
   if (!parsed.success) return json({ error: "invalid_input", fields: Object.keys(parsed.error.flatten().fieldErrors) }, 400);
 
-  const result = assess(parsed.data);
+  const result = assess(parsed.data as Parameters<typeof assess>[0]);
   console.log("v2 calc", { status: result.status, shifts: parsed.data.shifts.length, notAssessed: result.notAssessed.length });
   return json(result);
 });
