@@ -107,6 +107,10 @@ export const CASES: Case[] = [
     input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, state: "NSW", payPeriod: { start: "2026-12-21", end: "2027-01-03" }, shifts: [{ date: "2026-12-28", start: "09:00", finish: "13:00" }] },
     expect: { status: "partial" }, working: "Holiday list covers 2024–2025 only", source: "data.gov.au dataset coverage" },
 
+  { id: "R27", title: "Retail L1 casual, Christmas Day 2025 (NSW)",
+    input: { awardCode: R, classificationFixedId: 112, employmentType: "casual", ...adult, state: "NSW", payPeriod: { start: "2025-12-22", end: "2025-12-28" }, shifts: [{ date: "2025-12-25", start: "09:00", finish: "17:00" }] },
+    expect: { status: "complete", entitlementCents: 53104 }, working: "$26.55 × 250% = $66.375 → $66.38; 8 h × $66.38 = $531.04", source: "FWC API $26.55 (2025-07-01); cl 22 Table 12 column 3 (250%); data.gov.au NSW 2025-12-25" },
+
   // ---------------- Hospitality ----------------
   { id: "H1", title: "Hospitality L2 full-time, weekday into evening (+$2.95 per hour or part)",
     input: { awardCode: H, classificationFixedId: 246, employmentType: "full_time", ...adult, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "17:00", finish: "22:30" }] },
