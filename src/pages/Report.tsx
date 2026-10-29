@@ -8,6 +8,7 @@ import { CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { FullReport } from "@/components/report/FullReport";
 import { LockedTeaser, ReportIncludes } from "@/components/report/LockedTeaser";
+import PreliminaryNotice, { ESTIMATE_LABEL, MULTI_LEVEL_LABEL } from "@/components/report/PreliminaryNotice";
 import { NavBar } from "@/components/NavBar";
 import { PublicNavBar } from "@/components/PublicNavBar";
 import { useUserCredits } from "@/hooks/useUserCredits";
@@ -183,11 +184,12 @@ export default function Report() {
             </p>
           </header>
           <div className="space-y-6">
+            {!isPaid && <PreliminaryNotice />}
             {/* Headline */}
             {!isPaid && (isUnderpaid ? (
               <div className="checker-sheet">
                 <div className="ledger-label mb-3">
-                  {isUnsureMode ? "You may be owed up to" : "You may be owed"}
+                  {isUnsureMode ? `${ESTIMATE_LABEL} · ${MULTI_LEVEL_LABEL}` : ESTIMATE_LABEL}
                 </div>
                 <div className="checker-owed figure">
                   {isUnsureMode ? "~" : ""}$
@@ -200,7 +202,7 @@ export default function Report() {
             ) : (
               <div className="checker-sheet">
                 <CheckCircle className="h-10 w-10 text-primary mx-auto mb-3" />
-                <h2 className="text-2xl font-semibold">Looks like you were paid correctly</h2>
+                <h2 className="text-2xl font-semibold">No shortfall found in this preliminary estimate</h2>
               </div>
             ))}
 

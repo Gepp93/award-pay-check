@@ -33,17 +33,17 @@ export function LockedTeaser({ result }: Props) {
           <span className="checker-locked-detail"><Lock className="h-3.5 w-3.5" />In full report</span>
         </div>
       )}
-      {issueCount === 0 && <p className="text-sm text-muted-foreground">Your full report shows exactly where the money went missing.</p>}
+      {issueCount === 0 && <p className="text-sm text-muted-foreground">Your full report shows the preliminary estimate, line by line.</p>}
     </section>
   );
 }
 
 export function ReportIncludes() {
   const includes = [
-    "Your award, classification and the exact hourly rate you should be on",
-    "A shift-by-shift breakdown of what you were paid vs what you were owed",
-    "Every penalty, overtime and allowance line that was missed",
-    "The exact shortfall figure for the period",
+    "Your award, classification and the base hourly rate we compared against",
+    "A shift-by-shift comparison of what you were paid and our preliminary estimate",
+    "Possible penalty, overtime and allowance issues to check",
+    "The preliminary estimated shortfall for the period",
     "A dated PDF you can send to your employer or Fair Work",
   ];
 
