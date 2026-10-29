@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { IndustryId } from "./industries";
+import type { IntentId } from "./intents";
 
 /** Answers only — never the payslip file — kept in session storage so Back keeps answers. */
 export interface V2Answers {
   industry: IndustryId | null;
+  intent: IntentId | null;
   role: string;
   employment: "Full-time" | "Part-time" | "Casual" | "";
   state: string;
@@ -13,7 +15,7 @@ export interface V2Answers {
 }
 
 const KEY = "awardpay-v2-preview";
-const empty: V2Answers = { industry: null, role: "", employment: "", state: "", extras: [], hoursPerWeek: "", hourlyRate: "" };
+const empty: V2Answers = { industry: null, intent: null, role: "", employment: "", state: "", extras: [], hoursPerWeek: "", hourlyRate: "" };
 
 const Ctx = createContext<{ answers: V2Answers; update: (p: Partial<V2Answers>) => void; reset: () => void } | null>(null);
 
