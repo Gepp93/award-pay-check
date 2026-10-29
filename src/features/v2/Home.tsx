@@ -46,12 +46,12 @@ export default function V2Home() {
             </ul>
             <div className="mt-7">
               <p className="text-sm font-bold">Start with your industry</p>
-              <div role="group" aria-label="Choose your industry" className="mt-3 grid grid-cols-4 gap-2 sm:gap-3">
+              <div role="group" aria-label="Choose your industry" className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
                 {INDUSTRIES.filter((i) => i.image).map((i) => (
                   <button key={i.id} type="button" onClick={() => pick(i.id)}
-                    className={cn("group overflow-hidden rounded-md border bg-card text-left shadow-soft transition hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", answers.industry === i.id ? "border-2 border-primary" : "border-border")}>
-                    <img src={i.image} alt="" loading="eager" width={896} height={752} className="aspect-[4/3] w-full object-cover" />
-                    <span className="block truncate px-2 py-1.5 text-xs font-bold sm:text-sm">{i.label}</span>
+                    className={cn("group flex min-h-14 items-center overflow-hidden rounded-md border bg-card text-left sm:block shadow-soft transition hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", answers.industry === i.id ? "border-2 border-primary" : "border-border")}>
+                    <img src={i.image} alt="" loading="eager" width={896} height={752} className="h-14 w-16 shrink-0 object-cover sm:aspect-[4/3] sm:h-auto sm:w-full" />
+                    <span className="block px-2 py-1.5 text-sm font-bold">{i.label}</span>
                   </button>
                 ))}
               </div>
