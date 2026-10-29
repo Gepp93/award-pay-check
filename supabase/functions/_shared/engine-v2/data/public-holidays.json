@@ -1,0 +1,1431 @@
+{
+ "source": "data.gov.au \u2014 Australian Public Holidays Dates Machine Readable Dataset",
+ "fetched": "2026-10-29",
+ "coveredYears": [
+  2024,
+  2025
+ ],
+ "holidays": [
+  {
+   "date": "2024-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "ACT",
+   "info": "New Year's Day is the first day of the calendar year and is celebrated each January 1st",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-01-26",
+   "name": "Australia Day",
+   "jurisdiction": "ACT",
+   "info": "Always celebrated on 26 January",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-03-11",
+   "name": "Canberra Day",
+   "jurisdiction": "ACT",
+   "info": "Held on the second Monday of March each year in Canberra to celebrate the naming ceremony of Australia's capital which took place on 12 March 1913.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-03-29",
+   "name": "Good Friday",
+   "jurisdiction": "ACT",
+   "info": "Easter is celebrated with Good Friday and Easter Monday creating a 4 day long weekend.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-03-30",
+   "name": "Easter Saturday - the day after Good Friday",
+   "jurisdiction": "ACT",
+   "info": "Easter Saturday is between Good Friday and Easter Sunday in Australia.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-03-31",
+   "name": "Easter Sunday",
+   "jurisdiction": "ACT",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-04-01",
+   "name": "Easter Monday",
+   "jurisdiction": "ACT",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "ACT",
+   "info": "Celebrated on the 25 April each year.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-05-27",
+   "name": "Reconciliation Day",
+   "jurisdiction": "ACT",
+   "info": "Takes place on the first Monday on or after 27 May each year the anniversary of the 1967 referendum",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-06-10",
+   "name": "Sovereign's Birthday",
+   "jurisdiction": "ACT",
+   "info": "Celebrated on second Monday in June except in Western Australia and Queensland.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-10-07",
+   "name": "Labour Day",
+   "jurisdiction": "ACT",
+   "info": "Always on a Monday creating a long weekend. It celebrates the eight-hour working day a victory for workers in the mid-late 19th century.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-12-25",
+   "name": "Christmas Day ",
+   "jurisdiction": "ACT",
+   "info": "Christmas Day is an annual holiday which celebrates the birth of Jesus Christ over 2000 years ago.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "ACT",
+   "info": "Boxing Day occurs the day after Christmas. Sydney-to-Hobart yacht race and Boxing Day Test Match (Cricket) start on this day.",
+   "source": "https://www.cmtedd.act.gov.au/communication/holidays"
+  },
+  {
+   "date": "2024-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "NSW",
+   "info": "New Year's Day is the first day of the calendar year and is celebrated each January 1st",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-01-26",
+   "name": "Australia Day",
+   "jurisdiction": "NSW",
+   "info": "Always celebrated on 26 January",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-03-29",
+   "name": "Good Friday",
+   "jurisdiction": "NSW",
+   "info": "Easter is celebrated with Good Friday and Easter Monday creating a 4 day long weekend.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-03-30",
+   "name": "Easter Saturday",
+   "jurisdiction": "NSW",
+   "info": "Easter Saturday is between Good Friday and Easter Sunday in Australia.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-03-31",
+   "name": "Easter Sunday",
+   "jurisdiction": "NSW",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-04-01",
+   "name": "Easter Monday",
+   "jurisdiction": "NSW",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "NSW",
+   "info": "Celebrated on the 25 April each year.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-06-10",
+   "name": "King's Birthday",
+   "jurisdiction": "NSW",
+   "info": "Celebrated on second Monday in June except in Western Australia and Queensland.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-08-05",
+   "name": "Bank Holiday",
+   "jurisdiction": "NSW",
+   "info": "Applies to banks and certain financial institutions, per the Retail Trading Act 2008",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-10-07",
+   "name": "Labour Day",
+   "jurisdiction": "NSW",
+   "info": "Always on a Monday creating a long weekend. It celebrates the eight-hour working day a victory for workers in the mid-late 19th century.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-12-25",
+   "name": "Christmas Day ",
+   "jurisdiction": "NSW",
+   "info": "Christmas Day is an annual holiday which celebrates the birth of Jesus Christ over 2000 years ago.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "NSW",
+   "info": "Boxing Day occurs the day after Christmas. Sydney-to-Hobart yacht race and Boxing Day Test Match (Cricket) start on this day.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2024-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "NT",
+   "info": "New Year's Day is the first day of the calendar year and is celebrated each January 1st",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-01-26",
+   "name": "Australia Day",
+   "jurisdiction": "NT",
+   "info": "Always celebrated on 26 January",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-03-29",
+   "name": "Good Friday",
+   "jurisdiction": "NT",
+   "info": "Easter is celebrated with Good Friday and Easter Monday creating a 4 day long weekend.",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-03-30",
+   "name": "Easter Saturday",
+   "jurisdiction": "NT",
+   "info": "Easter Saturday is between Good Friday and Easter Sunday in Australia.",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-03-31",
+   "name": "Easter Sunday",
+   "jurisdiction": "NT",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-04-01",
+   "name": "Easter Monday",
+   "jurisdiction": "NT",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "NT",
+   "info": "Celebrated on the 25 April each year.",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-05-06",
+   "name": "May Day",
+   "jurisdiction": "NT",
+   "info": "Always on a Monday, creating a long weekend. It celebrates the eight-hour working day, a victory for workers in the mid-late 19th century.",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-06-10",
+   "name": "King's Birthday",
+   "jurisdiction": "NT",
+   "info": "Celebrated on second Monday in June except in Western Australia and Queensland.",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-08-05",
+   "name": "Picnic Day",
+   "jurisdiction": "NT",
+   "info": "Observed on the first Monday of August each year and is clebrated with a horse race, railway picnic and other social outings",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-12-24",
+   "name": "Christmas Eve",
+   "jurisdiction": "NT",
+   "info": "Part-day holiday 7pm to midnight",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-12-25",
+   "name": "Christmas Day ",
+   "jurisdiction": "NT",
+   "info": "Christmas Day is an annual holiday which celebrates the birth of Jesus Christ over 2000 years ago.",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "NT",
+   "info": "Boxing Day occurs the day after Christmas. Sydney-to-Hobart yacht race and Boxing Day Test Match (Cricket) start on this day.",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-12-31",
+   "name": "New Year's Eve",
+   "jurisdiction": "NT",
+   "info": "Part-day holiday 7pm to midnight",
+   "source": "https://nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2024-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "QLD",
+   "info": "New Year's Day is the first day of the calendar year and is celebrated each January 1st",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-01-26",
+   "name": "Australia Day",
+   "jurisdiction": "QLD",
+   "info": "Always celebrated on 26 January",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-03-29",
+   "name": "Good Friday",
+   "jurisdiction": "QLD",
+   "info": "Easter is celebrated with Good Friday and Easter Monday creating a 4 day long weekend.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-03-30",
+   "name": "Easter Saturday",
+   "jurisdiction": "QLD",
+   "info": "Easter Saturday is between Good Friday and Easter Sunday in Australia.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-03-31",
+   "name": "Easter Sunday",
+   "jurisdiction": "QLD",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-04-01",
+   "name": "Easter Monday",
+   "jurisdiction": "QLD",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "QLD",
+   "info": "Celebrated on the 25 April each year.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-05-06",
+   "name": "Labour Day",
+   "jurisdiction": "QLD",
+   "info": "Always on a Monday creating a long weekend. It celebrates the eight-hour working day a victory for workers in the mid-late 19th century.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-08-14",
+   "name": "Royal Queensland Show (Brisbane only)",
+   "jurisdiction": "QLD",
+   "info": "The Royal National Agricultural (RNA) Show Day (Brisbane only) is held on the Wednesday during the RNA Show period. The RNA Show commences on the first Friday in August, unless the first Friday is prior to 5 August, then it commences on the second Friday of August.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-10-07",
+   "name": "King\u2019s Birthday",
+   "jurisdiction": "QLD",
+   "info": "Celebrated on second Monday in June except in Western Australia and Queensland.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-12-24",
+   "name": "Christmas Eve",
+   "jurisdiction": "QLD",
+   "info": "From 2019, the Holidays Act 1983 provides for a part-day public holiday from 6pm to midnight on Christmas Eve",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-12-25",
+   "name": "Christmas Day ",
+   "jurisdiction": "QLD",
+   "info": "Christmas Day is an annual holiday which celebrates the birth of Jesus Christ over 2000 years ago.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "QLD",
+   "info": "Boxing Day occurs the day after Christmas. Sydney-to-Hobart yacht race and Boxing Day Test Match (Cricket) start on this day.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2024-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "SA",
+   "info": "New Year's Day is the first day of the calendar year and is celebrated each January 1st",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-01-26",
+   "name": "Australia Day",
+   "jurisdiction": "SA",
+   "info": "Always celebrated on 26 January",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-03-11",
+   "name": "Adelaide Cup Day (subject to Proclamation)",
+   "jurisdiction": "SA",
+   "info": "The Holidays Act 1910 provides for the third Monday in May to be a public holiday, through the issuing of a special Proclamation by the Governor.",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-03-29",
+   "name": "Good Friday",
+   "jurisdiction": "SA",
+   "info": "Easter is celebrated with Good Friday and Easter Monday creating a 4 day long weekend.",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-03-30",
+   "name": "Easter Saturday",
+   "jurisdiction": "SA",
+   "info": "Easter Saturday is between Good Friday and Easter Sunday in Australia.",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-04-01",
+   "name": "Easter Monday",
+   "jurisdiction": "SA",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "SA",
+   "info": "Celebrated on the 25 April each year.",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-06-10",
+   "name": "King\u2019s Birthday",
+   "jurisdiction": "SA",
+   "info": "Celebrated on second Monday in June except in Western Australia and Queensland.",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-10-07",
+   "name": "Labour Day",
+   "jurisdiction": "SA",
+   "info": "Always on a Monday creating a long weekend. It celebrates the eight-hour working day a victory for workers in the mid-late 19th century.",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-12-24",
+   "name": "Christmas Eve",
+   "jurisdiction": "SA",
+   "info": "7pm to midnight",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-12-25",
+   "name": "Christmas Day ",
+   "jurisdiction": "SA",
+   "info": "Christmas Day is an annual holiday which celebrates the birth of Jesus Christ over 2000 years ago.",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-12-26",
+   "name": "Boxing Day / Proclamation Day",
+   "jurisdiction": "SA",
+   "info": "Boxing Day occurs the day after Christmas. Sydney-to-Hobart yacht race and Boxing Day Test Match (Cricket) start on this day.",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-12-31",
+   "name": "New Year's Eve",
+   "jurisdiction": "SA",
+   "info": "7pm to midnight",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2024-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "TAS",
+   "info": "New Year's Day is the first day of the calendar year and is celebrated each January 1st",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-01-26",
+   "name": "Australia Day",
+   "jurisdiction": "TAS",
+   "info": "Always celebrated on 26 January",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-03-11",
+   "name": "Eight Hours Day",
+   "jurisdiction": "TAS",
+   "info": "Always on a Monday, creating a long weekend. It celebrates the eight-hour working day, a victory for workers in the mid-late 19th century.",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-03-29",
+   "name": "Good Friday",
+   "jurisdiction": "TAS",
+   "info": "Easter is celebrated with Good Friday and Easter Monday creating a 4 day long weekend.",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-04-01",
+   "name": "Easter Monday",
+   "jurisdiction": "TAS",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-04-02",
+   "name": "Easter Tuesday",
+   "jurisdiction": "TAS",
+   "info": "Public Holiday currently observed by certain awards/agreements and the State Public Service",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "TAS",
+   "info": "Celebrated on the 25 April each year.",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-06-10",
+   "name": "King's Birthday",
+   "jurisdiction": "TAS",
+   "info": "Celebrated on second Monday in June except in Western Australia and Queensland.",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-12-25",
+   "name": "Christmas Day ",
+   "jurisdiction": "TAS",
+   "info": "Christmas Day is an annual holiday which celebrates the birth of Jesus Christ over 2000 years ago.",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "TAS",
+   "info": "Boxing Day occurs the day after Christmas. Sydney-to-Hobart yacht race and Boxing Day Test Match (Cricket) start on this day.",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2024-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "VIC",
+   "info": "New Year's Day is the first day of the calendar year and is celebrated each January 1st",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-01-26",
+   "name": "Australia Day",
+   "jurisdiction": "VIC",
+   "info": "Always celebrated on 26 January",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-03-11",
+   "name": "Labour Day",
+   "jurisdiction": "VIC",
+   "info": "Always on a Monday, creating a long weekend. It celebrates the eight-hour working day, a victory for workers in the mid-late 19th century.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-03-29",
+   "name": "Good Friday",
+   "jurisdiction": "VIC",
+   "info": "Easter is celebrated with Good Friday and Easter Monday creating a 4 day long weekend.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-03-30",
+   "name": "Easter Saturday",
+   "jurisdiction": "VIC",
+   "info": "Easter Saturday is between Good Friday and Easter Sunday in Australia.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-03-31",
+   "name": "Easter Sunday",
+   "jurisdiction": "VIC",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-04-01",
+   "name": "Easter Monday",
+   "jurisdiction": "VIC",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "VIC",
+   "info": "Celebrated on the 25 April each year.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-06-10",
+   "name": "King's Birthday",
+   "jurisdiction": "VIC",
+   "info": "Celebrated on second Monday in June except in Western Australia and Queensland.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-09-27",
+   "name": "Friday before the AFL Grand Final",
+   "jurisdiction": "VIC",
+   "info": "Friday before the AFL Grand Final - Subject to AFL schedule",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-11-05",
+   "name": "Melbourne Cup",
+   "jurisdiction": "VIC",
+   "info": "All of Victoria unless alternate local holiday has been arranged by non-metro council.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-12-25",
+   "name": "Christmas Day ",
+   "jurisdiction": "VIC",
+   "info": "Christmas Day is an annual holiday which celebrates the birth of Jesus Christ over 2000 years ago.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "VIC",
+   "info": "Boxing Day occurs the day after Christmas. Sydney-to-Hobart yacht race and Boxing Day Test Match (Cricket) start on this day.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays"
+  },
+  {
+   "date": "2024-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "WA",
+   "info": "New Year's Day is the first day of the calendar year and is celebrated each January 1st",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-01-26",
+   "name": "Australia Day",
+   "jurisdiction": "WA",
+   "info": "Always celebrated on 26 January",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-03-04",
+   "name": "Labour Day",
+   "jurisdiction": "WA",
+   "info": "Always on a Monday, creating a long weekend. It celebrates the eight-hour working day, a victory for workers in the mid-late 19th century.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-03-29",
+   "name": "Good Friday",
+   "jurisdiction": "WA",
+   "info": "Easter is celebrated with Good Friday and Easter Monday creating a 4 day long weekend.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-03-31",
+   "name": "Easter Sunday",
+   "jurisdiction": "WA",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-04-01",
+   "name": "Easter Monday",
+   "jurisdiction": "WA",
+   "info": "Public Holiday as part of Easter.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "WA",
+   "info": "Celebrated on the 25 April each year.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-06-03",
+   "name": "Western Australia Day",
+   "jurisdiction": "WA",
+   "info": "Held on the first Monday in June each year and is a state holiday only.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-09-23",
+   "name": "King's Birthday",
+   "jurisdiction": "WA",
+   "info": "Celebrated on second Monday in June except in Western Australia and Queensland.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-12-25",
+   "name": "Christmas Day ",
+   "jurisdiction": "WA",
+   "info": "Christmas Day is an annual holiday which celebrates the birth of Jesus Christ over 2000 years ago.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2024-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "WA",
+   "info": "Boxing Day occurs the day after Christmas. Sydney-to-Hobart yacht race and Boxing Day Test Match (Cricket) start on this day.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-01-27",
+   "name": "Australia Day",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-03-10",
+   "name": "Canberra Day",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-04-18",
+   "name": "Good Friday",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-04-19",
+   "name": "Easter Saturday - the day after Good Friday",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-04-20",
+   "name": "Easter Sunday",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-04-21",
+   "name": "Easter Monday",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-04-25",
+   "name": "ANZAC Day",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-06-02",
+   "name": "Reconciliation Day",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-06-09",
+   "name": "King's Birthday",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-10-06",
+   "name": "Labour Day",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-12-25",
+   "name": "Christmas Day",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "ACT",
+   "info": "",
+   "source": "https://www.act.gov.au/living-in-the-act/public-holidays-school-terms-and-daylight-savings"
+  },
+  {
+   "date": "2025-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-01-27",
+   "name": "Australia Day",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-04-18",
+   "name": "Good Friday",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-04-19",
+   "name": "Easter Saturday",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-04-20",
+   "name": "Easter Sunday",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-04-21",
+   "name": "Easter Monday",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-06-09",
+   "name": "King's Birthday",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-08-04",
+   "name": "Bank Holiday",
+   "jurisdiction": "NSW",
+   "info": "Applies to banks and certain financial institutions, see the Retail Trading Act 2008.",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-10-06",
+   "name": "Labour Day",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-12-25",
+   "name": "Christmas Day",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "NSW",
+   "info": "",
+   "source": "https://www.nsw.gov.au/about-nsw/public-holidays"
+  },
+  {
+   "date": "2025-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-01-27",
+   "name": "Australia Day",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-04-18",
+   "name": "Good Friday",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-04-19",
+   "name": "Easter Saturday",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-04-20",
+   "name": "Easter Sunday",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-04-21",
+   "name": "Easter Monday",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-05-05",
+   "name": "May Day",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-06-09",
+   "name": "King's Birthday",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-07-04",
+   "name": "Alice Springs Show Day",
+   "jurisdiction": "NT",
+   "info": "Regional holiday - to find out which show day applies to your area, check the map of NT show day regions.",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-07-11",
+   "name": "Tennant Creek Show Day",
+   "jurisdiction": "NT",
+   "info": "Regional holiday - to find out which show day applies to your area, check the map of NT show day regions.",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-07-18",
+   "name": "Katherine Show Day",
+   "jurisdiction": "NT",
+   "info": "Regional holiday - to find out which show day applies to your area, check the map of NT show day regions.",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-07-25",
+   "name": "Darwin Show Day",
+   "jurisdiction": "NT",
+   "info": "Regional holiday - to find out which show day applies to your area, check the map of NT show day regions.",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-08-04",
+   "name": "Picnic Day",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-12-24",
+   "name": "Christmas Eve - part day holiday",
+   "jurisdiction": "NT",
+   "info": "Part day holiday - from 7pm to midnight only.",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-12-25",
+   "name": "Christmas Day",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "NT",
+   "info": "",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-12-31",
+   "name": "New Year's Eve - part day holiday",
+   "jurisdiction": "NT",
+   "info": "Part day holiday - from 7pm to midnight only.",
+   "source": "https://www.nt.gov.au/nt-public-holidays"
+  },
+  {
+   "date": "2025-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "QLD",
+   "info": "",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-01-27",
+   "name": "Australia Day",
+   "jurisdiction": "QLD",
+   "info": "Australia Day public holiday is to be observed on the 26 January or, if 26 January is a Saturday or Sunday, it shall be observed the following Monday.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-04-18",
+   "name": "Good Friday",
+   "jurisdiction": "QLD",
+   "info": "",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-04-19",
+   "name": "The day after Good Friday",
+   "jurisdiction": "QLD",
+   "info": "",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-04-20",
+   "name": "Easter Sunday",
+   "jurisdiction": "QLD",
+   "info": "Easter Sunday is appointed as a public holiday. These arrangements have been in place since 2017 following amendments to the Holidays Act 1983 (passed by Parliament on 1 December 2016).",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-04-21",
+   "name": "Easter Monday",
+   "jurisdiction": "QLD",
+   "info": "",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "QLD",
+   "info": "",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-05-05",
+   "name": "Labour Day",
+   "jurisdiction": "QLD",
+   "info": "Labour Day public holiday is to be observed on the first Monday in May and the Birthday of the Sovereign (King's Birthday) public holiday is to be observed on the first Monday in October. These arrangements have been in place since 2016 following amendments to the Holidays Act 1983 (passed by Parliament on 13 October 2015).",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-08-13",
+   "name": "Royal Queensland Show (Brisbane area only)",
+   "jurisdiction": "QLD",
+   "info": "The Royal National Agricultural (RNA) Show Day (Brisbane only) is held on the Wednesday during the RNA Show period. The RNA Show commences on the first Friday in August, unless the first Friday is prior to 5 August, then it commences on the second Friday of August.",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-10-06",
+   "name": "King's Birthday",
+   "jurisdiction": "QLD",
+   "info": "Labour Day public holiday is to be observed on the first Monday in May and the Birthday of the Sovereign (King's Birthday) public holiday is to be observed on the first Monday in October. These arrangements have been in place since 2016 following amendments to the Holidays Act 1983 (passed by Parliament on 13 October 2015).",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-12-24",
+   "name": "Christmas Eve (24 December) 6pm - midnight",
+   "jurisdiction": "QLD",
+   "info": "From 2019, the Holidays Act 1983 provides for a part-day public holiday from 6pm to midnight on Christmas Eve (24 December).",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-12-25",
+   "name": "Christmas Day",
+   "jurisdiction": "QLD",
+   "info": "",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "QLD",
+   "info": "",
+   "source": "https://www.qld.gov.au/recreation/travel/holidays/public"
+  },
+  {
+   "date": "2025-01-01",
+   "name": "New Years Day",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-01-27",
+   "name": "Australia Day public holiday",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-03-10",
+   "name": "Adelaide Cup Day",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-04-18",
+   "name": "Good Friday",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-04-19",
+   "name": "Easter Saturday",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-04-20",
+   "name": "Easter Sunday",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-04-21",
+   "name": "Easter Monday",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-04-25",
+   "name": "ANZAC Day",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-06-09",
+   "name": "Kings Birthday",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-10-06",
+   "name": "Labour Day",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-12-24",
+   "name": "Christmas Eve: 7pm to midnight",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-12-25",
+   "name": "Christmas Day",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-12-26",
+   "name": "Proclamation Day holiday and Boxing Day",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-12-31",
+   "name": "New Years Eve: 7pm to midnight",
+   "jurisdiction": "SA",
+   "info": "",
+   "source": "https://www.safework.sa.gov.au/resources/public-holidays"
+  },
+  {
+   "date": "2025-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-01-27",
+   "name": "Australia Day",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-03-10",
+   "name": "Eight Hours Day",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-04-18",
+   "name": "Good Friday",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-04-21",
+   "name": "Easter Monday",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-04-22",
+   "name": "Easter Tuesday - generally Tasmanian Public Service only",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-04-25",
+   "name": "ANZAC Day",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-06-09",
+   "name": "King's Birthday",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-12-25",
+   "name": "Christmas Day",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "TAS",
+   "info": "",
+   "source": "https://worksafe.tas.gov.au/topics/laws-and-compliance/public-holidays"
+  },
+  {
+   "date": "2025-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "VIC",
+   "info": "",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-01-27",
+   "name": "Australia Day",
+   "jurisdiction": "VIC",
+   "info": "As Australia Day falls on a Sunday, the public holiday is on the following Monday.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-03-10",
+   "name": "Labour Day",
+   "jurisdiction": "VIC",
+   "info": "",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-04-18",
+   "name": "Good Friday",
+   "jurisdiction": "VIC",
+   "info": "ANZAC Day, Good Friday and Christmas Day are restricted trading days.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-04-19",
+   "name": "Saturday before Easter Sunday",
+   "jurisdiction": "VIC",
+   "info": "",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-04-20",
+   "name": "Easter Sunday",
+   "jurisdiction": "VIC",
+   "info": "",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-04-21",
+   "name": "Easter Monday",
+   "jurisdiction": "VIC",
+   "info": "",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-04-25",
+   "name": "ANZAC Day",
+   "jurisdiction": "VIC",
+   "info": "ANZAC Day, Good Friday and Christmas Day are restricted trading days.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-06-09",
+   "name": "King's Birthday",
+   "jurisdiction": "VIC",
+   "info": "",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "--",
+   "name": "Friday before the AFL Grand Final",
+   "jurisdiction": "VIC",
+   "info": "Friday before AFL Grand Final typically falls on the last Friday in September. The Business Victoria website will be updated with the exact date upon release of the 2025 AFL schedule.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-11-04",
+   "name": "Melbourne Cup",
+   "jurisdiction": "VIC",
+   "info": "Melbourne Cup Day is a public holiday across all of Victoria unless alternate local holiday has been arranged by a non-metro council.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-12-25",
+   "name": "Christmas Day",
+   "jurisdiction": "VIC",
+   "info": "ANZAC Day, Good Friday and Christmas Day are restricted trading days.",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "VIC",
+   "info": "",
+   "source": "https://business.vic.gov.au/business-information/public-holidays/victorian-public-holidays-2025"
+  },
+  {
+   "date": "2025-01-01",
+   "name": "New Year's Day",
+   "jurisdiction": "WA",
+   "info": "",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-01-27",
+   "name": "Australia Day",
+   "jurisdiction": "WA",
+   "info": "",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-03-03",
+   "name": "Labour Day",
+   "jurisdiction": "WA",
+   "info": "",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-04-18",
+   "name": "Good Friday",
+   "jurisdiction": "WA",
+   "info": "",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-04-20",
+   "name": "Easter Sunday",
+   "jurisdiction": "WA",
+   "info": "Easter Sunday was established as a public holiday in Western Australia in February 2022. Visit the Easter Sunday public holiday page for more information.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-04-21",
+   "name": "Easter Monday",
+   "jurisdiction": "WA",
+   "info": "",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-04-25",
+   "name": "Anzac Day",
+   "jurisdiction": "WA",
+   "info": "",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-06-02",
+   "name": "Western Australia Day",
+   "jurisdiction": "WA",
+   "info": "",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-09-29",
+   "name": "King's Birthday",
+   "jurisdiction": "WA",
+   "info": "This public holiday now known as the King's Birthday, was previously known as the Queen\u2019s Birthday. Some regional areas in WA hold this public holiday on a different date - the 2024 dates are on the Regional WA public holiday dates page.",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-12-25",
+   "name": "Christmas Day",
+   "jurisdiction": "WA",
+   "info": "",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  },
+  {
+   "date": "2025-12-26",
+   "name": "Boxing Day",
+   "jurisdiction": "WA",
+   "info": "",
+   "source": "https://www.commerce.wa.gov.au/labour-relations/public-holidays-western-australia"
+  }
+ ]
+}
