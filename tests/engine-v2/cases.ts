@@ -18,6 +18,7 @@ import type { AssessmentInput } from "../../supabase/functions/_shared/engine-v2
 
 export interface Case {
   id: string; title: string; input: AssessmentInput;
+  corrected?: string;
   expect: { status: "complete" | "partial" | "unsupported"; entitlementCents?: number; underpaymentCents?: number | null; comparableCents?: number | null };
   working: string; source: string;
 }
@@ -66,8 +67,11 @@ export const CASES: Case[] = [
     input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2025-03-10", end: "2025-03-23" }, shifts: [{ date: "2025-03-10", start: "09:00", breakMinutes: 0, finish: "13:00" }] },
     expect: { status: "complete", entitlementCents: 10260 }, working: "4 h × $25.65 = $102.60", source: "FWC API $25.65; data.gov.au (no NSW holiday 2025-03-10)" },
   { id: "R11", title: "Retail SA Christmas Eve part-day holiday from 7pm (overlapping evening and PH penalties)",
-    input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "SA", payPeriod: { start: "2025-12-22", end: "2026-01-04" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2025-12-24", start: "17:00", breakMinutes: 0, finish: "23:00", overtimeMinutes: 0 }] },
-    expect: { status: "complete", entitlementCents: 29870 }, working: "1 h × $26.55 + 1 h × $33.19 (125% of 26.55 = 33.1875) + 4 h × $59.74 (225% = 59.7375) = $298.70", source: "FWC API $26.55 (2025-07-01); Table 12; data.gov.au SA 'Christmas Eve: 7pm to midnight'" },
+    input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "SA", payPeriod: { start: "2025-12-22", end: "2026-01-04" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2025-12-24", start: "17:00", breakMinutes: 0, finish: "21:00", overtimeMinutes: 0 }] },
+    expect: { status: "complete", entitlementCents: 17922 }, working: "1 h × $26.55 + 1 h × $33.19 (125% of 26.55 = 33.1875) + 2 h × $59.74 (225% = 59.7375) = $179.22", source: "FWC API $26.55 (2025-07-01); Schedule B B.1.1; data.gov.au SA 'Christmas Eve: 7pm to midnight'", corrected: "Was 17:00–23:00 expected complete $298.70. Hours after 9 pm Wednesday are outside the Retail span (Table 2) and are overtime for full-time staff unless trading hours extend it (cl 15.2), so that shift cannot be complete; moved to R11b." },
+  { id: "R11b", title: "Same SA Christmas Eve shift running to 11pm → hours after 9pm outside span",
+    input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "SA", payPeriod: { start: "2025-12-22", end: "2026-01-04" }, shifts: [{ date: "2025-12-24", start: "17:00", breakMinutes: 0, finish: "23:00", overtimeMinutes: 0 }] },
+    expect: { status: "partial", underpaymentCents: null }, working: "21:00–23:00 outside Mon–Fri 7am–9pm span", source: "MA000004 cl 15.1 Table 2; cl 21.2 Table 10" },
   { id: "R12", title: "Pay period starting 30 Jun 2025 keeps the old rate for a 2 Jul shift",
     input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2025-06-30", end: "2025-07-13" }, shifts: [{ date: "2025-07-02", start: "09:00", breakMinutes: 0, finish: "17:00" }] },
     expect: { status: "complete", entitlementCents: 20520 }, working: "8 h × $25.65 = $205.20 (new rate starts from the first full pay period on/after 1 Jul)", source: "FWC data dictionary 'operativeFrom'; API L1 records 2024 and 2025" },
@@ -79,7 +83,7 @@ export const CASES: Case[] = [
     expect: { status: "unsupported" }, working: "A period could have started before or after 1 Jul", source: "FWC data dictionary 'operativeFrom'" },
   { id: "R15", title: "No pay period start, mid-year shift → rate is unambiguous (historical 2024-25)",
     input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "WA", shifts: [{ date: "2024-10-15", start: "09:00", breakMinutes: 0, finish: "13:00" }] },
-    expect: { status: "complete", entitlementCents: 10260 }, working: "4 h × $25.65 = $102.60", source: "FWC API L1 operative 2024-07-01" },
+    expect: { status: "partial", entitlementCents: 10260, underpaymentCents: null }, working: "4 h × $25.65 = $102.60; rate unambiguous, but without the pay period weekly overtime can't be ruled out", source: "FWC API L1 operative 2024-07-01", corrected: "Was expected complete. Without pay period dates the week's other hours are unknown, so weekly overtime (Table 10) can't be ruled out." },
   { id: "R16", title: "Retail casual with overtime → casual overtime not in Fair Work data",
     input: { awardCode: R, classificationFixedId: 112, employmentType: "casual", ...adult, arrangement: ARR.cas, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-12" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-07", start: "08:00", breakMinutes: 0, finish: "20:00", overtimeMinutes: 120 }] },
     expect: { status: "partial", underpaymentCents: null }, working: "API has no casual overtime records for MA000004", source: "FWC API penalties MA000004" },
@@ -90,11 +94,11 @@ export const CASES: Case[] = [
     input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-12", start: "07:00", breakMinutes: 0, finish: "12:00" }] },
     expect: { status: "partial" }, working: "Sunday span 9am–6pm (Table 2); hours before 9am may be overtime", source: "cl 15.1 Table 2; Table 10" },
   { id: "R19", title: "Retail compare against paid wage lines (allowance excluded)",
-    input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "VIC", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "09:00", breakMinutes: 0, finish: "17:00" }], paid: { grossCents: 26000, lines: [{ kind: "saturday", amountCents: 24000 }, { kind: "allowance", amountCents: 2000 }] } },
+    input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "VIC", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "09:00", breakMinutes: 0, finish: "17:00" }], paid: { grossCents: 26000, lines: [{ kind: "saturday", amountCents: 24000 }, { kind: "allowance", amountCents: 2000 }], linesCoverAllWages: true } },
     expect: { status: "complete", entitlementCents: 27808, comparableCents: 24000, underpaymentCents: 3808 }, working: "$278.08 − $240.00 wages = $38.08; $20 allowance not compared", source: `${SB(R)} B.1.1` },
   { id: "R20", title: "Retail gross only (not confirmed as wages only) → no comparison",
     input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "VIC", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "09:00", breakMinutes: 0, finish: "17:00" }], paid: { grossCents: 26000 } },
-    expect: { status: "complete", entitlementCents: 27808, comparableCents: null, underpaymentCents: null }, working: "Gross may include other payments", source: "—" },
+    expect: { status: "partial", entitlementCents: 27808, comparableCents: null, underpaymentCents: null }, working: "Gross may include other payments; gross-only is always Partial", source: "Owner rule (Phase 3 approval)", corrected: "Was expected complete with no comparison. Owner rule: any gross-only comparison is Partial." },
   { id: "R21", title: "Retail junior → not assessed (no junior dollar rates in API)",
     input: { awardCode: R, classificationFixedId: 112, employmentType: "casual", rateType: "junior", state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-12" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "10:00", breakMinutes: 0, finish: "16:00" }] },
     expect: { status: "unsupported" }, working: "JN pay-rate records have null calculated_rate", source: "FWC API pay-rates MA000004 (JN)" },
@@ -110,9 +114,9 @@ export const CASES: Case[] = [
   { id: "R25", title: "QLD Brisbane-only show holiday → needs confirmation",
     input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "QLD", payPeriod: { start: "2025-08-11", end: "2025-08-24" }, shifts: [{ date: "2025-08-13", start: "09:00", breakMinutes: 0, finish: "13:00" }] },
     expect: { status: "partial" }, working: "Regional holiday", source: "data.gov.au QLD 'Royal Queensland Show (Brisbane area only)'" },
-  { id: "R26", title: "2026 date outside the official holiday list (not marked) → partial",
+  { id: "R26", title: "NSW additional Boxing Day holiday Mon 28 Dec 2026 (official 2026 list)",
     input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-12-21", end: "2027-01-03" }, shifts: [{ date: "2026-12-28", start: "09:00", breakMinutes: 0, finish: "13:00" }] },
-    expect: { status: "partial" }, working: "Holiday list covers 2024–2025 only", source: "data.gov.au dataset coverage" },
+    expect: { status: "complete", entitlementCents: 25028 }, working: "4 h × $62.57 (225% of $27.81 = 62.5725) = $250.28", source: "nsw.gov.au/about-nsw/public-holidays (Additional Day 28 Dec 2026); Schedule B B.1.1", corrected: "Was expected partial when the list stopped at 2025; 2026 calendars from each state government were added." },
 
   { id: "R27", title: "Retail L1 casual, Christmas Day 2025 (NSW)",
     input: { awardCode: R, classificationFixedId: 112, employmentType: "casual", ...adult, arrangement: ARR.cas, state: "NSW", payPeriod: { start: "2025-12-22", end: "2025-12-28" }, shifts: [{ date: "2025-12-25", start: "09:00", breakMinutes: 0, finish: "17:00" }] },
