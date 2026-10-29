@@ -7,6 +7,7 @@ import SEO from "@/components/SEO";
 import { INDUSTRIES, type IndustryId } from "./industries";
 import { THREE_MONTH_PASS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
+import { EXAMPLES, exampleTotalCents, rowDiffCents } from "./examples";
 
 const fmt = (c: number) => `$${(c / 100).toFixed(2)}`;
 
@@ -27,6 +28,8 @@ export default function V2Home() {
   const [preview, setPreview] = useState<IndustryId | null>(null);
   const photoIndustries = INDUSTRIES.filter((i) => i.image);
   const shown = photoIndustries.find((i) => i.id === (preview ?? answers.industry)) ?? photoIndustries[0];
+  const ex = EXAMPLES[shown.id as keyof typeof EXAMPLES];
+  const total = exampleTotalCents(ex);
   return (
     <main>
       <SEO title="AwardPay 2.0 preview" description="Design preview of the new AwardPay pay checker." path="/v2"><meta name="robots" content="noindex" /></SEO>
