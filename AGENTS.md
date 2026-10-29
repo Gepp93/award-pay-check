@@ -19,3 +19,4 @@
 - Link guest pass purchases to accounts only through the authenticated claim_my_passes RPC matching a confirmed auth email; clients never write purchase ownership directly.
 - Build the AwardPay 2.0 redesign under `src/features/v2` on `/v2/*` routes with its own answers-only session store; production `/check`, payment and calculation flows stay untouched until the owner approves a switch.
 - Read payslips in `ai-parse-payslip` through the Lovable AI Gateway Responses API with a zero-retention model, strict null-for-missing schema and count-only logs; nulls are stripped so existing clients keep the absent-field contract.
+- Keep engine v2 as a pure module in `supabase/functions/_shared/engine-v2` whose rule packs reference Fair Work record IDs only, with amounts read from committed dated snapshots; unsupported or uncertain items must be Not assessed, never filled with generic rules, and v1 `calculate-shift-pay` stays unchanged until the owner approves a switch.
