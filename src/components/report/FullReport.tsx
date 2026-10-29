@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Download, CheckCircle, AlertCircle } from "lucide-react";
 import { jsPDF } from "jspdf";
 import { toast } from "@/hooks/use-toast";
+import PreliminaryNotice, { PRELIMINARY_NOTICE, ESTIMATE_LABEL, MULTI_LEVEL_LABEL, UNRELIABLE_LABEL } from "./PreliminaryNotice";
 
 type Props = {
   result: any;
@@ -53,29 +54,29 @@ function getHeadline(result: any) {
   if (isUnsure) {
     if (showRange) {
       return {
-        label: "Estimated range",
+        label: `${ESTIMATE_LABEL} · ${MULTI_LEVEL_LABEL}`,
         amount: `${fmt(min)} – ${fmt(max)}`,
-        caveat: "This is an estimate across the likely classification levels for your role. For an exact figure, select your classification.",
+        caveat: `${MULTI_LEVEL_LABEL}. Confirm your classification and check again before relying on this figure.`,
       };
     }
     return {
-      label: "You may be owed up to",
+      label: `${ESTIMATE_LABEL} · ${MULTI_LEVEL_LABEL}`,
       amount: `~${fmt(max)}`,
-      caveat: "This is an estimate across the likely classification levels for your role. For an exact figure, select your classification.",
+      caveat: `${MULTI_LEVEL_LABEL}. Confirm your classification and check again before relying on this figure.`,
     };
   }
 
   if (exact > 0) {
     return {
-      label: "You may be owed",
+      label: ESTIMATE_LABEL,
       amount: fmt(exact),
       caveat: null,
     };
   }
 
   return {
-    label: "Result",
-    amount: "Pay looks correct",
+    label: ESTIMATE_LABEL,
+    amount: "No shortfall found",
     caveat: null,
   };
 }
@@ -92,9 +93,9 @@ function recoverySteps(result: any, owed: number) {
   return [
     "Save every payslip for this pay period and any others affected.",
     shortfalls.length
-      ? `Note the specific shortfalls: ${shortfalls.join("; ")}.`
-      : "Note the specific shortfalls from the breakdown above.",
-    `Raise it with your employer in writing, quoting your award and the amount owed (${fmt(owed)}).`,
+      ? `Note the possible issues to confirm: ${shortfalls.join("; ")}.`
+      : "Note the possible issues from the breakdown above.",
+    `Confirm your award, classification and hours, then ask your employer in writing to check your pay, quoting your award and this preliminary estimate (${fmt(owed)}).`,
     "If it's not resolved, contact the Fair Work Ombudsman (fairwork.gov.au) or lodge a claim — keep all records.",
   ];
 }
@@ -159,7 +160,12 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   const period = getPeriod(shiftDetails);
   if (period) doc.text(`Period: ${period}`, RIGHT, y + 14, { align: "right" });
   doc.setTextColor(0);
-  y += 50;
+  y += 40;
+
+  // Preliminary-estimate notice (all reports, including ones saved before this notice existed)
+  doc.setFont("helvetica", "bold");
+  para(PRELIMINARY_NOTICE, 10, 0);
+  y += 14;
 
   // Headline
   doc.setFontSize(11);
@@ -195,7 +201,7 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   // What's missing — expected vs paid
   const bd = result?.breakdown || {};
   const rate = Number(result?.baseRate) || 0;
-  heading("What's missing");
+  heading("Estimate breakdown");
   if (bd.regularHours)
     line(`Regular hours (${Number(bd.regularHours).toFixed(2)} × ${fmt(rate)})`, fmt(Number(bd.basePay) || 0));
   if (bd.overtimeAt150Hours)
@@ -210,12 +216,12 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
     line("Award pay total", fmt(Number(result?.awardPayTotal) || 0), { bold: true });
   }
   line("Actually paid", shiftDetails?.actualPaid ? fmt(parseFloat(shiftDetails.actualPaid)) : "—");
-  if (owed > 0) line("Shortfall", `${isUnsure ? "up to ~" : ""}${fmt(owed)}`, { bold: true });
+  if (owed > 0) line("Preliminary estimated shortfall", `${isUnsure ? "up to ~" : ""}${fmt(owed)}`, { bold: true });
 
   // Reasons
   const reasons: string[] = Array.isArray(result?.reasons) ? result.reasons : [];
   if (reasons.length) {
-    heading("Why the difference");
+    heading("Possible reasons for the difference");
     reasons.forEach((r) => para(`• ${r}`));
   }
 
@@ -224,7 +230,7 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
     ? result.potentialAllowances
     : [];
   if (allowances.length) {
-    heading("Potential allowances");
+    heading(`Potential allowances (${UNRELIABLE_LABEL.toLowerCase()}; not included above)`);
     allowances.forEach((a) => {
       const est = a.estimatedValue ? fmt(Number(a.estimatedValue)) : "—";
       line(`${a.name} — ${a.amount}`, est, { bold: true });
@@ -234,7 +240,7 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   }
 
   // Recovery
-  heading("How to recover it");
+  heading("Next steps");
   recoverySteps(result, owed).forEach((step, i) => {
     para(`${i + 1}. ${step}`);
     y += 2;
@@ -299,6 +305,8 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
         </Button>
       </header>
 
+      <PreliminaryNotice />
+
       {/* Headline */}
       {isUnderpaid ? (
         <section className="checker-result-headline">
@@ -310,8 +318,8 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
           </div>
           {(reasons.length + allowances.length) > 0 && (
             <div className="mt-3 text-sm text-muted-foreground">
-              {reasons.length + allowances.length} issue
-              {reasons.length + allowances.length === 1 ? "" : "s"} identified
+              {reasons.length + allowances.length} possible issue
+              {reasons.length + allowances.length === 1 ? "" : "s"} to check
             </div>
           )}
           {headline.caveat && (
@@ -323,7 +331,7 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
       ) : (
         <section className="checker-result-headline">
           <CheckCircle className="h-8 w-8 mx-auto text-primary mb-2" />
-          <div className="text-xl font-semibold">Looks like you were paid correctly</div>
+          <div className="text-xl font-semibold">No shortfall found in this preliminary estimate</div>
         </section>
       )}
 
@@ -354,7 +362,7 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
 
       {/* What's missing */}
       <section>
-        <h3 className="text-base font-semibold mb-3">What's missing</h3>
+        <h3 className="text-base font-semibold mb-3">Estimate breakdown</h3>
         <div className="ledger-table-wrap">
           <table className="ledger-table">
             <thead><tr><th>Pay item</th><th className="text-right">Amount</th></tr></thead>
@@ -390,10 +398,10 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
                     : "—"
                 }
               />
-              {!isUnderpaid && <tr><td colSpan={2}><span className="flex items-center gap-2 text-primary"><CheckCircle className="h-4 w-4" />Paid correctly</span></td></tr>}
+              {!isUnderpaid && <tr><td colSpan={2}><span className="flex items-center gap-2 text-primary"><CheckCircle className="h-4 w-4" />No shortfall found in this estimate</span></td></tr>}
               {isUnderpaid && (
                 <Row
-                  label="Shortfall"
+                  label="Preliminary estimated shortfall"
                   value={fmt(owed)}
                   bold
                   highlight
@@ -417,6 +425,7 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
         {allowances.length > 0 && (
           <div className="mt-4 space-y-2">
             <div className="text-sm font-semibold">Potential allowances</div>
+            <p className="text-[13px] text-muted-foreground">{UNRELIABLE_LABEL}. Not included in the figure above.</p>
             {allowances.map((a) => (
               <div
                 key={a.id || a.name}
@@ -451,7 +460,7 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
 
       {/* How to recover it */}
       <section>
-        <h3 className="text-base font-semibold mb-3">How to recover it</h3>
+        <h3 className="text-base font-semibold mb-3">Next steps</h3>
         <ol className="space-y-3 text-sm">
           {steps.map((step, i) => (
             <li key={i} className="flex gap-3">
