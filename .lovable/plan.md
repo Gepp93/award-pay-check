@@ -13,6 +13,7 @@ A narrow patch to the live checker's award, level and result screens. The calcul
 - **Preliminary wording everywhere** across those same screens and the paid-report teaser:
   - "You may be owed", "You may be owed up to" and "Owed $X" become "Preliminary estimate".
   - "The amount owed" becomes "the preliminary estimate".
+- **Unreliable parts are not shown as underpayment.** v1 results are never labelled "verified" or "owed". Some parts of the live calculation are only generic estimates: allowances, and penalties without a confirmed level. These are listed as "Possible issue — not calculated reliably" and are not included in the headline amount. Without a confirmed level, no amount is shown.
 
 ## Not changed
 
