@@ -20,16 +20,16 @@ export function LockedTeaser({ result }: Props) {
 
   return (
     <section className="checker-findings">
-      <h3>What we found</h3>
+      <h3>Possible issues to check</h3>
       {allowances.slice(0, 3).map((item) => (
         <div key={item.id || item.name} className="checker-finding-row">
-          <div className="min-w-0"><span className="ledger-missing">MISSING</span><span>{item.name}</span></div>
+          <div className="min-w-0"><span className="ledger-missing">POSSIBLE</span><span>{item.name}</span></div>
           <span className="checker-locked-detail"><Lock className="h-3.5 w-3.5" />In full report</span>
         </div>
       ))}
       {reasonsCount > 0 && (
         <div className="checker-finding-row">
-          <div className="min-w-0"><span className="ledger-missing">MISSING</span><span>{reasonsCount} pay item{reasonsCount === 1 ? "" : "s"} to explain</span></div>
+          <div className="min-w-0"><span className="ledger-missing">POSSIBLE</span><span>{reasonsCount} pay item{reasonsCount === 1 ? "" : "s"} to explain</span></div>
           <span className="checker-locked-detail"><Lock className="h-3.5 w-3.5" />In full report</span>
         </div>
       )}
