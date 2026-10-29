@@ -54,8 +54,8 @@
 - [x] Connect Engine v2 to AwardPay 2.0 preview (internal only) — awaiting owner review
 
 ## 2.0 preview: pay mapping and end-to-end testing
-- [ ] Explicit pay categories, total vs loading basis, no Ordinary default
-- [ ] Results: per-category actual/minimum/shortfall/overpayment, net only when Complete
-- [ ] Retail cl 15.2 extended trading questions (verified conditions)
-- [ ] Combined vs split Saturday payment equivalence test
-- [ ] 10 browser journeys desktop and mobile, scanner PDF and image, security regression, report
+- [x] Explicit pay categories, total vs loading basis, no Ordinary default
+- [x] Results: per-category actual/minimum/shortfall/overpayment, net only when Complete
+- [x] Retail cl 15.2 extended trading questions (verified conditions)
+- [x] Combined vs split Saturday payment equivalence test
+- [x] 10 browser journeys desktop and mobile, scanner PDF and image, security regression, report
