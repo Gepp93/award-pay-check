@@ -61,6 +61,9 @@ export default function EngineQuestions() {
   const [err, setErr] = useState<EngineCallError | null>(null);
   useEffect(() => { update({ engine: d }); }, [d]); // eslint-disable-line react-hooks/exhaustive-deps
   const step = steps[Math.min(i, steps.length - 1)];
+  // Keep the step in the URL hash so browser Back/Forward and refresh land on the same question.
+  useEffect(() => { const h = loc.hash.slice(1) as StepId; const k = steps.indexOf(h); if (k >= 0 && k !== i) setI(k); }, [loc.hash]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (loc.hash.slice(1) !== step) navigate({ hash: step }, { replace: !loc.hash }); }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
   const set = (p: Partial<EngineDraft>) => setD(x => ({ ...x, ...p }));
   const rules = d.awardCode && d.employmentType ? overtimeRules(d.awardCode, d.employmentType) : null;
   const fromPayslip = (v: string, src?: string) => v && src === "payslip" ? <span className="ml-2 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-bold text-primary">From your confirmed payslip</span> : null;
