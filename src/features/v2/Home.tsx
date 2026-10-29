@@ -1,13 +1,12 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useV2 } from "./store";
 import { ArrowRight, Calculator, Clock, FileSearch, Lock, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import SEO from "@/components/SEO";
-import { INDUSTRIES } from "./industries";
+import { INDUSTRIES, type IndustryId } from "./industries";
 import { THREE_MONTH_PASS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
-import hero from "@/assets/workers/construction.jpg";
 
 const example = [
   { l: "Ordinary hours", s: "38h at $32.50", v: "Correct", ok: true },
@@ -30,60 +29,70 @@ export default function V2Home() {
     update(answers.industry === id ? {} : { industry: id, role: "", extras: [] });
     navigate("/v2/check");
   };
+  const [preview, setPreview] = useState<IndustryId | null>(null);
+  const photoIndustries = INDUSTRIES.filter((i) => i.image);
+  const shown = photoIndustries.find((i) => i.id === (preview ?? answers.industry)) ?? photoIndustries[0];
   return (
     <main>
       <SEO title="AwardPay 2.0 preview" description="Design preview of the new AwardPay pay checker." path="/v2"><meta name="robots" content="noindex" /></SEO>
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 md:grid-cols-[1.05fr_1fr] md:px-8 md:py-14">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 md:grid-cols-[1.05fr_1fr] md:gap-12 md:px-8 md:py-16">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">Australian pay checker</span>
-            <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] md:text-6xl">Working hard.<br />Getting paid <span className="text-primary">right?</span></h1>
-            <p className="mt-5 max-w-lg text-lg text-ink-2">Check your payslip against Australian award rates. Understand your overtime, penalties and allowances — and what to do next.</p>
+            <h1 className="mt-6 text-4xl font-extrabold leading-[1.05] md:text-6xl">Working hard.<br />Getting paid <span className="text-primary">right?</span></h1>
+            <p className="mt-6 max-w-lg text-lg text-ink-2">Check your payslip against Australian award rates. Understand your overtime, penalties and allowances — and what to do next.</p>
             <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-2">
               <li className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" /> Published award rates</li>
               <li className="flex items-center gap-2"><Lock className="h-4 w-4 text-primary" /> No account needed</li>
             </ul>
-            <div className="mt-7">
+            <div className="mt-10">
               <p className="text-sm font-bold">Start with your industry</p>
-              <div role="group" aria-label="Choose your industry" className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
-                {INDUSTRIES.filter((i) => i.image).map((i) => (
+              <div role="group" aria-label="Choose your industry" onMouseLeave={() => setPreview(null)}
+                className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {photoIndustries.map((i) => (
                   <button key={i.id} type="button" onClick={() => pick(i.id)}
-                    className={cn("group flex min-h-14 items-center overflow-hidden rounded-md border bg-card text-left sm:block shadow-soft transition hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", answers.industry === i.id ? "border-2 border-primary" : "border-border")}>
-                    <img src={i.image} alt="" loading="eager" width={896} height={752} className="h-14 w-16 shrink-0 object-cover sm:aspect-[4/3] sm:h-auto sm:w-full" />
-                    <span className="block px-2 py-1.5 text-sm font-bold">{i.label}</span>
+                    onPointerEnter={(e) => { if (e.pointerType === "mouse") setPreview(i.id); }}
+                    onFocus={() => setPreview(i.id)} onBlur={() => setPreview(null)}
+                    aria-pressed={answers.industry === i.id}
+                    className={cn("group flex min-h-12 items-center overflow-hidden rounded-md border bg-card text-left shadow-soft transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:block", answers.industry === i.id ? "border-2 border-primary" : "border-border")}>
+                    <img src={i.image} alt="" loading="eager" width={896} height={752} className="h-12 w-14 shrink-0 object-cover sm:aspect-[16/10] sm:h-auto sm:w-full" />
+                    <span className="block truncate px-2 py-1.5 text-[13px] font-bold">{i.label}</span>
                   </button>
                 ))}
               </div>
-              <Link to="/v2/industry" className="mt-2 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">Something else? See all industries</Link>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button asChild variant="gold" size="lg" className="h-14 px-7 text-base"><Link to={answers.industry ? "/v2/check" : "/v2/industry"}>Check my pay <ArrowRight className="h-5 w-5" /></Link></Button>
-              <Button asChild variant="outline" size="lg" className="h-14 px-7 text-base"><Link to="/how-it-works">See how it works</Link></Button>
+              <Link to="/v2/industry" className="mt-3 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">Something else? See all industries</Link>
             </div>
           </div>
           <div className="relative">
-            <img src={hero} alt="" width={1024} height={1152} className="ml-auto aspect-[4/5] w-[85%] rounded-lg object-cover" />
-            <div className="absolute bottom-6 left-0 w-[70%] max-w-[300px] md:-left-6 rounded-lg border border-border bg-card p-5 shadow-sheet">
-              <div className="flex items-center justify-between text-xs"><span className="font-bold uppercase tracking-wide text-primary">Payslip check</span><span className="rounded-full bg-gold-soft px-2 py-0.5 font-bold">Example</span></div>
-              <p className="mt-1 font-bold">Construction</p>
-              <ul className="mt-3 divide-y divide-border text-sm">
+            <div className="relative ml-auto aspect-[4/3] w-full overflow-hidden rounded-lg md:aspect-[4/5] md:w-[85%]">
+              {photoIndustries.map((i) => (
+                <img key={i.id} src={i.image} alt="" aria-hidden width={1024} height={1152}
+                  className={cn("absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-300", shown.id === i.id ? "opacity-100" : "opacity-0")} />
+              ))}
+            </div>
+            <div className="relative mt-4 rounded-lg border border-border bg-card p-4 shadow-sheet md:absolute md:-left-8 md:bottom-4 md:mt-0 md:w-[260px]" aria-live="polite">
+              <div className="flex items-center justify-between text-xs"><span className="font-bold uppercase tracking-wide text-primary">Payslip check</span><span className="rounded-full bg-gold-soft px-2 py-0.5 font-bold">Illustrative example</span></div>
+              <p className="mt-1 font-bold">{shown.label}</p>
+              {shown.id !== "construction" && <p className="text-[11px] text-ink-3">Sample figures below are a construction example, not specific to {shown.label.toLowerCase()}.</p>}
+              <ul className="mt-2 divide-y divide-border text-[13px]">
                 {example.map((r) => (
-                  <li key={r.l} className="flex items-center justify-between gap-3 py-2">
-                    <span><span className="block font-medium">{r.l}</span><span className="text-xs text-ink-3">{r.s}</span></span>
+                  <li key={r.l} className="flex items-center justify-between gap-3 py-1.5">
+                    <span><span className="block font-medium">{r.l}</span><span className="text-[11px] text-ink-3">{r.s}</span></span>
                     <span className={r.ok ? "text-xs font-bold text-primary" : "tabular font-bold text-destructive"}>{r.v}</span>
                   </li>
                 ))}
               </ul>
-              <div className="mt-3 rounded-md bg-primary-soft p-3">
-                <p className="text-xs font-bold uppercase text-primary">Potential underpayment</p>
-                <p className="tabular text-3xl font-extrabold">$220.00</p>
+              <div className="mt-2 rounded-md bg-primary-soft p-2.5">
+                <p className="text-[11px] font-bold uppercase text-primary">Potential underpayment</p>
+                <p className="tabular text-2xl font-extrabold">$220.00</p>
               </div>
-              <p className="mt-2 text-[11px] text-ink-3">Example for illustration only — not a real payslip.</p>
+              <p className="mt-2 text-[11px] text-ink-3">Illustration only — not a real payslip or customer result.</p>
             </div>
           </div>
         </div>
       </section>
+
 
       {/* Sourced stat band — FWO 2024–25 Annual Report figures, quoted as recoveries only */}
       <section className="bg-forest text-forest-foreground">
