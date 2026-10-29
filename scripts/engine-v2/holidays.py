@@ -69,7 +69,7 @@ for st in SRC:
     for d, n in common:
         add(st, d, n)
 for st in ("NSW", "VIC", "QLD", "SA", "ACT", "NT"):
-    add(st, "2026-04-04", "Easter Saturday"); 
+    add(st, "2026-04-04", "Easter Saturday")
 for st in ("NSW", "VIC", "QLD", "SA", "WA", "ACT", "NT"):
     add(st, "2026-04-05", "Easter Sunday")
 for st in SRC:
@@ -97,11 +97,10 @@ add("SA", "2026-12-24", "Christmas Eve: 7pm to midnight", "part_day", 19 * 60)
 add("SA", "2026-12-31", "New Year's Eve: 7pm to midnight", "part_day", 19 * 60)
 add("WA", "2026-03-02", "Labour Day")
 add("WA", "2026-06-01", "Western Australia Day")
-add("WA", "2026-09-28", "King's Birthday", info="Some regional local government areas observe a different date")
+add("WA", "2026-09-28", "King's Birthday", "regional", info="Some regional local government areas observe a different date")
 add("WA", "2026-08-03", "Regional King's Birthday (Karratha, Port Hedland)", "regional")
 add("TAS", "2026-03-09", "Eight Hours Day")
 add("TAS", "2026-04-07", "Easter Tuesday - generally Tasmanian Public Service only", "restricted")
-add("TAS", "2026-06-08", "King's Birthday") if False else None
 add("TAS", "2026-02-09", "Royal Hobart Regatta", "regional")
 add("TAS", "2026-11-02", "Recreation Day", "regional")
 for d, n in (("2026-01-07", "Devonport Cup (half day)"), ("2026-02-25", "Launceston Cup"), ("2026-03-03", "King Island Show"), ("2026-05-08", "Agfest"), ("2026-10-02", "Burnie Show"), ("2026-10-08", "Royal Launceston Show"), ("2026-10-16", "Flinders Island Show"), ("2026-10-22", "Royal Hobart Show"), ("2026-11-27", "Devonport Show")):
