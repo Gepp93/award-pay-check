@@ -1,62 +1,38 @@
-# Fix incorrect award and classification suggestions (2.0 preview)
+# Live checker safety patch (`/check`)
 
-## What the code shows (diagnosis)
+A narrow patch to the live checker's award, level and result screens. The calculation formulas, Engine v2, Stripe, accounts, the database and saved reports are not changed. Nothing is published until you approve.
 
-The screens you saw ("Most people in this job are covered by…", "Not sure — check across all levels", repeated cabin crew levels) are not part of the 2.0 preview. That text only exists in the **live checker** (`/check`). Choosing "Check my payslip" on the 2.0 intent screen sends you to the live checker, which loses your 2.0 industry and job and runs the old matching.
+## What customers will notice
 
-Within the live checker, the code shows three faults:
+- **No automatic award.** A scanned payslip still fills in the job title, hours and pay, but never the award. The "Looks right" job button no longer picks an award behind the scenes. Everyone confirms their award on the award screen.
+- **Fewer, honest suggestions.** Up to three awards appear, but only ones with real evidence from the job title or chosen job. Generic words ("crew", "worker", "foreman", "level", and similar) and employer names no longer count. When nothing credible matches, customers see: "We couldn't confidently identify your award. Search for your award or tell us more about your work." The award search box is open below that message.
+- **Neutral wording.** "Most people in this job are covered by…" becomes "Possible award — please confirm". The "I'm not sure — use the suggested award" button is removed.
+- **Clean level list.** Only levels for the confirmed award are shown, each once, even when the official list repeats a level for different rate dates. Genuinely different levels, such as junior or apprentice levels and different work areas, stay separate. Changing the award clears the chosen level.
+- **"Not sure" level option.** The live checker can calculate a range across an award's levels, so this option stays. It is renamed "Not sure — show an estimated range across this award's levels". That result always shows a range, never one "you may be owed up to" figure.
+- **Prominent notice** on the review screen (before calculating) and on the result screen: "Important: This checker currently uses simplified pay rules and may not reflect all conditions of your award. Results are preliminary estimates, not verified underpayment amounts."
+- **Softer headline.** "You may be owed" becomes "Preliminary estimate", followed by the amount.
 
-1. **Word-overlap matching.** Awards are scored by shared words. "Civil **Crew** Foreman" matches "Aircraft Cabin **Crew**" and the "Fast food **crew**" job. Employer-name words also count, which is how something like "Queensland Newspapers" can appear. The top three scores are shown even when the only evidence is one shared word.
-2. **Silent auto-selection.** When a payslip is read, the top-scoring award is applied automatically, with no confirmation.
-3. **No de-duplication of levels.** The official classifications list can return several rows per level (for example, one per rate date). These are shown as returned, which produces repeated entries. Nothing checks that each row belongs to the selected award.
+## Not changed
 
-No request logs were captured from your test. Step 1 of the build is to confirm points 1–3 using the real award and classification responses for "Civil Crew Foreman". If those responses point to a different cause, I'll stop and report it before changing anything.
+Rate and overtime maths, what is sent to the calculation, payment and pass access, how reports are saved (including the stored amount), and existing saved report pages. Open question: should saved Full Report pages also show the notice? This plan leaves them unchanged unless you say so.
 
-## The fix (2.0 preview only)
+## Testing
 
-Your brief says to keep the live checker unchanged, so the fix keeps 2.0 users inside the 2.0 preview.
-
-- **Stop the hand-off to the live checker.** "Check my payslip" in 2.0 goes to the 2.0 upload/questions flow and keeps your industry and confirmed job title.
-- **New 2.0 award discovery step**, placed before calculation:
-  - Shows the confirmed job title prominently, with the industry and award as separate items.
-  - Suggestions come only from a short curated list of roles, industries and duty keywords. One shared generic word ("crew", "worker", "level") or an employer name is never enough.
-  - For civil construction roles, Building and Construction (MA000020) appears as a candidate. Electrical (MA000025) appears only when the role or duties mention electrical work. Both are labelled "possible — please confirm", never as a default.
-  - Unknown occupations get no suggestion. You choose from the industry's list or search, and you can mark "covered by an enterprise agreement".
-  - Nothing looks selected until you confirm, and the phrase "Most people in this job are covered by" is removed.
-- **Discovery separate from calculation.** Only Retail (MA000004), Hospitality (MA000009) and Fast Food (MA000003) continue to the v2 calculation. Any other confirmed award shows: "We've identified your selected award, but detailed pay calculations for this award aren't available yet." It offers a "Change award" button and no substitute award. The classification picker never opens for unsupported awards.
-- **Strict classifications.** Levels come only from the confirmed supported award's rule pack. They are de-duplicated by stable ID, and the selected level is cleared when the award changes. No "check across all levels" option.
-- **Session.** The confirmed award and job are saved in the existing answers-only 2.0 session, so Back/Forward and refresh keep the right award and never show a previous award's levels.
-
-## Live checker (not changed; needs your decision)
-
-The live checker at `/check` has the same matching and duplicate-level bugs, so real customers can see the same wrong suggestions today. I won't change it without your separate approval. I'll report the exact fix it needs.
-
-## Tests
-
-Automated tests, plus real browser runs on desktop and phone screens:
-- Civil Crew Foreman: no cabin crew, fast food or newspaper suggestion; MA000020 offered only as a candidate; unsupported message shown.
-- Electrician: MA000025 offered as a candidate, then unsupported message.
-- Retail assistant, Barista, Fast food worker: the right supported award is suggested but not preselected; levels belong only to that award, with no duplicates.
-- Unknown occupation: no suggestion.
-- Switching awards: old levels cleared.
-- Back/forward and refresh mid-flow: award, job and level stay consistent.
-
-## Safety
-
-No changes to the live checker, v1 engine, Stripe, database, accounts or saved reports. The 2.0 calculator stays tester-only. Nothing is published.
+- Automated tests run on the real Fair Work award list (156 awards) for Civil Crew Foreman, Electrician, Retail assistant, Barista, Fast Food worker and an unknown job. They check that nothing is picked automatically, no unrelated award appears, and fewer than three suggestions show when evidence is thin.
+- Level tests: repeated cabin-crew rows (36 rows, 3 real levels) collapse to 3. Junior levels stay separate. Switching award clears the level.
+- Real browser on desktop and a phone-sized screen: questions-only path, synthetic payslip upload (award left unselected), switching award, changing level, notice visible on review and result.
+- Existing saved reports and pass access: open a saved report signed in as the test admin and confirm it still unlocks. Only reads, no payments.
 
 ## Technical details
 
-- Files: `src/features/v2/intents.tsx` (payslip intent goes to `/v2/upload` instead of `/check`); a new `src/features/v2/engine/awardDiscovery.ts` (curated evidence table and pure ranking with reasons); `EngineQuestions.tsx` (job-title display, a discovery step before the award/classification steps, the unsupported-award stop, and clearing `classificationFixedId` when the award changes); `classificationsFor` de-duplicates by ID and validates against the rule pack code; `store.tsx` keeps the job title in the answers-only state.
-- Discovery list entries for MA000020 and MA000025 hold only codes and official names, with no rates.
-- Tests: `tests/v2/award-discovery.test.ts` and extensions to `tests/v2/engine-model.test.ts`, run with `bun test`. Browser runs are reported in `tests/v2/BROWSER-REPORT.md`.
-- `AGENTS.md`: add one rule saying 2.0 award discovery is evidence-based and confirmation-only, and that only rule-pack awards proceed to calculation.
-
-## Additional requirements (owner approval)
-
-- Step 1 is mandatory. Call the real award and classification lookups for "Civil Crew Foreman" and record the responses. If they contradict the diagnosis, stop and report before changing any code.
-- Keep the selected industry, the confirmed occupation and the confirmed payslip fields through the 2.0 "Check my payslip" path. The 2.0 preview must never silently redirect to `/check`.
-- One generic shared word is never enough evidence, and no award is ever selected automatically.
-- MA000020 is a "possible" award only. MA000025 needs electrical duties or other supporting evidence.
-- Test every occupation listed above, plus switching awards, browser Back/Forward and refresh, on desktop and on a phone-sized screen.
-- The final report lists the live checker's matching weaknesses. The live checker is not changed.
+- `src/features/check/model.ts`
+  - `matchAwards`: add a generic-word stoplist, drop employer-word scoring, require a non-generic role match or curated job title, keep the existing `award_name_or_code` hint, and return only credible matches.
+  - `applyPayslip`: stop setting `awardCode`/`awardName`.
+  - Add a `dedupeClassifications` helper keyed on `classification_fixed_id`.
+- `src/features/check/GuidedCheck.tsx`
+  - The job step no longer sets the award, and the award step gets the new copy and no fallback button.
+  - The level list uses `dedupeClassifications` and ignores responses for an award that is no longer selected.
+  - Add the notice on review.
+- `src/pages/NewCheck_Step3_Result.tsx`: add the notice, use the preliminary-estimate label, and always show a range in "not sure" mode. Display only; the saved values are unchanged.
+- Tests: update `tests/guided-model.test.ts` and add `tests/live-award-matching.test.ts` using a committed snapshot of the award list. Run with `bun test`.
+- `AGENTS.md`: replace the existing "Rank guided award suggestions…" rule with the stricter evidence and confirmation rule.
