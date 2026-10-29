@@ -17,3 +17,4 @@
 - Compare monthly manual rosters as a typical week and divide monthly gross by 4.33 only in the adapter; label the result weekly so engine overtime and annualization semantics remain unchanged.
 - Retry payslip reads only for transport errors or timeouts; provider rejection must immediately fall back to guided questions.
 - Link guest pass purchases to accounts only through the authenticated claim_my_passes RPC matching a confirmed auth email; clients never write purchase ownership directly.
+- Build the AwardPay 2.0 redesign under `src/features/v2` on `/v2/*` routes with its own answers-only session store; production `/check`, payment and calculation flows stay untouched until the owner approves a switch.

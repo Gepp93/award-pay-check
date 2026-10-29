@@ -30,6 +30,13 @@ import Report from "./pages/Report";
 import MyReports from "./pages/MyReports";
 import PaymentComplete from "./pages/PaymentComplete";
 import UnderpaidAward from "./pages/UnderpaidAward";
+import V2Layout from "./features/v2/Layout";
+import V2Home from "./features/v2/Home";
+import V2Industry from "./features/v2/IndustryPick";
+import V2Guided from "./features/v2/Guided";
+import V2Upload from "./features/v2/UploadPayslip";
+import V2Results from "./features/v2/Results";
+import V2Pricing from "./features/v2/PricingPreview";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +73,14 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/thank-you" element={<ThankYou />} />
           <Route path="/underpaid/:slug" element={<UnderpaidAward />} />
+          <Route path="/v2" element={<V2Layout />}>
+            <Route index element={<V2Home />} />
+            <Route path="industry" element={<V2Industry />} />
+            <Route path="check" element={<V2Guided />} />
+            <Route path="upload" element={<V2Upload />} />
+            <Route path="results" element={<V2Results />} />
+            <Route path="pricing-preview" element={<V2Pricing />} />
+          </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
