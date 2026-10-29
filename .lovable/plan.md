@@ -59,3 +59,14 @@ Stripe, the pass, accounts, saved reports, the database schema, security rules, 
 - Fair Work data is fetched once, while building, through a small dev script using `FWC_API_KEY` (from inside a backend function, since the key isn't available in the browser). The snapshots are committed, so tests work without the network.
 - If the API leaves out a penalty the award text requires (e.g. a specific casual public holiday combination), that case stays Not assessed. Nothing is hand-entered.
 - Risk: pay guide PDFs may round differently from the API's `calculatedRate`. The tests will flag any difference over 1 cent rather than adjusting expected values to match.
+
+## Additional approved requirements
+
+- Snapshots cover the 2024, 2025 and 2026 published years, with every operative date and rate change the API provides.
+- Junior, apprentice and trainee eligibility is checked per award and per classification. If a band isn't supported, the item is Not assessed. Adult rates are never substituted, and no common age formula is assumed.
+- Each result is marked `complete`, `partial` or `unsupported`. When a material entitlement is missing, the assessed subtotal is never presented as total underpayment.
+- Gross pay and comparable paid amounts stay separate. Only payments matched to the assessed lines are compared, and unrelated gross is never compared or counted twice.
+- Every rule and expected test value links to a Fair Work record ID, pay guide page or award clause. Expected values are never adjusted to make tests pass.
+- Scope is Phases 1–3: the v2 engine, rule packs, historical snapshots, tests, the pass/fail report and v1-versus-v2 comparisons.
+- The live v1 warning is not implemented; that needs separate approval. AwardPay 2.0 is not connected, nothing is enabled for customers, nothing is published.
+- After that, stop and report: test results, supported scenarios, unsupported conditions, sources, risks and an implementation summary. Passing tests are not presented as proof of accuracy.
