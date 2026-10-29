@@ -1,3 +1,10 @@
+# Engine v2 (Retail, Hospitality, Fast Food) — Phases 1–3
+- [x] Fair Work snapshots (pay rates, penalties, wage allowances; published years 2023–2026) and official public holidays (2024–2025)
+- [x] Clause-cited rule packs, integer-cent engine, complete/partial/unsupported output, gross vs comparable pay
+- [x] 42 hand-worked cases + rules tests, REPORT.md and v1-vs-v2 comparison
+- [ ] Owner review of results; approval needed before connecting AwardPay 2.0, enabling v2 or adding the v1 warning
+- [ ] 2026 public holiday list: no official national dataset yet (users must confirm holiday dates for 2026)
+
 # Phase 8 guided-flow polish
 - [x] Fast reader-outage fallback (429/unavailable: one request), keyword award matching and tagged printed penalty-hour roster defaults.
 - [x] Casual/part-time shortcuts, monthly typical-week paid-share comparison and mobile sticky actions with safe-area padding.
