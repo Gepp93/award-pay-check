@@ -77,16 +77,23 @@ export default function Results() {
           </table>
           <p className="mt-3 text-right text-sm">{r.status === "complete" ? "Assessed award minimum" : "Assessed items only (not a total entitlement)"}: <strong>{$(r.assessedEntitlementCents)}</strong></p>
 
-          {r.status === "complete" && r.paid.comparison === "complete" && (
-            <div className="mt-4 border-t border-rule pt-4 text-sm">
-              <p>Comparable wages paid: <strong>{$(r.paid.comparableCents)}</strong> · Net difference: <strong>{$(r.differenceCents)}</strong></p>
-              {r.paid.components && (
-                <table className="mt-3 w-full">
-                  <thead><tr className="text-left text-ink-3"><th>Category</th><th className="text-right">Award</th><th className="text-right">Paid</th><th className="text-right">Difference</th></tr></thead>
-                  <tbody>{r.paid.components.map(c => <tr key={c.kind} className="border-t border-rule"><td className="py-1">{KIND[c.kind]}</td><td className="text-right">{$(c.entitledCents)}</td><td className="text-right">{$(c.paidCents)}</td><td className="text-right font-semibold">{$(c.differenceCents)}</td></tr>)}</tbody>
+          {r.paid.components && (
+            <div className="mt-4 border-t border-rule pt-4 text-sm" data-testid="components">
+              <h3 className="font-extrabold">By pay category</h3>
+              <div className="overflow-x-auto">
+                <table className="mt-2 w-full min-w-[30rem]">
+                  <thead><tr className="text-left text-ink-3"><th>Category</th><th className="text-right">Actual paid</th><th className="text-right">Award minimum</th><th className="text-right">Shortfall</th><th className="text-right">Overpayment</th></tr></thead>
+                  <tbody>{r.paid.components.map(c => (
+                    <tr key={c.kind} className="border-t border-rule"><td className="py-1">{KIND[c.kind]}{c.basis === "loading" ? " (extra loading only)" : ""}</td>
+                      <td className="text-right">{$(c.paidCents)}</td><td className="text-right">{$(c.entitledCents)}</td>
+                      <td className="text-right font-semibold">{c.differenceCents > 0 ? $(c.differenceCents) : "—"}</td>
+                      <td className="text-right">{c.differenceCents < 0 ? $(-c.differenceCents) : "—"}</td></tr>))}</tbody>
                 </table>
-              )}
-              {r.componentShortfallCents != null && r.componentShortfallCents !== r.underpaymentCents && <p className="mt-2">Shortfalls in individual categories add up to {$(r.componentShortfallCents)}.</p>}
+              </div>
+              {r.status === "complete" && r.paid.comparison === "complete" && r.differenceCents != null
+                ? <p className="mt-3">Comparable wages paid: <strong>{$(r.paid.comparableCents)}</strong> · Net comparable difference: <strong data-testid="net">{$(r.differenceCents)}</strong></p>
+                : <p className="mt-3 font-semibold">Category differences are shown, but these may offset each other and not everything could be checked, so no total underpayment is stated.</p>}
+              {r.paid.components.some(c => c.differenceCents > 0) && r.paid.components.some(c => c.differenceCents < 0) && <p className="mt-2 text-ink-2">A shortfall in one category isn't necessarily money owed: an overpayment in another category may offset it, depending on your employment arrangement.</p>}
               <p className="mt-2 text-ink-2">{r.paid.note}</p>
             </div>
           )}
