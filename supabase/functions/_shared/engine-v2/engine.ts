@@ -108,7 +108,7 @@ export function holidayStatus(date: string, state: State): HolidayStatus {
   const text = `${h.name} ${h.info}`;
   const part = text.match(/(\d{1,2})\s*pm\s*(?:to|-|–)\s*midnight/i);
   if (part) return { kind: "part", fromMinute: (Number(part[1]) % 12 + 12) * 60, holiday: h };
-  if (/\b(only|some areas|regional|region|parts? of)\b/i.test(h.info) && !/part of easter/i.test(h.info)) return { kind: "uncertain", holiday: h };
+  if (/\b(only|some areas|regional|region|parts? of)\b/i.test(text.replace(/part of easter/ig, ""))) return { kind: "uncertain", holiday: h };
   return { kind: "full", holiday: h };
 }
 
