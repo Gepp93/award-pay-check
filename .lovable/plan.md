@@ -8,13 +8,15 @@ A narrow patch to the live checker's award, level and result screens. The calcul
 - **Fewer, honest suggestions.** Up to three awards appear, but only ones with real evidence from the job title or chosen job. Generic words ("crew", "worker", "foreman", "level", and similar) and employer names no longer count. When nothing credible matches, customers see: "We couldn't confidently identify your award. Search for your award or tell us more about your work." The award search box is open below that message.
 - **Neutral wording.** "Most people in this job are covered by…" becomes "Possible award — please confirm". The "I'm not sure — use the suggested award" button is removed.
 - **Clean level list.** Only levels for the confirmed award are shown, each once, even when the official list repeats a level for different rate dates. Genuinely different levels, such as junior or apprentice levels and different work areas, stay separate. Changing the award clears the chosen level.
-- **"Not sure" level option.** The live checker can calculate a range across an award's levels, so this option stays. It is renamed "Not sure — show an estimated range across this award's levels". That result always shows a range, never one "you may be owed up to" figure.
-- **Prominent notice** on the review screen (before calculating) and on the result screen: "Important: This checker currently uses simplified pay rules and may not reflect all conditions of your award. Results are preliminary estimates, not verified underpayment amounts."
-- **Softer headline.** "You may be owed" becomes "Preliminary estimate", followed by the amount.
+- **"Not sure" level option removed.** The live "not sure" range mixes adult, junior and apprentice levels, and only checks the first 30 levels. It leaves out only trainee and school-leaver levels. Fixing that would mean changing the calculation, so the option is removed. Customers see: "Please confirm your classification before we can estimate your pay. You'll find it on your payslip or contract, or you can ask your employer." Old saved reports that used the range keep their numbers. They are labelled "Estimated across several levels — may not match your classification".
+- **Prominent notice** on the review screen, the result screen, saved report pages, the Full Report, My Reports and the downloaded PDF, including reports created before this patch: "Important: This checker currently uses simplified pay rules and may not reflect all conditions of your award. Results are preliminary estimates, not verified underpayment amounts."
+- **Preliminary wording everywhere** across those same screens and the paid-report teaser:
+  - "You may be owed", "You may be owed up to" and "Owed $X" become "Preliminary estimate".
+  - "The amount owed" becomes "the preliminary estimate".
 
 ## Not changed
 
-Rate and overtime maths, what is sent to the calculation, payment and pass access, how reports are saved (including the stored amount), and existing saved report pages. Open question: should saved Full Report pages also show the notice? This plan leaves them unchanged unless you say so.
+Rate and overtime maths, what is sent to the calculation, payment and pass access, and saved report data. The notice and wording are added when a page or PDF is shown; stored amounts and records are never rewritten or recalculated.
 
 ## Testing
 
@@ -33,6 +35,10 @@ Rate and overtime maths, what is sent to the calculation, payment and pass acces
   - The job step no longer sets the award, and the award step gets the new copy and no fallback button.
   - The level list uses `dedupeClassifications` and ignores responses for an award that is no longer selected.
   - Add the notice on review.
-- `src/pages/NewCheck_Step3_Result.tsx`: add the notice, use the preliminary-estimate label, and always show a range in "not sure" mode. Display only; the saved values are unchanged.
+- `GuidedCheck.tsx` level step: remove the "not sure" choice. Continue needs a confirmed `classificationId`, and a resumed draft with no level returns to the level step.
+- New shared `src/components/report/PreliminaryNotice.tsx`, containing the notice and wording.
+- Display-only changes, with stored `owed_amount` and result JSON untouched: `src/pages/NewCheck_Step3_Result.tsx`, `src/pages/Report.tsx`, `src/components/report/FullReport.tsx` (screen and jsPDF), `src/pages/MyReports.tsx` and `src/components/report/LockedTeaser.tsx`.
+- Tests also cover a new result and an existing saved report, including an old "not sure" one. They download the PDF, extract its text, and check that the notice is present and the amounts are unchanged.
+- `roadmap.md`: add this patch's tasks when build starts.
 - Tests: update `tests/guided-model.test.ts` and add `tests/live-award-matching.test.ts` using a committed snapshot of the award list. Run with `bun test`.
 - `AGENTS.md`: replace the existing "Rank guided award suggestions…" rule with the stricter evidence and confirmation rule.
