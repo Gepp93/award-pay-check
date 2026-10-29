@@ -93,7 +93,8 @@ export function buildRequest(d: EngineDraft) {
     .map(l => ({ kind: resolveKind(l.kind, d.shifts), amountCents: money(l.amount), label: l.label.slice(0, 80) || undefined }))
     .filter((l): l is { kind: string; amountCents: number; label: string | undefined } => l.amountCents != null);
   const gross = money(d.grossPay);
-  const g = int(d.guaranteedHours.replace(/[^\d.]/g, "") ? String(Number(d.guaranteedHours) * 60) : "");
+  const gh = Number(d.guaranteedHours);
+  const g = d.guaranteedHours.trim() !== "" && Number.isFinite(gh) && gh >= 0 ? Math.round(gh * 60) : null;
   const cycle = int(d.rosterCycleWeeks);
   const holidayDates = Object.entries(d.holidayAnswers).filter(([, v]) => v).map(([k]) => k);
   return {
