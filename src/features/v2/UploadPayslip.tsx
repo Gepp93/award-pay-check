@@ -71,7 +71,7 @@ export default function UploadPayslip() {
     if (state.kind !== "done" || !confirmed) return;
     const val = (k: FieldKey) => state.fields.find(f => f.key === k)?.value ?? "";
     if (!state.demo) update({ hoursPerWeek: val("ordinary_hours"), hourlyRate: val("base_hourly_rate"), payslip: state.fields, result: null });
-    navigate(state.demo ? "/v2/results" : "/v2/questions");
+    navigate("/v2/questions");
   };
 
   const missing = state.kind === "done" ? state.fields.filter(f => f.source === "missing").length : 0;
