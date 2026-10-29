@@ -170,7 +170,7 @@ export default function GuidedCheck() {
   }
 
   if (step === "result" && resultState) return <Result resultState={resultState} />;
-  const visibleAwards = searchOpen ? (search ? awards.filter(x => `${x.code} ${x.name}`.toLowerCase().includes(search.toLowerCase())) : a.industry && a.industry !== "Other" ? industryAwards(a.industry, awards) : allAwards ? awards : []) : [...new Map([...(a.awardCode ? awards.filter(x => x.code === a.awardCode) : []), ...suggested].map(x => [x.code, x])).values()];
+  const visibleAwards = searchOpen ? (search ? awards.filter(x => `${x.code} ${x.name}`.toLowerCase().includes(search.toLowerCase())) : a.industry && a.industry !== "Other" ? industryAwards(a.industry, awards) : []) : [...new Map([...(a.awardCode ? awards.filter(x => x.code === a.awardCode) : []), ...suggested].map(x => [x.code, x])).values()];
   const showClasses = classes.filter(c => junior || !/apprentice|junior|trainee|school.leaver|plus \d year|under \d|\b(?:1[5-9]|20) years/i.test(`${c.classification} ${c.clause_description}`));
   const reviewRows: [Step, string, string][] = [["job", "Job", a.job || "Not sure"], ["award", "Award", a.awardName], ["employment", "Employment", a.employmentType], ["level", "Level", a.classificationName], ["pay", "Pay", `${a.frequency} · ${a.gross ? `$${a.gross} gross` : `$${a.rate}/hr`}`], ["hours", "Hours", a.usePayslipHours ? `${a.hours} ordinary hours from your payslip` : `${a.shifts.length} shifts · ${a.shifts.reduce((t, s) => t + shiftHours(s), 0).toFixed(1)} hrs`], ["allowances", "Allowances", Object.values(a.conditions).some(Boolean) ? "Work conditions selected" : "None / not sure"]];
 
