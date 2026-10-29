@@ -22,7 +22,7 @@ const TITLES: Partial<Record<Step, [string, string]>> = {
   industry: ["Which industry do you work in?", "This helps narrow down your award."],
   award: ["Confirm your award", "An award sets the minimum pay and conditions for your job."],
   employment: ["How are you employed?", "Your employment type affects loading and entitlements."],
-  level: ["What's your level?", "Not sure? We'll check across the available levels."],
+  level: ["What's your level?", "Choose the classification on your payslip or contract."],
   age: ["Are you under 21?", "This award includes junior classifications."],
   pay: ["What were you paid?", "Use gross pay before tax. Your hourly rate or total is enough."],
   hours: ["When did you work?", "Choose your days, then confirm or adjust the shifts."],
