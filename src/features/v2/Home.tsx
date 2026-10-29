@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useV2 } from "./store";
 import { ArrowRight, Calculator, Clock, FileSearch, Lock, Search, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -22,6 +23,12 @@ const faqs = [
 ];
 
 export default function V2Home() {
+  const { answers, update } = useV2();
+  const navigate = useNavigate();
+  const pick = (id: typeof answers.industry) => {
+    update(answers.industry === id ? {} : { industry: id, role: "", extras: [] });
+    navigate("/v2/check");
+  };
   return (
     <main>
       <SEO title="AwardPay 2.0 preview" description="Design preview of the new AwardPay pay checker." path="/v2"><meta name="robots" content="noindex" /></SEO>
@@ -37,7 +44,7 @@ export default function V2Home() {
               <li className="flex items-center gap-2"><Lock className="h-4 w-4 text-primary" /> No account needed</li>
             </ul>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild variant="gold" size="lg" className="h-14 px-7 text-base"><Link to="/v2/industry">Check my pay <ArrowRight className="h-5 w-5" /></Link></Button>
+              <Button asChild variant="gold" size="lg" className="h-14 px-7 text-base"><Link to={answers.industry ? "/v2/check" : "/v2/industry"}>Check my pay <ArrowRight className="h-5 w-5" /></Link></Button>
               <Button asChild variant="outline" size="lg" className="h-14 px-7 text-base"><Link to="/how-it-works">See how it works</Link></Button>
             </div>
           </div>
@@ -100,10 +107,10 @@ export default function V2Home() {
           <h2 className="text-3xl font-extrabold">What industry do you work in?</h2>
           <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
             {INDUSTRIES.filter((i) => i.image).slice(0, 8).map((i) => (
-              <Link key={i.id} to={`/v2/industry?pick=${i.id}`} className="group overflow-hidden rounded-lg border border-border bg-card shadow-soft focus-visible:ring-2 focus-visible:ring-ring">
+              <button type="button" key={i.id} onClick={() => pick(i.id)} className="group overflow-hidden rounded-lg border border-border bg-card text-left shadow-soft hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <img src={i.image} alt="" loading="lazy" width={896} height={752} className="aspect-[4/3] w-full object-cover" />
                 <span className="flex items-center justify-between p-3 font-bold">{i.label}<ArrowRight className="h-4 w-4 text-primary" /></span>
-              </Link>
+              </button>
             ))}
           </div>
         </div>

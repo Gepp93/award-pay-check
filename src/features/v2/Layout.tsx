@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { ArrowRight, Check, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { V2Provider } from "./store";
+import { V2Provider, useV2 } from "./store";
+import { industryById } from "./industries";
 import { cn } from "@/lib/utils";
 
 export const Logo = () => (
@@ -64,7 +65,24 @@ export function PreviewBanner() {
   );
 }
 
-const STEPS = ["Industry", "Hours & pay", "Results"];
+/** Selected industry with its worker photo, shown on every step after picking. */
+export function IndustryChip() {
+  const { answers } = useV2();
+  const ind = industryById(answers.industry);
+  if (!ind) return null;
+  return (
+    <div className="mb-6 flex items-center gap-3 rounded-lg border border-border bg-card p-2 pr-4 shadow-soft">
+      {ind.image && <img src={ind.image} alt="" width={96} height={72} className="h-12 w-16 shrink-0 rounded-md object-cover" />}
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-ink-3">Your industry</p>
+        <p className="truncate font-bold">{ind.label}</p>
+      </div>
+      <Link to="/v2/industry" className="text-sm font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm">Change industry</Link>
+    </div>
+  );
+}
+
+const STEPS = ["Industry", "Your details", "Results"];
 export function Stepper({ current }: { current: 0 | 1 | 2 }) {
   return (
     <ol className="mx-auto mb-10 flex max-w-xl items-start justify-between" aria-label="Progress">

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { PAYSLIP_ACCEPT, readPayslip, type ParsedPayslip } from "@/lib/payslipReader";
-import { Stepper } from "./Layout";
+import { IndustryChip, Stepper } from "./Layout";
 import { useV2 } from "./store";
 
 type State = { kind: "idle" } | { kind: "reading"; name: string } | { kind: "done"; data: ParsedPayslip; demo: boolean } | { kind: "error"; message: string };
@@ -50,6 +50,7 @@ export default function UploadPayslip() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 md:px-8">
       <Stepper current={1} />
+      <IndustryChip />
       <div className="grid gap-8 lg:grid-cols-2">
         <section>
           <h1 className="text-3xl font-extrabold">Upload your payslip</h1>

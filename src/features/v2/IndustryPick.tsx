@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, Check, HelpCircle, Sparkles } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, ArrowRight, Check, HelpCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -29,20 +29,23 @@ export default function IndustryPick() {
 
   useEffect(() => {
     const pick = params.get("pick") as IndustryId | null;
-    if (pick && INDUSTRIES.some((i) => i.id === pick)) update({ industry: pick });
+    if (pick && INDUSTRIES.some((i) => i.id === pick)) { choose(pick); navigate("/v2/check", { replace: true }); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const choose = (id: IndustryId) => update({ industry: id, role: answers.industry === id ? answers.role : "", extras: answers.industry === id ? answers.extras : [] });
+  const pickAndGo = (id: IndustryId) => { choose(id); navigate("/v2/check"); };
+  const [suggested, setSuggested] = useState<IndustryId | null>(null);
 
   const suggest = () => {
     const found = KEYWORDS.find(([, re]) => re.test(text));
-    if (found) { choose(found[0]); setHint(`This sounds like ${INDUSTRIES.find((i) => i.id === found[0])!.label}. Change it if that's not right.`); }
-    else { choose("other"); setHint("We couldn't match that to an industry, so we picked Other. You can still continue."); }
+    if (found) { setSuggested(found[0]); setHint(`This sounds like ${INDUSTRIES.find((i) => i.id === found[0])!.label}. Change it if that's not right.`); }
+    else { setSuggested("other"); setHint("We couldn't match that to an industry, so we suggest Other."); }
   };
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 md:px-8">
+      <Link to="/v2" className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-ink-2 hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to home</Link>
       <Stepper current={0} />
       <h1 className="text-3xl font-extrabold md:text-4xl">What industry do you work in?</h1>
       <p className="mt-2 text-ink-2">We'll tailor the questions. You'll confirm your award and classification later.</p>
@@ -50,7 +53,7 @@ export default function IndustryPick() {
         {INDUSTRIES.map((i) => {
           const on = answers.industry === i.id;
           return (
-            <button key={i.id} role="radio" aria-checked={on} onClick={() => choose(i.id)}
+            <button key={i.id} role="radio" aria-checked={on} onClick={() => pickAndGo(i.id)}
               className={cn("relative overflow-hidden rounded-lg border bg-card text-left shadow-soft transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 on ? "border-2 border-primary ring-4 ring-primary-soft" : "border-border hover:border-rule-strong")}>
               {i.image
@@ -72,13 +75,13 @@ export default function IndustryPick() {
             <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. I'm an electrician on residential sites in NSW" className="h-12 bg-card text-base" aria-label="Describe your job" />
             <Button type="submit" size="icon" className="h-12 w-12 shrink-0" aria-label="Suggest industry"><ArrowRight /></Button>
           </form>
-          {hint && <p className="mt-2 text-sm font-medium" role="status">{hint}</p>}
+          {hint && <div className="mt-3 flex flex-wrap items-center gap-3" role="status">
+            <p className="text-sm font-medium">{hint}</p>
+            {suggested && <Button size="sm" onClick={() => pickAndGo(suggested)}>Continue with {INDUSTRIES.find((i) => i.id === suggested)!.label} <ArrowRight /></Button>}
+          </div>}
         </div>
       </div>
 
-      <div className="sticky bottom-0 mt-8 flex justify-end bg-background/95 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <Button size="lg" className="h-14 w-full px-10 md:w-auto" disabled={!answers.industry} onClick={() => navigate("/v2/check")}>Continue <ArrowRight /></Button>
-      </div>
     </main>
   );
 }
