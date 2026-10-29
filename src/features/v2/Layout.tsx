@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { ArrowRight, Check, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { V2Provider, useV2 } from "./store";
@@ -121,6 +121,8 @@ export function V2Footer() {
 }
 
 export default function V2Layout() {
+  const { pathname } = useLocation();
+  useEffect(() => { if (!window.location.hash) window.scrollTo(0, 0); }, [pathname]);
   return (
     <V2Provider>
       <div className="min-h-screen bg-background">
