@@ -42,8 +42,8 @@ export default function V2Home() {
             </div>
           </div>
           <div className="relative">
-            <img src={hero} alt="" width={1024} height={1152} className="ml-auto aspect-[4/5] w-4/5 rounded-lg object-cover md:w-3/4" />
-            <div className="absolute bottom-6 left-0 w-[78%] max-w-sm rounded-lg border border-border bg-card p-5 shadow-sheet">
+            <img src={hero} alt="" width={1024} height={1152} className="ml-auto aspect-[4/5] w-[85%] rounded-lg object-cover" />
+            <div className="absolute bottom-6 left-0 w-[70%] max-w-[300px] md:-left-6 rounded-lg border border-border bg-card p-5 shadow-sheet">
               <div className="flex items-center justify-between text-xs"><span className="font-bold uppercase tracking-wide text-primary">Payslip check</span><span className="rounded-full bg-gold-soft px-2 py-0.5 font-bold">Example</span></div>
               <p className="mt-1 font-bold">Construction</p>
               <ul className="mt-3 divide-y divide-border text-sm">
