@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Calculator, Clock, FileSearch, Lock, Search, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { SEO } from "@/components/SEO";
+import SEO from "@/components/SEO";
 import { INDUSTRIES } from "./industries";
 import { THREE_MONTH_PASS } from "@/lib/plans";
 import hero from "@/assets/workers/construction.jpg";
@@ -24,7 +24,7 @@ const faqs = [
 export default function V2Home() {
   return (
     <main>
-      <SEO title="AwardPay 2.0 preview" description="Design preview of the new AwardPay pay checker." path="/v2" />
+      <SEO title="AwardPay 2.0 preview" description="Design preview of the new AwardPay pay checker." path="/v2"><meta name="robots" content="noindex" /></SEO>
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 md:grid-cols-[1.05fr_1fr] md:px-8 md:py-20">
