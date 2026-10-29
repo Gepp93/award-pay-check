@@ -102,7 +102,7 @@ export async function readPayslip(file: File, signal: AbortSignal): Promise<Pars
           const status = "context" in error && error.context instanceof Response ? error.context.status : 0;
           if ("context" in error && error.context instanceof Response) {
             const body = await error.context.clone().json().catch(() => null);
-            if (body?.error === "reader_unavailable" || body?.error === "reader_429") throw new Error(body.error);
+            if (typeof body?.error === "string" && /^(reader_[a-z_0-9]+|image_too_large)$/.test(body.error)) throw new Error(body.error);
           }
           throw new Error(status ? `reader_${status}` : "reader_network");
         }
