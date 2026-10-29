@@ -26,6 +26,7 @@ const Body = z.object({
     allShiftsInPeriodIncluded: z.boolean().optional(), workedToRoster: z.boolean().optional(),
     guaranteedMinutesPerWeek: z.number().int().min(0).max(38 * 60).optional(),
     rosterCycleWeeks: z.number().int().min(1).max(4).optional(),
+    spanExceptions: z.array(z.enum(["late_trading", "newsagency", "video_shop"])).max(3).optional(),
   }).optional(),
   holidayConfirmation: z.object({ publicHolidayDates: z.array(day).max(40) }).optional(),
   paid: z.object({
@@ -35,6 +36,7 @@ const Body = z.object({
     lines: z.array(z.object({
       kind: z.enum(["ordinary", "casual_loading", "saturday", "sunday", "public_holiday", "evening", "overtime", "allowance", "leave", "other"]),
       amountCents: z.number().int().min(0).max(10_000_000), label: z.string().max(80).optional(),
+      basis: z.enum(["total", "loading", "unknown"]).optional(),
     })).max(60).optional(),
   }).optional(),
   flags: z.object({
