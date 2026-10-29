@@ -15,8 +15,19 @@ export const OTHER_AWARD = "OTHER";
 
 export function classificationsFor(code: string): { id: number; label: string }[] {
   const p = RULE_PACKS[code];
-  return p ? Object.entries(p.classifications).map(([id, c]) => ({ id: Number(id), label: c.label })) : [];
+  if (!p || p.awardCode !== code) return [];
+  const seen = new Set<number>();
+  return Object.entries(p.classifications).map(([id, c]) => ({ id: Number(id), label: c.label }))
+    .filter(c => Number.isInteger(c.id) && !seen.has(c.id) && !!seen.add(c.id));
 }
+/** Drop a classification that doesn't belong to the current award (stale from a previous award). */
+export function sanitizeDraft(d: EngineDraft): EngineDraft {
+  const ok = d.classificationFixedId === null || d.classificationFixedId === 0 || classificationsFor(d.awardCode).some(c => c.id === d.classificationFixedId);
+  return ok && (d.classificationFixedId !== 0 || RULE_PACKS[d.awardCode]) ? d : { ...d, classificationFixedId: null };
+}
+/** Changing the award always clears its classification. */
+export const withAward = (d: EngineDraft, awardCode: string): EngineDraft =>
+  awardCode === d.awardCode ? d : { ...d, awardCode, classificationFixedId: null, enterpriseAgreement: "" };
 export function overtimeRules(code: string, emp: Emp) {
   const p = RULE_PACKS[code];
   if (!p) return null;
@@ -34,6 +45,9 @@ export const lineReady = (l: PayLineDraft) => !!l.kind && (!needsBasis(l.kind) |
 export type Tri = "yes" | "no" | "unknown" | "";
 
 export interface EngineDraft {
+  /** Confirmed job title (payslip or typed) and optional duties — discovery evidence only, never sent to the engine. */
+  jobTitle: string; jobTitleSource: Src | "";
+  duties: string;
   awardCode: string;
   classificationFixedId: number | null; // 0 = not sure
   employmentType: Emp | "";
@@ -55,6 +69,7 @@ export interface EngineDraft {
 }
 
 export const emptyDraft: EngineDraft = {
+  jobTitle: "", jobTitleSource: "", duties: "",
   awardCode: "", classificationFixedId: null, employmentType: "", rateType: "", enterpriseAgreement: "", state: "",
   periodStart: "", periodEnd: "", shifts: [], allShifts: "", workedToRoster: "", guaranteedHours: "", rosterCycleWeeks: "",
   payLines: [], grossPay: "", grossSource: "", linesCoverAllWages: "", holidayAnswers: {}, spanExceptions: null,
@@ -78,8 +93,10 @@ export function prefillFromPayslip(draft: EngineDraft, fields: Field[]): EngineD
   push("public_holiday_pay", "public_holiday", "Public holiday pay", "");
   push("overtime_pay", "overtime", "Overtime pay", "");
   const g = filled("gross_pay");
+  const jt = filled("job_title");
   return {
     ...draft,
+    jobTitle: draft.jobTitle || jt?.value || "", jobTitleSource: draft.jobTitleSource || (jt ? (jt.source as Src) : ""),
     employmentType: draft.employmentType || (emp.startsWith("full") ? "full_time" : emp.startsWith("part") ? "part_time" : emp.startsWith("casual") ? "casual" : ""),
     periodStart: draft.periodStart || filled("pay_period_start")?.value || "",
     periodEnd: draft.periodEnd || filled("pay_period_end")?.value || "",
@@ -153,7 +170,7 @@ export function buildRequest(d: EngineDraft) {
 export type StepId = "award" | "classification" | "employment" | "rate" | "state" | "period" | "shifts" | "allShifts" | "roster" | "guaranteed" | "cycle" | "extended" | "pay";
 export function stepsFor(d: EngineDraft): StepId[] {
   const s: StepId[] = ["award"];
-  if (d.awardCode === OTHER_AWARD || d.enterpriseAgreement === "yes") return s;
+  if (d.awardCode === OTHER_AWARD || d.enterpriseAgreement === "yes" || (d.awardCode && !RULE_PACKS[d.awardCode])) return s;
   s.push("classification", "employment", "rate", "state", "period", "shifts", "allShifts");
   const rules = d.awardCode && d.employmentType ? overtimeRules(d.awardCode, d.employmentType) : null;
   if (rules?.needs.includes("roster")) s.push("roster");

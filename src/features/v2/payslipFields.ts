@@ -2,7 +2,7 @@ import type { ParsedPayslip } from "@/lib/payslipReader";
 
 export type FieldSource = "payslip" | "missing" | "user";
 export type FieldKey =
-  | "employer_name" | "pay_period_start" | "pay_period_end" | "employment_type" | "base_hourly_rate"
+  | "employer_name" | "job_title" | "pay_period_start" | "pay_period_end" | "employment_type" | "base_hourly_rate"
   | "ordinary_hours" | "ordinary_pay" | "overtime_hours" | "overtime_pay"
   | "weekend_pay" | "public_holiday_pay" | "allowances" | "gross_pay";
 
@@ -10,6 +10,7 @@ export interface Field { key: FieldKey; label: string; value: string; source: Fi
 
 const LABELS: Record<FieldKey, [string, Field["kind"]]> = {
   employer_name: ["Employer name", "text"],
+  job_title: ["Job title (as printed)", "text"],
   pay_period_start: ["Pay period start", "date"],
   pay_period_end: ["Pay period end", "date"],
   employment_type: ["Employment type", "text"],
@@ -45,6 +46,7 @@ export function fieldsFromPayslip(p: ParsedPayslip): Field[] {
 
   const raw: Record<FieldKey, string | number | undefined> = {
     employer_name: p.employer_name,
+    job_title: p.classification_or_role,
     pay_period_start: p.pay_period_start,
     pay_period_end: p.pay_period_end,
     employment_type: p.employment_type,
