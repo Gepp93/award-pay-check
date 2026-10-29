@@ -68,7 +68,7 @@ export default function EngineQuestions() {
     setBusy(true); setErr(null);
     const r = await runEngine(buildRequest(d));
     setBusy(false);
-    if (!r.ok) { setErr(r.error); return; }
+    if (r.ok === false) { setErr(r.error); return; }
     update({ engine: d, result: r.result });
     navigate("/v2/results");
   };
