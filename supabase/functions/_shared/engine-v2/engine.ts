@@ -22,8 +22,6 @@ export interface ShiftInput {
   breakStart?: string; // HH:MM, optional; without it the break is removed from the highest-rate minutes (conservative)
   /** Minutes of this shift the employer treated as overtime (last minutes of the shift). Undefined = not stated. */
   overtimeMinutes?: number;
-  /** User says this date was a public holiday. Only used when the official list does not cover the date. */
-  publicHoliday?: boolean;
 }
 
 export type PaidKind = "ordinary" | "saturday" | "sunday" | "public_holiday" | "evening" | "overtime" | "allowance" | "leave" | "other";
@@ -38,6 +36,8 @@ export interface AssessmentInput {
   payPeriod?: { start: string; end: string };
   shifts: ShiftInput[];
   paid?: { grossCents?: number; lines?: PaidLine[]; grossCoversOnlyTheseShifts?: boolean };
+  /** For years the official holiday list doesn't cover: the user's confirmed list of public holiday dates in their state (empty = none). */
+  holidayConfirmation?: { publicHolidayDates: string[] };
   flags?: { enterpriseAgreement?: boolean; awardFree?: boolean; shiftworker?: boolean; casinoGaming?: boolean; managerial?: boolean };
 }
 
@@ -220,7 +220,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
       else if (hs.kind === "uncertain") {
         holidayNotes.add(`uncertain:${date}:${hs.holiday?.name}`);
       } else if (hs.kind === "unknown_year") {
-        if (date === s.date && s.publicHoliday) { ph = true; holidayNotes.add(`user:${date}`); }
+        if (input.holidayConfirmation) { ph = input.holidayConfirmation.publicHolidayDates.includes(date); holidayNotes.add(`user:${date}:${ph ? "yes" : "no"}`); }
         else holidayNotes.add(`unknown:${date}`);
       }
       if (ph && hs.holiday) holidayNotes.add(`official:${date}:${hs.holiday.name}:${hs.holiday.source}`);
@@ -231,7 +231,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
       const [k, d, name, src] = n.split(":");
       if (k === "uncertain") material("Public holiday", `${name} on ${d} applies only in part of ${input.state}. Confirm whether it applied where you work.`, si);
       if (k === "unknown") material("Public holiday", `AwardPay's official public holiday list doesn't cover ${d.slice(0, 4)} yet, so ${d} couldn't be checked.`, si);
-      if (k === "user") result.notes.push(`Shift ${si + 1}: you marked ${d} as a public holiday; AwardPay's official list doesn't cover ${d.slice(0, 4)}.`);
+      if (k === "user") result.notes.push(`Shift ${si + 1}: AwardPay's official list doesn't cover ${d.slice(0, 4)}; you confirmed ${d} ${name === "yes" ? "was" : "was not"} a public holiday in ${input.state}.`);
       if (k === "official") result.notes.push(`Shift ${si + 1}: ${d} is ${name} in ${input.state} (source: ${n.slice(n.indexOf("http"))}).`);
       void src;
     }
