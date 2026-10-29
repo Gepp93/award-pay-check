@@ -52,3 +52,10 @@
 - [x] Engine v2 accuracy verification and safety fixes (breaks, roster-aware overtime, gross-only Partial, 2026 holidays, report)
 - [ ] Engine v2 frontend integration — waiting on owner approval
 - [x] Connect Engine v2 to AwardPay 2.0 preview (internal only) — awaiting owner review
+
+## 2.0 preview: pay mapping and end-to-end testing
+- [x] Explicit pay categories, total vs loading basis, no Ordinary default
+- [x] Results: per-category actual/minimum/shortfall/overpayment, net only when Complete
+- [x] Retail cl 15.2 extended trading questions (verified conditions)
+- [x] Combined vs split Saturday payment equivalence test
+- [x] 10 browser journeys desktop and mobile, scanner PDF and image, security regression, report

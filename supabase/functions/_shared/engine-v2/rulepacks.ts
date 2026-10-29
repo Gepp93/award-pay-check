@@ -38,6 +38,8 @@ export interface SpanRule {
   /** Latest possible end if the extended-trading exception applies (unknown to us). */
   extendedEnd: number;
   clause: string;
+  /** Exceptions that move the span when the user confirms them. start/end in minutes of the day. */
+  exceptions?: Array<{ id: string; label: string; clause: string; question: string; start?: number; end?: number }>;
 }
 
 export interface Classification { label: string; sundayGroup?: string }
@@ -116,6 +118,11 @@ export const RETAIL: RulePack = {
   span: {
     byDow: { 0: [h(9), h(18)], 1: [h(7), h(21)], 2: [h(7), h(21)], 3: [h(7), h(21)], 4: [h(7), h(21)], 5: [h(7), h(21)], 6: [h(7), h(18)] },
     extendedEnd: h(23), clause: "cl 15.1–15.2 and Table 10",
+    exceptions: [
+      { id: "late_trading", label: "Retailer trades beyond 9 pm weekdays or 6 pm weekends: ordinary hours until 11 pm every day", clause: "cl 15.2(c)", question: "the store trades beyond 9 pm Monday to Friday or 6 pm on a Saturday or Sunday", end: h(23) },
+      { id: "newsagency", label: "Newsagency: ordinary hours from 5 am", clause: "cl 15.2(a)", question: "you work in a newsagency", start: h(5) },
+      { id: "video_shop", label: "Video shop: ordinary hours until midnight", clause: "cl 15.2(b)", question: "you work in a video shop", end: h(24) },
+    ],
   },
   unsupportedFlags: ["shiftworker"],
 };

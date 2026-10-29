@@ -152,3 +152,60 @@ describe("engine v2 — safety regressions", () => {
     expect(r.status).toBe("unsupported"); expect(r.lines.length).toBe(0);
   });
 });
+
+// Pay-mapping phase. Figures: MA000004 Schedule B.1.1 (2026-07-01) L1 ordinary $27.81, Saturday 125% $34.76.
+// 8 h Saturday = $278.08 award minimum; as ordinary base 8 × $27.81 = $222.48 plus loading $55.60.
+describe("engine v2 — total vs loading pay lines", () => {
+  const sat = CASES.find(c => c.id === "R2")!.input;
+  const run = (lines: { kind: string; amountCents: number; basis?: "total" | "loading" | "unknown" }[]) =>
+    assess({ ...sat, paid: { lines: lines as never, linesCoverAllWages: true } });
+  test("combined Saturday payment and ordinary + loading lines give the same comparison (paid correctly)", () => {
+    const a = run([{ kind: "saturday", amountCents: 27808 }]);
+    const b = run([{ kind: "ordinary", amountCents: 22248 }, { kind: "saturday", amountCents: 5560, basis: "loading" }]);
+    expect(a.status).toBe("complete"); expect(b.status).toBe("complete");
+    expect(a.underpaymentCents).toBe(0); expect(b.underpaymentCents).toBe(0);
+    expect(b.paid.components!.find(c => c.kind === "saturday")!.entitledCents).toBe(5560);
+    expect(b.paid.components!.find(c => c.kind === "ordinary")!.entitledCents).toBe(22248);
+  });
+  test("same equivalence when underpaid by $10.00", () => {
+    const a = run([{ kind: "saturday", amountCents: 26808 }]);
+    const b = run([{ kind: "ordinary", amountCents: 22248 }, { kind: "saturday", amountCents: 4560, basis: "loading" }]);
+    expect(a.underpaymentCents).toBe(1000); expect(b.underpaymentCents).toBe(1000);
+  });
+  test("loading line with no ordinary line, unknown basis, or mixed basis → Partial", () => {
+    expect(run([{ kind: "saturday", amountCents: 5560, basis: "loading" }]).status).toBe("partial");
+    expect(run([{ kind: "saturday", amountCents: 27808, basis: "unknown" }]).status).toBe("partial");
+    expect(run([{ kind: "ordinary", amountCents: 22248 }, { kind: "saturday", amountCents: 5560, basis: "loading" }, { kind: "saturday", amountCents: 100 }]).status).toBe("partial");
+  });
+  test("an unidentified line is never treated as ordinary → Partial", () => {
+    const r = run([{ kind: "other", amountCents: 27808 }]);
+    expect(r.status).toBe("partial"); expect(r.underpaymentCents).toBeNull();
+  });
+});
+
+// Retail cl 15.2: (a) newsagency from 5 am, (b) video shop until midnight, (c) until 11 pm all days if trading
+// extends beyond 9 pm Mon–Fri or 6 pm Sat/Sun. Monday 2026-07-06 14:00–22:00 casual L1.
+describe("engine v2 — Retail extended trading (cl 15.2)", () => {
+  const base = CASES.find(c => c.id === "R5")!.input;
+  const mk = (spanExceptions?: string[]) => assess({ ...base, arrangement: { ...base.arrangement, spanExceptions }, shifts: [{ date: "2026-07-06", start: "14:00", finish: "22:00", breakMinutes: 0 }] });
+  test("not known → Partial with the cl 15.2 question", () => {
+    const r = mk(undefined);
+    expect(r.status).toBe("partial");
+    expect(r.notAssessed.some(n => n.question?.includes("trades beyond 9 pm"))).toBe(true);
+  });
+  test("store trades late (cl 15.2(c)) → 9–10 pm is ordinary; no span item", () => {
+    const r = mk(["late_trading"]);
+    expect(r.notAssessed.some(n => n.reason.includes("span"))).toBe(false);
+  });
+  test("none apply → hours after 9 pm are overtime, which isn't entered → Partial", () => {
+    const r = mk([]); expect(r.status).toBe("partial");
+    expect(r.notAssessed.some(n => n.reason.includes("Those hours are overtime"))).toBe(true);
+  });
+  test("newsagency exception does not extend the evening → still outside span", () => {
+    expect(mk(["newsagency"]).notAssessed.some(n => n.reason.includes("outside the span"))).toBe(true);
+  });
+  test("cl 15.2(c) ends at 11 pm: a shift to 11.30 pm is still partly outside", () => {
+    const r = assess({ ...base, arrangement: { ...base.arrangement, spanExceptions: ["late_trading"] }, shifts: [{ date: "2026-07-06", start: "15:30", finish: "23:30", breakMinutes: 0 }] });
+    expect(r.notAssessed.some(n => n.reason.includes("0.50 hours outside the span"))).toBe(true);
+  });
+});

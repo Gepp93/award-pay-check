@@ -7,17 +7,18 @@ import { cn } from "@/lib/utils";
 import { IndustryChip, Stepper } from "./Layout";
 import { useV2 } from "./store";
 import {
-  AWARDS, OTHER_AWARD, buildRequest, classificationsFor, overtimeRules, prefillFromPayslip, stepsFor,
+  AWARDS, OTHER_AWARD, buildRequest, lineReady, needsBasis, RETAIL_EXCEPTIONS, classificationsFor, overtimeRules, prefillFromPayslip, stepsFor,
   type EngineDraft, type ShiftDraft, type StepId, type Tri,
 } from "./engine/model";
 import { runEngine, type EngineCallError } from "./engine/api";
 
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"];
 const KINDS: [string, string][] = [
-  ["ordinary", "Ordinary hours"], ["casual_loading", "Casual loading"], ["evening", "Evening / night penalty"],
-  ["saturday", "Saturday"], ["sunday", "Sunday"], ["weekend", "Weekend (Sat and Sun combined)"], ["public_holiday", "Public holiday"],
-  ["overtime", "Overtime"], ["allowance", "Allowance"], ["leave", "Leave"], ["other", "Other / not sure"],
+  ["ordinary", "Ordinary pay"], ["saturday", "Saturday pay"], ["sunday", "Sunday pay"], ["public_holiday", "Public holiday pay"],
+  ["overtime", "Overtime"], ["casual_loading", "Casual loading"], ["evening", "Evening / night pay"], ["allowance", "Allowance"],
+  ["leave", "Leave"], ["other", "Other / Not sure"],
 ];
+const BASIS: [string, string][] = [["total", "The whole payment for those hours"], ["loading", "Only the extra loading on top of ordinary pay"], ["unknown", "Not sure"]];
 const ERR: Record<EngineCallError, string> = {
   signin: "Sign in with an authorised tester account to run Engine v2 in this preview.",
   forbidden: "This account isn't authorised to test Engine v2.",
@@ -61,7 +62,7 @@ export default function EngineQuestions() {
     award: !!d.awardCode && (d.awardCode === OTHER_AWARD || !!d.enterpriseAgreement),
     classification: d.classificationFixedId !== null, employment: !!d.employmentType, rate: !!d.rateType, state: !!d.state,
     period: true, shifts: d.shifts.some(s => s.date && s.start && s.finish), allShifts: !!d.allShifts, roster: !!d.workedToRoster,
-    guaranteed: true, cycle: true, pay: true,
+    guaranteed: true, cycle: true, extended: d.spanExceptions !== undefined, pay: d.payLines.every(lineReady),
   };
 
   const submit = async () => {
@@ -173,20 +174,46 @@ export default function EngineQuestions() {
           <Choice label="Roster cycle" value={d.rosterCycleWeeks} onChange={v => set({ rosterCycleWeeks: v })} options={[["1", "No — weekly"], ["2", "Over 2 weeks"], ["3", "Over 3 weeks"], ["4", "Over 4 weeks"], ["", "I don't know"]]} />
         </>)}
 
+        {step === "extended" && (<>
+          <h1 className="text-3xl font-extrabold">Your shifts go outside the usual ordinary hours</h1>
+          <p className="text-ink-2">Under the General Retail Award (cl 15.1, Table 2) ordinary hours are 7 am–9 pm Monday to Friday, 7 am–6 pm Saturday and 9 am–6 pm Sunday. Clause 15.2 moves this only in these cases. Choose every one that applies.</p>
+          <div role="group" aria-label="Extended ordinary hours" className="grid gap-3">
+            {RETAIL_EXCEPTIONS.map(e => { const on = !!d.spanExceptions?.includes(e.id); return (
+              <button key={e.id} type="button" role="checkbox" aria-checked={on} onClick={() => set({ spanExceptions: on ? (d.spanExceptions ?? []).filter(x => x !== e.id) : [...(d.spanExceptions ?? []), e.id] })}
+                className={cn("min-h-14 rounded-lg border-2 bg-card px-4 py-3 text-left font-semibold", on ? "border-primary bg-primary-soft" : "border-border hover:border-primary/50")}>
+                {e.text}<span className="block text-xs font-normal text-ink-2">{e.clause}</span></button>); })}
+            <button type="button" role="checkbox" aria-checked={d.spanExceptions?.length === 0} onClick={() => set({ spanExceptions: [] })}
+              className={cn("min-h-14 rounded-lg border-2 bg-card px-4 py-3 text-left font-semibold", d.spanExceptions?.length === 0 ? "border-primary bg-primary-soft" : "border-border")}>None of these</button>
+            <button type="button" role="checkbox" aria-checked={d.spanExceptions === null} onClick={() => set({ spanExceptions: null })}
+              className={cn("min-h-14 rounded-lg border-2 bg-card px-4 py-3 text-left font-semibold", d.spanExceptions === null ? "border-primary bg-primary-soft" : "border-border")}>I'm not sure</button>
+          </div>
+          <p className="text-sm text-ink-2">If you're not sure, the hours outside the usual span stay unassessed and the result will be partial.</p>
+        </>)}
+
         {step === "pay" && (<>
           <h1 className="text-3xl font-extrabold">What you were paid for these hours</h1>
-          <p className="text-ink-2">Each amount once, as printed. Don't add a total that's already split into lines.</p>
+          <p className="text-ink-2">Each amount once, as printed. Choose a category for every line; nothing is assumed to be ordinary pay. Don't add a total that's already split into lines.</p>
           {d.payLines.map((l, k) => (
             <div key={k} className="grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-[2fr_1fr_auto]">
               <label className="text-xs font-bold">Type{l.source === "payslip" && <span className="ml-2 rounded-full bg-primary-soft px-2 py-0.5 text-[11px] text-primary">From payslip</span>}{l.source === "user" && <span className="ml-2 rounded-full bg-secondary px-2 py-0.5 text-[11px]">Entered by you</span>}
-                <select className="mt-1 h-12 w-full rounded-md border border-input bg-background px-3 text-base" value={l.kind} onChange={e => set({ payLines: d.payLines.map((x, j) => j === k ? { ...x, kind: e.target.value, source: "user" } : x) })}>
+                {!l.kind && <span className="ml-2 rounded-full bg-gold-soft px-2 py-0.5 text-[11px]">Please choose</span>}
+                {l.label && l.source === "payslip" && <span className="mt-1 block font-normal text-ink-2">Printed as: {l.label}</span>}
+                <select aria-label={`Category for pay line ${k + 1}`} className="mt-1 h-12 w-full rounded-md border border-input bg-background px-3 text-base" value={l.kind} onChange={e => set({ payLines: d.payLines.map((x, j) => j === k ? { ...x, kind: e.target.value, basis: needsBasis(e.target.value) ? "" : "total" } : x) })}>
+                  <option value="" disabled>Choose a category</option>
                   {KINDS.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
                 </select></label>
               <label className="text-xs font-bold">Amount ($)<Input inputMode="decimal" className="mt-1 h-12 text-base" value={l.amount} onChange={e => set({ payLines: d.payLines.map((x, j) => j === k ? { ...x, amount: e.target.value, source: "user" } : x) })} /></label>
               <Button variant="ghost" size="icon" aria-label="Remove line" className="self-end" onClick={() => set({ payLines: d.payLines.filter((_, j) => j !== k) })}><Trash2 /></Button>
+              {needsBasis(l.kind) && (
+                <div className="sm:col-span-3">
+                  <p className="text-sm font-bold">Is this amount the whole payment for those hours, or only the extra loading?</p>
+                  <p className="mb-2 text-xs text-ink-2">Some payslips pay Saturday hours as one amount; others pay the hours as ordinary pay plus a separate loading.</p>
+                  <Choice label={`Payment type for line ${k + 1}`} value={l.basis} onChange={v => set({ payLines: d.payLines.map((x, j) => j === k ? { ...x, basis: v as typeof l.basis } : x) })} options={BASIS} />
+                </div>
+              )}
             </div>
           ))}
-          <Button variant="outline" onClick={() => set({ payLines: [...d.payLines, { kind: "ordinary", amount: "", source: "user", label: "" }] })}><Plus /> Add a pay line</Button>
+          <Button variant="outline" onClick={() => set({ payLines: [...d.payLines, { kind: "", amount: "", source: "user", label: "", basis: "" }] })}><Plus /> Add a pay line</Button>
           <label className="block text-sm font-bold">Gross pay ($){fromPayslip(d.grossPay, d.grossSource)}<Input inputMode="decimal" className="mt-1 h-12 max-w-48 text-base" value={d.grossPay} onChange={e => set({ grossPay: e.target.value, grossSource: "user" })} /></label>
           {d.payLines.length > 0 && (<>
             <p className="font-bold">Do these lines include every wage payment for these hours?</p>

@@ -27,7 +27,9 @@ export interface ShiftInput {
 }
 
 export type PaidKind = "ordinary" | "casual_loading" | "saturday" | "sunday" | "public_holiday" | "evening" | "overtime" | "allowance" | "leave" | "other";
-export interface PaidLine { kind: PaidKind; amountCents: number; label?: string }
+/** basis: "total" = the whole payment for those hours (default); "loading" = only the extra on top of ordinary pay, whose base is paid in the ordinary line; "unknown" = the user isn't sure. */
+export type PaidBasis = "total" | "loading" | "unknown";
+export interface PaidLine { kind: PaidKind; amountCents: number; label?: string; basis?: PaidBasis }
 
 /** Facts about the work arrangement that decide whether overtime can be ruled out. */
 export interface Arrangement {
@@ -39,6 +41,8 @@ export interface Arrangement {
   guaranteedMinutesPerWeek?: number;
   /** Roster cycle length in weeks when hours are averaged (1 = no averaging). */
   rosterCycleWeeks?: number;
+  /** Span-of-hours exceptions that apply at the workplace (Retail cl 15.2). Undefined = not known; [] = none apply. */
+  spanExceptions?: string[];
 }
 
 export interface AssessmentInput {
@@ -73,7 +77,7 @@ export interface Line {
 
 export interface NotAssessed { item: string; reason: string; shiftIndex?: number; material: boolean; question?: string }
 
-export interface Component { kind: LineKind; entitledCents: number; paidCents: number; differenceCents: number }
+export interface Component { kind: LineKind; entitledCents: number; paidCents: number; differenceCents: number; basis?: "total" | "loading" }
 
 export interface AssessmentResult {
   engine: "v2"; engineVersion: string;
@@ -103,6 +107,7 @@ export interface AssessmentResult {
 }
 
 // ---------- integer helpers ----------
+function baseCentsOf(l: Line): number { return l.sources[0]?.type === "pay_rate" && l.hourlyCents != null && l.percent ? Math.round(l.hourlyCents * 100 / l.percent) : 0; }
 function divRound(num: number, den: number): number {
   return Math.floor((2 * num + den) / (2 * den));
 }
@@ -332,10 +337,25 @@ export function assess(input: AssessmentInput): AssessmentResult {
         material("Overtime", `Shift ${si + 1} has ${hrs(ordinaryWorked.length)} ordinary hours, more than the award's daily maximum (${pack.dailyMaxClause}). The extra hours are likely overtime.`, si, `How many hours on ${s.date} were paid as overtime?`);
       }
     }
-    // Span of hours.
+    // Span of hours (with any confirmed award exceptions, e.g. Retail cl 15.2).
     if (pack.span && (pack.spanAppliesTo ?? ["full_time", "part_time"]).includes(emp)) {
-      const outside = ordinaryWorked.filter(x => { const [a, b] = pack.span!.byDow[x.dow]; return x.tod < a || x.tod >= b; });
-      if (outside.length) material("Overtime", `Shift ${si + 1} includes ${hrs(outside.length)} hours outside the span of ordinary hours (${pack.span.clause}). These are overtime unless your workplace's trading hours extend the span.`, si, `Were the hours outside ${s.date}'s span paid as overtime, or does your store trade beyond 9 pm weekdays / 6 pm weekends?`);
+      const span = pack.span;
+      const known = arr.spanExceptions;
+      const applied = (span.exceptions ?? []).filter(e => known?.includes(e.id));
+      const spanFor = (dow: Dow): [number, number] => {
+        let [a, b] = span.byDow[dow];
+        for (const e of applied) { if (e.start != null) a = Math.min(a, e.start); if (e.end != null) b = Math.max(b, e.end); }
+        return [a, b];
+      };
+      const outsideStd = ordinaryWorked.filter(x => { const [a, b] = span.byDow[x.dow]; return x.tod < a || x.tod >= b; });
+      const outside = ordinaryWorked.filter(x => { const [a, b] = spanFor(x.dow); return x.tod < a || x.tod >= b; });
+      if (outsideStd.length && !outside.length) {
+        result.notes.push(`Shift ${si + 1}: hours outside the standard span are within the extended span you confirmed (${applied.map(e => `${e.label}, ${e.clause}`).join("; ")}).`);
+      } else if (outside.length && known !== undefined) {
+        material("Overtime", `Shift ${si + 1} includes ${hrs(outside.length)} hours outside the span of ordinary hours${applied.length ? " even with the exception you confirmed" : ""} (${span.clause}). Those hours are overtime, but they weren't entered as overtime, so AwardPay can't price them.`, si, `How many minutes of the shift on ${s.date} were outside the span? Enter them as overtime minutes.`);
+      } else if (outside.length) {
+        material("Overtime", `Shift ${si + 1} includes ${hrs(outside.length)} hours outside the standard span of ordinary hours (${span.clause}). Whether they are overtime depends on your workplace, and that isn't known.`, si, span.exceptions?.length ? `Does any of these apply at your workplace: ${span.exceptions.map(e => e.question).join("; ")}?` : `Were the hours outside ${s.date}'s span paid as overtime?`);
+      }
     }
     for (const x of ordinaryWorked) { const w = weekOf(x.date); weeklyOrdinary.set(w, (weeklyOrdinary.get(w) ?? 0) + 1); }
 
@@ -437,6 +457,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
     const problems: string[] = [];
     if (input.paid?.linesCoverAllWages !== true) problems.push("It isn't confirmed that these lines are every wage payment for these hours, so a missing pay line could make the shortfall look bigger than it is.");
     if (lines.some(l => l.kind === "other")) problems.push("Some pay lines couldn't be identified as wages or allowances.");
+    if (lines.some(l => l.basis === "unknown")) problems.push("For some pay lines it isn't known whether the amount is the whole payment for those hours or only an extra loading.");
     if (lines.some(l => l.kind === "casual_loading") && !isCasual) problems.push("A casual loading line was entered for a non-casual employee.");
     if (gross != null && comp + excl > gross) problems.push("The pay lines add up to more than the gross pay, so a line may have been counted twice.");
     if (lines.some(l => l.amountCents < 0)) problems.push("Negative pay lines (adjustments) can't be matched to these hours.");
@@ -444,17 +465,43 @@ export function assess(input: AssessmentInput): AssessmentResult {
       result.paid.comparison = "partial";
       material("Pay comparison", problems.join(" "), undefined, "Please check the pay lines on your payslip for these hours.");
     } else if (!lines.some(l => l.kind === "casual_loading")) {
-      // Per-category comparison, only when every wage line has a specific category.
+      // Per-category comparison. A "loading" line is compared with only the extra above ordinary pay for those
+      // hours; the ordinary base of those same hours is then expected in the ordinary line. Nothing counts twice:
+      // each entitlement line is split into base + loading exactly once.
       const kinds: LineKind[] = ["ordinary", "evening", "saturday", "sunday", "public_holiday", "overtime"];
-      const components = kinds.map(k => {
-        const entitledCents = result.lines.filter(l => l.kind === k).reduce((t, l) => t + l.amountCents, 0);
-        const paidCents = lines.filter(l => l.kind === k).reduce((t, l) => t + l.amountCents, 0);
-        return { kind: k, entitledCents, paidCents, differenceCents: entitledCents - paidCents };
-      }).filter(c => c.entitledCents || c.paidCents);
-      result.paid.components = components;
-      result.componentShortfallCents = components.reduce((t, c) => t + Math.max(0, c.differenceCents), 0);
-      if (components.some(c => c.differenceCents < 0) && components.some(c => c.differenceCents > 0)) {
-        result.notes.push("Some pay categories were paid above the award and others below. Whether an overpayment can make up for a shortfall depends on your employment arrangement, so both the net difference and the category shortfalls are shown.");
+      const basisOf = (k: LineKind) => {
+        const ls = lines.filter(l => l.kind === k);
+        const b = new Set(ls.map(l => l.basis ?? "total"));
+        return b.size === 0 ? "none" : b.size === 1 ? [...b][0] : "mixed";
+      };
+      const mismatch: string[] = [];
+      if (basisOf("ordinary") === "loading") mismatch.push("Ordinary pay can't be an extra loading.");
+      const loadingKinds = kinds.filter(k => k !== "ordinary" && basisOf(k) === "loading");
+      for (const k of kinds) if (basisOf(k) === "mixed") mismatch.push(`The ${k.replace("_", " ")} pay lines mix whole payments and extra loadings, so they can't be matched to the hours reliably.`);
+      if (loadingKinds.length && !lines.some(l => l.kind === "ordinary")) mismatch.push("A pay line is an extra loading, but there is no ordinary pay line that would hold the base pay for those hours.");
+      if (mismatch.length) {
+        result.paid.comparison = "partial";
+        material("Pay comparison", mismatch.join(" "), undefined, "Please check how your payslip splits pay for these hours.");
+      } else {
+        const entitled = new Map<LineKind, number>(kinds.map(k => [k, 0]));
+        for (const l of result.lines) {
+          if (loadingKinds.includes(l.kind)) {
+            const base = l.percent != null ? divRound(baseCents * l.minutes, 60) : 0;
+            entitled.set("ordinary", entitled.get("ordinary")! + base);
+            entitled.set(l.kind, entitled.get(l.kind)! + l.amountCents - base);
+          } else entitled.set(l.kind, entitled.get(l.kind)! + l.amountCents);
+        }
+        const components = kinds.map(k => {
+          const entitledCents = entitled.get(k)!;
+          const paidCents = lines.filter(l => l.kind === k).reduce((t, l) => t + l.amountCents, 0);
+          return { kind: k, entitledCents, paidCents, differenceCents: entitledCents - paidCents, basis: loadingKinds.includes(k) ? "loading" as const : "total" as const };
+        }).filter(c => c.entitledCents || c.paidCents);
+        result.paid.components = components;
+        if (loadingKinds.length) result.notes.push(`Some lines are extra loadings only, so the ordinary line is compared with ordinary pay for all those hours (including the base pay for ${loadingKinds.map(k => k.replace("_", " ")).join(", ")} hours), and each loading line with only the extra on top.`);
+        result.componentShortfallCents = components.reduce((t, c) => t + Math.max(0, c.differenceCents), 0);
+        if (components.some(c => c.differenceCents < 0) && components.some(c => c.differenceCents > 0)) {
+          result.notes.push("Some pay categories were paid above the award and others below. Whether an overpayment can make up for a shortfall depends on your employment arrangement, so a category shortfall isn't necessarily money owed.");
+        }
       }
     } else {
       result.notes.push("Casual loading was paid as a separate line, so only the total of wage lines is compared (not each category).");

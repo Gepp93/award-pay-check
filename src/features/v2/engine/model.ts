@@ -24,7 +24,13 @@ export function overtimeRules(code: string, emp: Emp) {
 }
 
 export interface ShiftDraft { date: string; start: string; finish: string; breakMinutes: string; breakStart: string; overtimeMinutes: string }
-export interface PayLineDraft { kind: string; amount: string; source: Src; label: string }
+/** kind "" = not chosen yet (must be chosen before continuing). basis "" = not answered yet. */
+export type Basis = "" | "total" | "loading" | "unknown";
+export interface PayLineDraft { kind: string; amount: string; source: Src; label: string; basis: Basis }
+/** Categories where an amount can be either the whole payment for those hours or only the extra loading. */
+export const BASIS_KINDS = ["saturday", "sunday", "public_holiday", "overtime", "evening"];
+export const needsBasis = (kind: string) => BASIS_KINDS.includes(kind);
+export const lineReady = (l: PayLineDraft) => !!l.kind && (!needsBasis(l.kind) || !!l.basis);
 export type Tri = "yes" | "no" | "unknown" | "";
 
 export interface EngineDraft {
@@ -44,12 +50,14 @@ export interface EngineDraft {
   grossPay: string; grossSource: Src | "";
   linesCoverAllWages: Tri;
   holidayAnswers: Record<string, boolean>;
+  /** Retail cl 15.2 exceptions the user confirmed. null = not answered / not sure; [] = none apply. */
+  spanExceptions: string[] | null;
 }
 
 export const emptyDraft: EngineDraft = {
   awardCode: "", classificationFixedId: null, employmentType: "", rateType: "", enterpriseAgreement: "", state: "",
   periodStart: "", periodEnd: "", shifts: [], allShifts: "", workedToRoster: "", guaranteedHours: "", rosterCycleWeeks: "",
-  payLines: [], grossPay: "", grossSource: "", linesCoverAllWages: "", holidayAnswers: {},
+  payLines: [], grossPay: "", grossSource: "", linesCoverAllWages: "", holidayAnswers: {}, spanExceptions: null,
 };
 
 const money = (s: string) => { const n = Number(String(s).replace(/[$,\s]/g, "")); return s.trim() !== "" && Number.isFinite(n) && n >= 0 ? Math.round(n * 100) : null; };
@@ -62,11 +70,13 @@ export function prefillFromPayslip(draft: EngineDraft, fields: Field[]): EngineD
   const filled = (k: Field["key"]) => { const x = f(k); return x && x.source !== "missing" && x.value.trim() ? x : null; };
   const emp = filled("employment_type")?.value.toLowerCase() ?? "";
   const lines: PayLineDraft[] = [];
-  const push = (k: Field["key"], kind: string, label: string) => { const x = filled(k); if (x) lines.push({ kind, amount: x.value, source: x.source as Src, label }); };
-  push("ordinary_pay", "ordinary", "Ordinary pay");
-  push("weekend_pay", "weekend", "Weekend pay");
-  push("public_holiday_pay", "public_holiday", "Public holiday pay");
-  push("overtime_pay", "overtime", "Overtime pay");
+  // Only a clearly named line keeps its category. A combined "weekend" line has no single category, so the user must choose.
+  // Whether a penalty/overtime amount is the whole payment or only the loading is never guessed.
+  const push = (k: Field["key"], kind: string, label: string, basis: Basis) => { const x = filled(k); if (x) lines.push({ kind, amount: x.value, source: x.source as Src, label, basis }); };
+  push("ordinary_pay", "ordinary", "Ordinary pay", "total");
+  push("weekend_pay", "", "Weekend pay — please confirm the category", "");
+  push("public_holiday_pay", "public_holiday", "Public holiday pay", "");
+  push("overtime_pay", "overtime", "Overtime pay", "");
   const g = filled("gross_pay");
   return {
     ...draft,
@@ -78,20 +88,36 @@ export function prefillFromPayslip(draft: EngineDraft, fields: Field[]): EngineD
   };
 }
 
-/** A combined "weekend" amount can only be matched when every weekend shift is on the same day; otherwise it stays unidentified. */
-export function resolveKind(kind: string, shifts: ShiftDraft[]): string {
-  if (kind !== "weekend") return kind;
-  const days = new Set(shifts.filter(s => s.date).map(s => dayOf(s.date)).filter(d => d === 0 || d === 6));
-  if (days.size === 1) return days.has(6) ? "saturday" : "sunday";
-  return "other";
+export const RETAIL_EXCEPTIONS = [
+  { id: "late_trading", text: "My store trades past 9 pm on a weekday, or past 6 pm on a Saturday or Sunday", clause: "cl 15.2(c): ordinary hours until 11 pm on all days" },
+  { id: "newsagency", text: "I work in a newsagency", clause: "cl 15.2(a): ordinary hours from 5 am" },
+  { id: "video_shop", text: "I work in a video shop", clause: "cl 15.2(b): ordinary hours until midnight" },
+];
+
+/** Shifts with ordinary-span exposure for awards whose span has confirmable exceptions (Retail cl 15.2). */
+export function outsideStandardSpan(d: EngineDraft): boolean {
+  const span = RULE_PACKS[d.awardCode]?.span;
+  if (!span?.exceptions?.length) return false;
+  return d.shifts.some(s => {
+    if (!s.date || !/^\d{2}:\d{2}$/.test(s.start) || !/^\d{2}:\d{2}$/.test(s.finish)) return false;
+    const m = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3));
+    const a = m(s.start); let b = m(s.finish); if (b <= a) b += 1440;
+    const [lo, hi] = span.byDow[dayOf(s.date) as 0];
+    return a < lo || b > hi;
+  });
 }
 
 /** Build the request. Unknown answers are left out, so the engine applies its own rules. */
 export function buildRequest(d: EngineDraft) {
   const tri = (t: Tri) => (t === "yes" ? true : t === "no" ? false : undefined);
   const lines = d.payLines
-    .map(l => ({ kind: resolveKind(l.kind, d.shifts), amountCents: money(l.amount), label: l.label.slice(0, 80) || undefined }))
-    .filter((l): l is { kind: string; amountCents: number; label: string | undefined } => l.amountCents != null);
+    // Unchosen or unidentified categories go to the engine as "other", which makes the comparison Partial.
+    .map(l => {
+      const kind = !l.kind || l.kind === "weekend" ? "other" : l.kind;
+      const basis = needsBasis(kind) ? (l.basis === "total" || l.basis === "loading" ? l.basis : "unknown") : "total";
+      return { kind, amountCents: money(l.amount), label: l.label.slice(0, 80) || undefined, basis };
+    })
+    .filter((l): l is { kind: string; amountCents: number; label: string | undefined; basis: "total" | "loading" | "unknown" } => l.amountCents != null);
   const gross = money(d.grossPay);
   const gh = Number(d.guaranteedHours);
   const g = d.guaranteedHours.trim() !== "" && Number.isFinite(gh) && gh >= 0 ? Math.round(gh * 60) : null;
@@ -115,6 +141,7 @@ export function buildRequest(d: EngineDraft) {
       workedToRoster: tri(d.workedToRoster),
       guaranteedMinutesPerWeek: g ?? undefined,
       rosterCycleWeeks: cycle ?? undefined,
+      spanExceptions: outsideStandardSpan(d) && d.spanExceptions ? d.spanExceptions : undefined,
     },
     holidayConfirmation: Object.keys(d.holidayAnswers).length ? { publicHolidayDates: holidayDates } : undefined,
     paid: lines.length || gross != null ? { lines: lines.length ? lines : undefined, grossCents: gross ?? undefined, linesCoverAllWages: tri(d.linesCoverAllWages) } : undefined,
@@ -123,7 +150,7 @@ export function buildRequest(d: EngineDraft) {
 }
 
 /** Which questions apply. Order matters: the questionnaire shows them one at a time. */
-export type StepId = "award" | "classification" | "employment" | "rate" | "state" | "period" | "shifts" | "allShifts" | "roster" | "guaranteed" | "cycle" | "pay";
+export type StepId = "award" | "classification" | "employment" | "rate" | "state" | "period" | "shifts" | "allShifts" | "roster" | "guaranteed" | "cycle" | "extended" | "pay";
 export function stepsFor(d: EngineDraft): StepId[] {
   const s: StepId[] = ["award"];
   if (d.awardCode === OTHER_AWARD || d.enterpriseAgreement === "yes") return s;
@@ -132,6 +159,7 @@ export function stepsFor(d: EngineDraft): StepId[] {
   if (rules?.needs.includes("roster")) s.push("roster");
   if (rules?.needs.includes("guaranteed")) s.push("guaranteed");
   if (d.employmentType === "casual") s.push("cycle");
+  if (outsideStandardSpan(d)) s.push("extended");
   s.push("pay");
   return s;
 }
