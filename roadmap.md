@@ -59,3 +59,6 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [ ] Confirm partial-refund/dispute restoration policy and signed-out customer launch journey; implement recovery/return flow after decisions. No publication.
 - [ ] Fix duplicate-session false fulfillment handling and enforce tier-specific paid report/PDF delivery (current PDF boundary is UI-only).
 - [ ] Set up isolated Stripe sandbox mode/keys/links/data and run actual delivery/lifecycle matrix; production remains strict live-only.
+- [ ] At publish time: re-apply `REVOKE SELECT ON public.reports FROM anon, authenticated` + column grants (migration 0009) — temporarily re-granted (0010) so the currently published site keeps working.
+- [ ] Owner-approved live purchase per tier (declined for now).
+- [ ] AwardPay For Employers page (plan pending).

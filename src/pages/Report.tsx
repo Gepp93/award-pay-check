@@ -15,6 +15,8 @@ import { useUserCredits } from "@/hooks/useUserCredits";
 import { startSubscriptionCheckout } from "@/lib/paymentLinks";
 import { THREE_MONTH_PASS } from "@/lib/plans";
 import { useSubscription } from "@/hooks/useSubscription";
+import TierChoices from "@/components/report/TierChoices";
+import { tierCall } from "@/features/v2/tierApi";
 
 interface ReportRow {
   id: string;
@@ -46,15 +48,38 @@ export default function Report() {
     supabase.rpc("unlock_report_with_pass", { p_report_id: row.id }).then(({ data }) => { if (data) void fetchReport(); });
   }, [isPremium, user, row]);
   const autoLaunchedRef = useRef(false);
+  const [tier, setTier] = useState<{ assessment: boolean; detailed: boolean; result: any; inputs: any } | null>(null);
+  const [confirming, setConfirming] = useState(false);
+
+  // Three-tier access is verified by the server against Stripe; the return address alone never unlocks.
+  useEffect(() => {
+    if (!user || !row || row.user_id !== user.id || row.payment_status === "paid") { setTier(null); return; }
+    let cancelled = false;
+    const session = params.get("tier_session");
+    const load = async () => (await tierCall({ action: "legacy_report", legacyReportId: row.id })) as any;
+    (async () => {
+      try {
+        if (session) { setConfirming(true); await tierCall({ action: "confirm", sessionId: session }).catch(() => null); }
+        let data = await load();
+        for (let i = 0; session && !data?.assessment && i < 20 && !cancelled; i++) {
+          await new Promise(r => setTimeout(r, 3000));
+          await tierCall({ action: "confirm", sessionId: session }).catch(() => null);
+          data = await load();
+        }
+        if (!cancelled) setTier(data);
+        if (!cancelled && session && !data?.assessment) toast.message("Payment is still being confirmed. Refresh this page in a minute.");
+      } catch { if (!cancelled) setTier(null); }
+      finally { if (!cancelled) setConfirming(false); }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, row?.id, row?.user_id, row?.payment_status]);
 
   const fetchReport = async () => {
     if (!id) return;
     setLoading(true);
-    const { data, error } = await (supabase as any)
-      .from("reports")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
+    // Detail is only returned by the server when the report is unlocked.
+    const { data, error } = await (supabase as any).rpc("get_report_view", { p_report_id: id });
     if (error) {
       console.error("Error loading report:", error);
       setNotFound(true);
@@ -74,8 +99,8 @@ export default function Report() {
   }, [authLoading, user, id]);
 
   // Offer to save an unowned report into the account of a signed-in visitor.
-  const handleClaim = async () => {
-    if (!id || !user || claiming) return;
+  const handleClaim = async (): Promise<boolean> => {
+    if (!id || !user || claiming) return false;
     setClaiming(true);
     const { error } = await (supabase as any)
       .from("reports")
@@ -86,10 +111,11 @@ export default function Report() {
     if (error) {
       console.error("Error claiming report:", error);
       toast.error("Couldn't save this report to your account.");
-      return;
+      return false;
     }
     toast.success("Saved to your account.");
-    fetchReport();
+    await fetchReport();
+    return true;
   };
 
   const handleUnlock = async (product: "full_report" | "backpay_pack") => {
@@ -165,9 +191,10 @@ export default function Report() {
     );
   }
 
-  const result = row.result;
-  const inputs = row.inputs || {};
-  const isPaid = row.payment_status === "paid";
+  const isPaid = row.payment_status === "paid" || !!tier?.detailed;
+  const result = tier?.detailed ? tier.result : row.result;
+  const inputs = (tier?.detailed ? tier.inputs : row.inputs) || {};
+  const summary = !isPaid && tier?.assessment ? tier.result : null;
   const isUnsureMode = result?.mode === "unsure";
   const owed = row.owed_amount || 0;
   const isUnderpaid = owed > 0;
@@ -239,14 +266,23 @@ export default function Report() {
               </>
             ) : (
               <>
-                <LockedTeaser result={result} />
+                {confirming && <div className="checker-sheet text-sm flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Confirming your payment with Stripe…</div>}
+                {summary ? (
+                  <section className="checker-findings">
+                    <h3>Your Pay Check</h3>
+                    {summary.awardName && <p className="text-sm">Award: {summary.awardName}{summary.classification ? ` · ${summary.classification}` : ""}</p>}
+                    {(summary.potentialAllowances || []).map((a: any) => <div key={a.id || a.name} className="checker-finding-row"><span className="ledger-missing">POSSIBLE</span><span>{a.name}</span></div>)}
+                    {(summary.reasons || []).map((r: string, i: number) => <div key={i} className="checker-finding-row"><span>{r}</span></div>)}
+                  </section>
+                ) : <LockedTeaser result={result} />}
+                <TierChoices reportId={row.id} signedIn={!!user} owned={!!user && row.user_id === user.id} onClaim={handleClaim} assessment={!!tier?.assessment} />
                 {user && credits > 0 && (
                   <div className="text-sm text-center text-muted-foreground">
                     You have <strong className="text-foreground">{credits}</strong> report
                     credit{credits === 1 ? "" : "s"} left from your Back-Pay Pack.
                   </div>
                 )}
-                <aside className="checker-unlock"><h2>Get your full report</h2>
+                {!tier?.assessment && <aside className="checker-unlock"><h2>Or use the {THREE_MONTH_PASS.name}</h2>
                 <p className="figure text-[32px] mb-4">{THREE_MONTH_PASS.priceLabel} · {THREE_MONTH_PASS.name}</p><ReportIncludes />
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
@@ -264,7 +300,7 @@ export default function Report() {
                 </div>
                 <p className="text-[13px] text-center text-muted-foreground">
                   One payment · no subscription · secure checkout by Stripe
-                </p></aside>
+                </p></aside>}
               </>
             )}
           </div>

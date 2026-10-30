@@ -4,11 +4,12 @@ import { z } from "npm:zod@3.23.8";
 import { AssessmentBody } from "./engine-v2/requestSchema.ts";
 import { assessConfirmed, reportSellable } from "./engine-v2/eligibility.ts";
 import { isTierProduct, TIER_PRODUCTS, subscriptionAccess } from "./tier-products.ts";
-import { tierAccess, projectTierResult } from "./tier-access.ts";
+import { tierAccess, projectTierResult, projectLegacySummary } from "./tier-access.ts";
+import { processTierEvent } from "./tier-webhook.ts";
 import { createPaidPdf } from "./tier-pdf.ts";
 import { stripeRuntime, tierDatabase, runtimeLink, runtimeWebhook, type TierMode } from "./tier-runtime.ts";
 
-const Body = z.object({ action: z.enum(["configuration", "save", "checkout", "report", "reports", "status", "pdf", "portal", "cancel"]), product: z.string().optional(), reportId: z.string().uuid().optional(), request: AssessmentBody.optional() });
+const Body = z.object({ action: z.enum(["configuration", "save", "checkout", "report", "reports", "status", "pdf", "portal", "cancel", "legacy_report", "confirm"]), product: z.string().optional(), reportId: z.string().uuid().optional(), legacyReportId: z.string().uuid().optional(), sessionId: z.string().regex(/^cs_(live|test)_[A-Za-z0-9]+$/).max(255).optional(), request: AssessmentBody.optional() });
 export function tierBillingHandler(mode: TierMode) {
 return async (req: Request) => {
   const stripe = stripeRuntime(mode);
@@ -27,14 +28,34 @@ return async (req: Request) => {
   const userId = claims?.claims?.sub;
   if (claimError || typeof userId !== "string" || claims?.claims?.role !== "authenticated") return json({ error: "unauthorized" }, 401);
   const db = tierDatabase(createClient(url, service, { auth: { persistSession: false } }), mode);
-  const { data: admin, error: roleError } = await db.rpc("has_role", { _user_id: userId, _role: "admin" });
-  if (roleError || admin !== true) return json({ error: "forbidden" }, 403);
   try {
     const raw = await req.text();
     if (raw.length > 60000) return json({ error: "too_large" }, 413);
     const parsed = Body.safeParse(JSON.parse(raw));
     if (!parsed.success) return json({ error: "invalid_input" }, 400);
     const b = parsed.data;
+    // Customer actions use public-checker reports; anything touching Engine v2 reports stays admin-only.
+    const customerAction = mode === "live" && (["legacy_report", "confirm", "status", "portal", "cancel"].includes(b.action) || (b.action === "checkout" && !b.reportId));
+    if (!customerAction) {
+      const { data: admin, error: roleError } = await db.rpc("has_role", { _user_id: userId, _role: "admin" });
+      if (roleError || admin !== true) return json({ error: "forbidden" }, 403);
+    }
+    const { data: legacy, error: legacyError } = b.legacyReportId ? await db.from("reports").select("id,user_id,result,inputs,payment_status").eq("id", b.legacyReportId).eq("user_id", userId).maybeSingle() : { data: null, error: null };
+    if (legacyError) throw legacyError;
+    if (b.action === "confirm") {
+      // Return-page reconciliation for delayed webhooks: same Stripe verification as the webhook, keyed per session.
+      if (!b.sessionId) return json({ error: "session_required" }, 400);
+      try { await processTierEvent({ id: `return:${b.sessionId}`, type: "checkout.session.completed", data: { object: { id: b.sessionId } } }, db, stripe.get, mode === "live"); }
+      catch (e) { console.warn("Tier return confirmation pending", { reason: e instanceof Error ? e.message : "unknown" }); return json({ confirmed: false }); }
+      const { data: tx } = await db.from("tier_transactions").select("user_id").eq("stripe_session_id", b.sessionId).maybeSingle();
+      return json({ confirmed: tx?.user_id === userId });
+    }
+    if (b.action === "legacy_report") {
+      if (!legacy) return json({ error: "not_found" }, 404);
+      const legacyPaid = legacy.payment_status === "paid";
+      const access = legacyPaid ? { assessment: true, detailed: true, active: false } : await tierAccess(db, userId, undefined, stripe.get, mode === "live", legacy.id);
+      return json({ assessment: access.assessment, detailed: access.detailed, protection: access.active, result: access.detailed ? legacy.result : access.assessment ? projectLegacySummary(legacy.result) : null, inputs: access.detailed ? legacy.inputs : null });
+    }
     if (b.action === "configuration") {
       const links = {} as Record<string, unknown>;
       for (const product of Object.keys(TIER_PRODUCTS)) if (isTierProduct(product)) links[product] = await resolveLink(product);
@@ -60,7 +81,7 @@ return async (req: Request) => {
     const { data: report, error: reportError } = b.reportId ? await db.from("v2_paid_reports").select("*").eq("id", b.reportId).eq("user_id", userId).maybeSingle() : { data: null, error: null };
     if (reportError) throw reportError;
     if (b.action === "portal" || b.action === "cancel") {
-      const { data: transactions, error } = await db.from("tier_transactions").select("*").eq("user_id", userId).eq("product", "pay_protection");
+      const { data: transactions, error } = await db.from("tier_transactions").select("*").eq("user_id", userId).eq("product", "pay_protection").order("created_at", { ascending: false });
       if (error) throw error;
       const transaction = transactions?.[0];
       if (!transaction?.stripe_customer_id || !transaction.stripe_subscription_id) return json({ error: "subscription_not_found" }, 404);
@@ -70,7 +91,7 @@ return async (req: Request) => {
         return json({ scheduled: true });
       }
       const origin = safeOrigin(req);
-      const portal = await stripe.post("billing_portal/sessions", { customer: transaction.stripe_customer_id, return_url: `${origin}/v2/reports${mode === "sandbox" ? "?billing=sandbox" : ""}` });
+      const portal = await stripe.post("billing_portal/sessions", { customer: transaction.stripe_customer_id, return_url: mode === "sandbox" ? `${origin}/v2/reports?billing=sandbox` : `${origin}/reports` });
       return json({ url: portal.url });
     }
     if (b.action === "report" || b.action === "pdf") {
@@ -83,23 +104,28 @@ return async (req: Request) => {
         return new Response(createPaidPdf(report.id, r), { headers: { ...corsHeaders, "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="AwardPay-${report.id}.pdf"`, "Cache-Control": "private, no-store" } });
       }
       // No detailed result is sent to a locked client. PDF uses this same access-checked response.
-      return json({ id: report.id, createdAt: report.created_at, status: report.assessment_status, assessmentUnlocked, pdfUnlocked, result: projectTierResult(r, assessmentUnlocked, pdfUnlocked), summary: { status: r.status, underpaymentCents: r.status === "complete" ? r.underpaymentCents : null, exclusions: r.exclusions } });
+      return json({ id: report.id, createdAt: report.created_at, status: report.assessment_status, assessmentUnlocked, pdfUnlocked, result: projectTierResult(r, assessmentUnlocked, pdfUnlocked), summary: { status: r.status, underpaymentCents: assessmentUnlocked && r.status === "complete" ? r.underpaymentCents : null, exclusions: r.exclusions } });
     }
     if (!isTierProduct(b.product)) return json({ error: "invalid_product" }, 400);
     if (!Deno.env.get(webhookSecretName)) return json({ error: "webhook_not_configured" }, 503);
     if (!(await webhookReadiness()).ready) return json({ error: "webhook_events_missing" }, 503);
-    if (b.product !== "pay_protection" && !report) return json({ error: "supported_report_required" }, 422);
+    if (b.product !== "pay_protection" && !report && !legacy) return json({ error: "supported_report_required" }, 422);
+    if (legacy && b.product !== "pay_protection" && legacy.payment_status === "paid") return json({ error: "already_unlocked" }, 409);
+    if (!report) {
+      const owned = await tierAccess(db, userId, undefined, stripe.get, mode === "live", legacy?.id);
+      if (owned.active || (b.product === "underpayment_report" && owned.detailed) || (b.product === "pay_check" && owned.assessment)) return json({ error: "already_unlocked" }, 409);
+    }
     if (report && !reportSellable(report.result as any)) return json({ error: "assessment_not_supported" }, 422);
     const config = await resolveLink(b.product);
     const { data: user } = await client.auth.getUser();
     if (!user.user?.email_confirmed_at) return json({ error: "confirmed_account_required" }, 403);
     const id = crypto.randomUUID();
-    const { error } = await db.from("tier_purchases").insert({ id, user_id: userId, checkout_account_email: user.user.email?.toLowerCase(), report_id: report?.id ?? null, product: b.product, payment_link_id: config.linkId, price_id: config.priceId });
+    const { error } = await db.from("tier_purchases").insert({ id, user_id: userId, checkout_account_email: user.user.email?.toLowerCase(), report_id: report?.id ?? null, legacy_report_id: report ? null : legacy?.id ?? null, product: b.product, payment_link_id: config.linkId, price_id: config.priceId });
     if (error) throw error;
     const checkout = new URL(config.url);
     const origin = safeOrigin(req);
     // Session creation reuses the verified Price without changing shared Payment Link settings.
-    const session = await stripe.post("checkout/sessions", { mode: TIER_PRODUCTS[b.product].mode, "line_items[0][price]": config.priceId, "line_items[0][quantity]": "1", client_reference_id: id, customer_email: user.user.email ?? "", "metadata[awardpay_purchase]": id, "metadata[awardpay_link]": config.linkId, success_url: `${origin}/v2/payment-return?purchase=${id}&billing=${mode}&session_id={CHECKOUT_SESSION_ID}`, cancel_url: `${origin}/v2/${report ? `report/${report.id}` : "pricing"}?billing=${mode}`, ...(TIER_PRODUCTS[b.product].mode === "payment" ? { customer_creation: "always" } : {}) });
+    const session = await stripe.post("checkout/sessions", { mode: TIER_PRODUCTS[b.product].mode, "line_items[0][price]": config.priceId, "line_items[0][quantity]": "1", client_reference_id: id, customer_email: user.user.email ?? "", "metadata[awardpay_purchase]": id, "metadata[awardpay_link]": config.linkId, success_url: report ? `${origin}/v2/payment-return?purchase=${id}&billing=${mode}&session_id={CHECKOUT_SESSION_ID}` : `${origin}${legacy ? `/report/${legacy.id}` : "/reports"}?tier_session={CHECKOUT_SESSION_ID}`, cancel_url: report ? `${origin}/v2/report/${report.id}?billing=${mode}` : `${origin}${legacy ? `/report/${legacy.id}` : "/reports"}`, ...(TIER_PRODUCTS[b.product].mode === "payment" ? { customer_creation: "always" } : {}) });
     checkout.searchParams.set("client_reference_id", id);
     if (user.user.email) checkout.searchParams.set("prefilled_email", user.user.email);
     return json({ url: session.url, purchaseId: id });
