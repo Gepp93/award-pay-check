@@ -57,11 +57,11 @@ export default function GuidedCheck() {
   const [stage, setStage] = useState(0); const [resultState, setResultState] = useState<any>();
   const input = useRef<HTMLInputElement>(null); const touched = useRef(new Set<string>()); const controller = useRef<AbortController>();
   const activeStep = useRef<Step>("start"); const mounted = useRef(true); const resultMade = useRef(false); const startedTracked = useRef(false);
-  useEffect(() => { if (!startedTracked.current && step !== "start") { startedTracked.current = true; track("check_started"); } }, [step]);
   const hash = location.hash.slice(1); const step: Step = VALID_STEPS.includes(hash) ? hash as Step : "start";
   activeStep.current = step;
   const sequence: Step[] = ["job", "award", "employment", "level", ...(classes.some(c => /junior|under \d|\b(?:1[5-9]|20) years/i.test(c.classification)) ? ["age" as Step] : []), "pay", "hours", "allowances", "review"];
   const number = Math.max(1, sequence.indexOf(step === "industry" ? "job" : step) + 1);
+  useEffect(() => { if (!startedTracked.current && step !== "start") { startedTracked.current = true; track("check_started"); } }, [step]);
   const validJobs = useMemo(() => JOBS.map(j => ({ ...j, codes: j.codes.filter(code => awards.some(x => x.code === code)) })).filter(j => j.codes.length), [awards]);
   const suggested = matchAwards(a.job, awards, parsed?.award_name_or_code, parsed?.employer_name);
   const hasSuggestion = Boolean(a.awardCode || suggested.length);
