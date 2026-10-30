@@ -83,12 +83,16 @@ for award in AWARDS:
         }
         for w in rows(f"all/{award}-wage-allowances-*.json") if w["published_year"] in YEARS
     ]
-    json.dump({
+    doc = {
         "awardCode": award, "fetched": FETCHED,
         "source": "Fair Work Commission Modern Awards Pay Database API (api.fwc.gov.au/api/v1)",
         "payRates": rates, "penalties": penalties, "wageAllowances": wage,
-    }, open(OUT / f"{award}.json", "w"), indent=1)
-    print(award, len(rates), "rates", len(penalties), "penalties", len(wage), "wage allowances")
+    }
+    if award in INLINE:
+        doc["inlinePenalties"] = INLINE[award]["inlinePenalties"]
+        doc["inlinePenaltiesNote"] = INLINE[award]["note"]
+    json.dump(doc, open(OUT / f"{award}.json", "w"), indent=1)
+    print(award, len(rates), "rates", len(penalties), "penalties", len(wage), "wage allowances", len(doc.get("inlinePenalties", [])), "inline penalties")
 
 holidays = []
 for year in (2024, 2025):
