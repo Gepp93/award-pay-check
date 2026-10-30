@@ -475,10 +475,12 @@ export function assess(input: AssessmentInput): AssessmentResult {
   } else {
     const days = daysBetween(input.payPeriod.start, input.payPeriod.end) + 1;
     if (days % 7 !== 0) material("Overtime", `The pay period is ${days} days, not whole weeks, so weekly overtime can't be checked reliably.`);
+    // On a confirmed RDO system, worked minutes include accrual time: 38 paid hours = 40 worked.
+    const weeklyLimit = rdoScale !== 1 ? Math.round(38 * 60 / rdoScale) : 38 * 60;
     for (const [w, m] of weeklyOrdinary) {
       const wkStart = addDays(input.payPeriod.start, w * 7);
-      if (m > 38 * 60) {
-        material("Overtime", `${hrs(m)} ordinary hours in the week starting ${wkStart}, more than 38 (${clause}). Some of these hours are likely overtime${(arr.rosterCycleWeeks ?? 1) > 1 ? " unless hours are averaged across your roster cycle" : ""}.`, undefined, `How many hours in the week starting ${wkStart} were paid as overtime?`);
+      if (m > weeklyLimit) {
+        material("Overtime", `${hrs(m)} ordinary hours in the week starting ${wkStart}, more than ${rdoScale !== 1 ? "40 worked (38 paid plus RDO accrual)" : "38"} (${clause}). Some of these hours are likely overtime${(arr.rosterCycleWeeks ?? 1) > 1 ? " unless hours are averaged across your roster cycle" : ""}.`, undefined, `How many hours in the week starting ${wkStart} were paid as overtime?`);
       }
       if (needs.includes("guaranteed") && arr.guaranteedMinutesPerWeek != null && m > arr.guaranteedMinutesPerWeek) {
         material("Overtime", `${hrs(m)} ordinary hours in the week starting ${wkStart}, more than your ${hrs(arr.guaranteedMinutesPerWeek)} guaranteed hours. Hours beyond guaranteed hours are overtime (${clause}).`, undefined, `How many hours in the week starting ${wkStart} were paid as overtime?`);
