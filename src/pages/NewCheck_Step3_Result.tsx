@@ -1,4 +1,5 @@
 import { useNavigate, useLocation, Navigate } from "react-router-dom";
+import { track } from "@/lib/analytics";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
@@ -124,6 +125,7 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
         if (error || !data) throw error || new Error("No row returned");
         reportId = data.id as string;
         sessionReportIdRef.current = reportId;
+        track("report_saved");
       } else {
         // Update product preference on the existing row.
         await (supabase as any)

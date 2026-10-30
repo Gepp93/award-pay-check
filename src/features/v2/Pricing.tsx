@@ -1,4 +1,6 @@
 import { ArrowRight, Check, Clock, FileText, Info, Loader2, Lock } from "lucide-react";
+import { useEffect } from "react";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import PublicTierCards from "@/components/PublicTierCards";
 import SEO from "@/components/SEO";
@@ -8,6 +10,7 @@ import TierOffers from "./TierOffers";
 
 export default function Pricing() {
   const publicSite = usePublicSite();
+  useEffect(() => { if (publicSite) track("pricing_viewed"); }, [publicSite]);
   if (!publicSite) return <main className="mx-auto max-w-6xl px-4 py-10 md:px-8"><p className="text-sm font-bold uppercase text-primary">Pricing preview</p><h1 className="mt-3 text-4xl font-extrabold">Choose your pay check</h1><p className="mb-8 mt-4 text-lg text-ink-2">Supported assessments. Clear reports. No promise of recovery.</p><TierOffers /></main>;
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 md:py-14">

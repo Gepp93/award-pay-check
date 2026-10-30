@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { track } from "@/lib/analytics";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ export default function PublicTierCards({ compact = false }: { compact?: boolean
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { navigate("/auth", { state: { returnTo: "/pricing", mode: "signup" } }); return; }
     setBusy(true); setError("");
-    try { const d = await tierCall({ action: "checkout", product: "pay_protection" }); window.location.assign(d.url); }
+    try { const d = await tierCall({ action: "checkout", product: "pay_protection" }); track("checkout_started", { tier: "pay_protection" }); window.location.assign(d.url); }
     catch (e) { setError(customerBillingError(e)); setBusy(false); }
   };
   return <div>

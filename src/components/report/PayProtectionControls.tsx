@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { trackPurchaseOnce } from "@/lib/analytics";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export default function PayProtectionControls() {
             data = await tierCall({ action: "status" });
             if (!data?.active) await new Promise(r => setTimeout(r, 3000));
           }
+          if (data?.active) trackPurchaseOnce(session, { tier: "pay_protection" });
           if (!data?.active && !cancelled) toast.message("Payment is still being confirmed. Refresh this page in a minute.");
         }
         if (!cancelled) setState(data);

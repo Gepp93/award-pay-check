@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { trackPurchaseOnce } from "@/lib/analytics";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -67,6 +68,7 @@ export default function Report() {
           data = await load();
         }
         if (!cancelled) setTier(data);
+        if (session && data?.assessment) trackPurchaseOnce(session);
         if (!cancelled && session && !data?.assessment) toast.message("Payment is still being confirmed. Refresh this page in a minute.");
       } catch { if (!cancelled) setTier(null); }
       finally { if (!cancelled) setConfirming(false); }
