@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useV2 } from "./store";
+import { liveCheckUrl, usePublicSite } from "./publicSite";
 import { ArrowRight, Calculator, Clock, FileSearch, Lock, ShieldCheck } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import SEO from "@/components/SEO";
@@ -21,7 +22,10 @@ const faqs = [
 export default function V2Home() {
   const { answers, update } = useV2();
   const navigate = useNavigate();
+  const publicSite = usePublicSite();
+  const allIndustries = publicSite ? "/check" : "/v2/industry";
   const pick = (id: typeof answers.industry) => {
+    if (publicSite) { navigate(liveCheckUrl(id)); return; }
     update(answers.industry === id ? {} : { industry: id, role: "", extras: [] });
     navigate("/v2/check");
   };
@@ -32,7 +36,9 @@ export default function V2Home() {
   const total = exampleTotalCents(ex);
   return (
     <main>
-      <SEO title="AwardPay 2.0 preview" description="Design preview of the new AwardPay pay checker." path="/v2"><meta name="robots" content="noindex" /></SEO>
+      {publicSite
+        ? <SEO title="AwardPay — Check your pay against Australian award rates" description="Check your payslip against Australian award rates. Understand overtime, penalties and allowances — and what to do next." path="/" />
+        : <SEO title="AwardPay 2.0 preview" description="Design preview of the new AwardPay pay checker." path="/v2"><meta name="robots" content="noindex" /></SEO>}
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 md:grid-cols-[1.05fr_1fr] md:gap-12 md:px-8 md:py-16">
@@ -59,7 +65,7 @@ export default function V2Home() {
                   </button>
                 ))}
               </div>
-              <Link to="/v2/industry" className="mt-3 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">Something else? See all industries</Link>
+              <Link to={allIndustries} className="mt-3 inline-block text-sm font-semibold text-primary underline-offset-4 hover:underline">Something else? See all industries</Link>
             </div>
           </div>
           <div className="relative">
@@ -132,7 +138,7 @@ export default function V2Home() {
         <div className="mx-auto max-w-6xl px-4 md:px-8">
           <h2 className="text-3xl font-extrabold">Check tools</h2>
           <p className="mt-2 text-ink-2">One checker covers your hours, penalties and allowances. More focused tools will be listed here once they're working.</p>
-          <Link to="/v2/industry" className="mt-6 flex items-start gap-4 rounded-lg border border-border bg-card p-5 shadow-soft hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:max-w-xl">
+          <Link to={allIndustries} className="mt-6 flex items-start gap-4 rounded-lg border border-border bg-card p-5 shadow-soft hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:max-w-xl">
             <Calculator className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
             <span className="flex-1"><span className="block font-bold">Payslip check</span>
               <span className="mt-1 block text-sm text-ink-2">Answer a few questions about your award, hours and pay (or upload a payslip) and we compare what you were paid with the award minimum for each shift.</span></span>

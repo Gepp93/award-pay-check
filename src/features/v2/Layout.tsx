@@ -6,20 +6,19 @@ import { V2Provider, useV2 } from "./store";
 import { industryById } from "./industries";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { siteLinks, usePublicSite } from "./publicSite";
 
-export const Logo = () => (
-  <Link to="/v2" className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-foreground">
+export const Logo = () => {
+  const home = siteLinks(usePublicSite()).home;
+  return (
+  <Link to={home} className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-foreground">
     <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground">
       <Check className="h-5 w-5" strokeWidth={3} />
     </span>
     AwardPay
   </Link>
-);
-
-const links = [
-  { to: "/v2/how-it-works", label: "How it works" },
-  { to: "/v2/pricing", label: "Pricing" },
-];
+  );
+};
 
 function useSignedIn() {
   const [signedIn, setSignedIn] = useState(false);
@@ -35,8 +34,11 @@ export function V2Nav() {
   const [open, setOpen] = useState(false);
   const signedIn = useSignedIn();
   const { answers } = useV2();
-  const start = answers.industry ? "/v2/check" : "/v2/industry";
-  const acct = signedIn ? { to: "/reports", label: "My reports" } : { to: "/v2/sign-in", label: "Sign in" };
+  const publicSite = usePublicSite();
+  const site = siteLinks(publicSite);
+  const links = [{ to: site.howItWorks, label: "How it works" }, { to: site.pricing, label: "Pricing" }];
+  const start = publicSite ? "/check" : answers.industry ? "/v2/check" : "/v2/industry";
+  const acct = signedIn ? { to: "/reports", label: "My reports" } : { to: site.signIn, label: "Sign in" };
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4 md:px-8">
@@ -112,6 +114,7 @@ export function Stepper({ current }: { current: 0 | 1 | 2 }) {
 }
 
 export function V2Footer() {
+  const site = siteLinks(usePublicSite());
   return (
     <footer className="bg-forest text-forest-foreground">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-3 md:px-8">
@@ -120,9 +123,9 @@ export function V2Footer() {
           <p className="mt-2 text-sm opacity-80">Check your payslip against Australian award rates. AwardPay is independent and is not affiliated with or endorsed by the Fair Work Ombudsman or the Fair Work Commission.</p>
         </div>
         <nav className="flex flex-col gap-2 text-sm">
-          <Link to="/v2/how-it-works" className="opacity-80 hover:opacity-100">How it works</Link>
+          <Link to={site.howItWorks} className="opacity-80 hover:opacity-100">How it works</Link>
           <Link to="/why-awardpay" className="opacity-80 hover:opacity-100">Why AwardPay</Link>
-          <Link to="/v2/pricing" className="opacity-80 hover:opacity-100">Pricing</Link>
+          <Link to={site.pricing} className="opacity-80 hover:opacity-100">Pricing</Link>
           <Link to="/contact" className="opacity-80 hover:opacity-100">Contact</Link>
         </nav>
         <p className="text-xs opacity-70">General information only, not legal advice. For help with a dispute, contact the Fair Work Ombudsman on 13 13 94.</p>
@@ -133,11 +136,12 @@ export function V2Footer() {
 
 export default function V2Layout() {
   const { pathname } = useLocation();
+  const publicSite = usePublicSite();
   useEffect(() => { if (!window.location.hash) window.scrollTo(0, 0); }, [pathname]);
   return (
     <V2Provider>
       <div className="min-h-screen bg-background">
-        <PreviewBanner />
+        {!publicSite && <PreviewBanner />}
         <V2Nav />
         <Outlet />
         <V2Footer />

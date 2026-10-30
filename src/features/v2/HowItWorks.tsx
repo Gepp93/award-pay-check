@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check, ShieldCheck, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useV2 } from "./store";
+import { usePublicSite } from "./publicSite";
 
 const Line = ({ w }: { w: string }) => <span className={`block h-2 rounded-full bg-rule ${w}`} />;
 
@@ -73,7 +74,7 @@ export default function HowItWorks() {
 
       <div className="mt-8 text-center">
         <Button asChild variant="gold" size="lg" className="h-14 px-8 text-base">
-          <Link to={answers.industry ? "/v2/check" : "/v2/industry"}>Check my pay <ArrowRight className="h-5 w-5" /></Link>
+          <Link to={publicSite ? "/check" : answers.industry ? "/v2/check" : "/v2/industry"}>Check my pay <ArrowRight className="h-5 w-5" /></Link>
         </Button>
       </div>
     </main>
