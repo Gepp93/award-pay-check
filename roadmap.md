@@ -16,8 +16,17 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [x] Full test suite green (189 tests) + REPORT.md regenerated
 - [x] AGENTS.md updated (inline-penalties exception)
 
+## Batch 2 — Restaurant (MA000119), Clubs (MA000058), Pharmacy (MA000012), Hair and Beauty (MA000005) [done]
+- [x] Official data verified and snapshotted (2023–2026 rates, penalties, allowances; all four have pay-database penalty records — no inline transcription needed)
+- [x] Award texts read and cited (ordinary hours, penalty tables, overtime, breaks, minimum engagements)
+- [x] Engine extensions: Saturday/Sunday time-of-day bands, per-day overtime tier rates
+- [x] Four rule packs with clause citations; registered and selectable in the admin preview
+- [x] 40 hand-worked cases (R1–R11, K1–K9, P1–P10, H1–H10) incl. historical rates, boundary and negative tests
+- [x] Coverage registry updated; admin-only /v2/coverage shows all nine awards
+- [x] End-to-end: deployed function returns exact hand-worked amounts for Construction, Electrical and Pharmacy cases (validator fixed to pass rdoAccrual through)
+- [x] Full suite green (229 tests), typecheck clean, build OK; Engine v1, Stripe, auth, customer data untouched; nothing published
+
 ## Later batches (not started)
-- Batch 2: Hospitality MA000119, MA000058; Retail MA000012, MA000005
 - Batch 3: Healthcare MA000034, MA000027, MA000018, MA000100
 - Batch 4: Manufacturing MA000010, MA000073, MA000089; Transport MA000038, MA000039, MA000063, MA000015
 - Batch 5: Agriculture MA000035, MA000028, MA000090, MA000114; Education MA000120, MA000076, MA000077, MA000075
