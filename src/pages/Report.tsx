@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { trackPurchaseOnce } from "@/lib/analytics";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthUser } from "@/hooks/useAuthUser";
@@ -57,13 +58,15 @@ export default function Report() {
     let cancelled = false;
     const session = params.get("tier_session");
     const load = async () => (await tierCall({ action: "legacy_report", legacyReportId: row.id })) as any;
+    // Count a purchase only when the server reports a verified transaction for this session.
+    const confirmPurchase = async (id: string) => { const r = await tierCall({ action: "confirm", sessionId: id }).catch(() => null); if (r?.confirmed === true) trackPurchaseOnce(id); };
     (async () => {
       try {
-        if (session) { setConfirming(true); await tierCall({ action: "confirm", sessionId: session }).catch(() => null); }
+        if (session) { setConfirming(true); await confirmPurchase(session); }
         let data = await load();
         for (let i = 0; session && !data?.assessment && i < 20 && !cancelled; i++) {
           await new Promise(r => setTimeout(r, 3000));
-          await tierCall({ action: "confirm", sessionId: session }).catch(() => null);
+          await confirmPurchase(session);
           data = await load();
         }
         if (!cancelled) setTier(data);

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { track } from "@/lib/analytics";
 import { useNavigate } from "react-router-dom";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export default function TierChoices({ reportId, signedIn, owned, onClaim, assess
     try {
       if (!owned && !(await onClaim())) throw new Error("claim_failed");
       const data = await tierCall({ action: "checkout", product, legacyReportId: reportId });
+      track("checkout_started", { tier: product });
       window.location.assign(data.url);
     } catch (e) { setError(customerBillingError(e)); setBusy(null); }
   };

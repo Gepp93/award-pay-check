@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { trackPurchaseOnce } from "@/lib/analytics";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,8 @@ export default function PayProtectionControls() {
         if (session) {
           setConfirming(true);
           for (let i = 0; !data?.active && i < 20 && !cancelled; i++) {
-            await tierCall({ action: "confirm", sessionId: session }).catch(() => null);
+            const r = await tierCall({ action: "confirm", sessionId: session }).catch(() => null);
+            if (r?.confirmed === true) trackPurchaseOnce(session, { tier: "pay_protection" });
             data = await tierCall({ action: "status" });
             if (!data?.active) await new Promise(r => setTimeout(r, 3000));
           }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { track } from "@/lib/analytics";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, Check, ChevronRight, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,11 +56,12 @@ export default function GuidedCheck() {
   const [restored, setRestored] = useState(false); const [reviewEdit, setReviewEdit] = useState(false);
   const [stage, setStage] = useState(0); const [resultState, setResultState] = useState<any>();
   const input = useRef<HTMLInputElement>(null); const touched = useRef(new Set<string>()); const controller = useRef<AbortController>();
-  const activeStep = useRef<Step>("start"); const mounted = useRef(true); const resultMade = useRef(false);
+  const activeStep = useRef<Step>("start"); const mounted = useRef(true); const resultMade = useRef(false); const startedTracked = useRef(false);
   const hash = location.hash.slice(1); const step: Step = VALID_STEPS.includes(hash) ? hash as Step : "start";
   activeStep.current = step;
   const sequence: Step[] = ["job", "award", "employment", "level", ...(classes.some(c => /junior|under \d|\b(?:1[5-9]|20) years/i.test(c.classification)) ? ["age" as Step] : []), "pay", "hours", "allowances", "review"];
   const number = Math.max(1, sequence.indexOf(step === "industry" ? "job" : step) + 1);
+  useEffect(() => { if (!startedTracked.current && step !== "start") { startedTracked.current = true; track("check_started"); } }, [step]);
   const validJobs = useMemo(() => JOBS.map(j => ({ ...j, codes: j.codes.filter(code => awards.some(x => x.code === code)) })).filter(j => j.codes.length), [awards]);
   const suggested = matchAwards(a.job, awards, parsed?.award_name_or_code, parsed?.employer_name);
   const hasSuggestion = Boolean(a.awardCode || suggested.length);
@@ -169,7 +171,7 @@ export default function GuidedCheck() {
     try {
       const state = await calculateAnswers(a, setStage);
       await new Promise(resolve => setTimeout(resolve, Math.max(0, 2500 - (Date.now() - start))));
-      resultMade.current = true; try { localStorage.removeItem(SAVE_KEY); } catch { /* Storage must not prevent results. */ } setResultState(state); go("result");
+      resultMade.current = true; try { localStorage.removeItem(SAVE_KEY); } catch { /* Storage must not prevent results. */ } setResultState(state); track("check_completed", { industry: a.industry || "unknown" }); go("result");
     } catch (e) { go("review"); setError(e instanceof Error ? e.message : "Your answers are saved. Please try again."); }
   }
 
