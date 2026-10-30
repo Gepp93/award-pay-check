@@ -71,6 +71,13 @@
       "when": 1793340861562,
       "tag": "0009_tier_public_reports_and_report_privacy",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793340870746,
+      "tag": "0010_restore_report_reads_until_publish",
+      "breakpoints": true
     }
   ]
 }
