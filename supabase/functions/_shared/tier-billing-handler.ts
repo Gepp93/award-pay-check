@@ -81,7 +81,7 @@ return async (req: Request) => {
     const { data: report, error: reportError } = b.reportId ? await db.from("v2_paid_reports").select("*").eq("id", b.reportId).eq("user_id", userId).maybeSingle() : { data: null, error: null };
     if (reportError) throw reportError;
     if (b.action === "portal" || b.action === "cancel") {
-      const { data: transactions, error } = await db.from("tier_transactions").select("*").eq("user_id", userId).eq("product", "pay_protection");
+      const { data: transactions, error } = await db.from("tier_transactions").select("*").eq("user_id", userId).eq("product", "pay_protection").order("created_at", { ascending: false });
       if (error) throw error;
       const transaction = transactions?.[0];
       if (!transaction?.stripe_customer_id || !transaction.stripe_subscription_id) return json({ error: "subscription_not_found" }, 404);
@@ -110,6 +110,11 @@ return async (req: Request) => {
     if (!Deno.env.get(webhookSecretName)) return json({ error: "webhook_not_configured" }, 503);
     if (!(await webhookReadiness()).ready) return json({ error: "webhook_events_missing" }, 503);
     if (b.product !== "pay_protection" && !report && !legacy) return json({ error: "supported_report_required" }, 422);
+    if (legacy && b.product !== "pay_protection" && legacy.payment_status === "paid") return json({ error: "already_unlocked" }, 409);
+    if (!report) {
+      const owned = await tierAccess(db, userId, undefined, stripe.get, mode === "live", legacy?.id);
+      if (owned.active || (b.product === "underpayment_report" && owned.detailed) || (b.product === "pay_check" && owned.assessment)) return json({ error: "already_unlocked" }, 409);
+    }
     if (report && !reportSellable(report.result as any)) return json({ error: "assessment_not_supported" }, 422);
     const config = await resolveLink(b.product);
     const { data: user } = await client.auth.getUser();
