@@ -1,34 +1,27 @@
 project_id = "umxwoofjvyvnhxbqvciw"
 
-[functions.test-fwc-api]
-verify_jwt = false
-
-[functions.get-awards]
-verify_jwt = false
-
-[functions.get-classifications]
-verify_jwt = false
-
-[functions.get-classification-details]
-verify_jwt = false
-
-[functions.calculate-shift-pay]
-verify_jwt = false
-
-[functions.generate-pdf-report]
-verify_jwt = false
-
-[functions.send-email-report]
-verify_jwt = false
-
-[functions.ai-parse-shifts]
-verify_jwt = false
-
-[functions.ai-parse-payslip]
-verify_jwt = false
-
-[functions.stripe-webhook]
-verify_jwt = false
-
-[functions.redeem-credit]
-verify_jwt = true
+[functions]
+  [functions.ai-parse-payslip]
+    verify_jwt = false
+  [functions.ai-parse-shifts]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.calculate-shift-pay]
+    verify_jwt = false
+  [functions.generate-pdf-report]
+    verify_jwt = false
+  [functions.get-awards]
+    verify_jwt = false
+  [functions.get-classification-details]
+    verify_jwt = false
+  [functions.get-classifications]
+    verify_jwt = false
+  [functions.redeem-credit]
+    verify_jwt = true
+  [functions.send-email-report]
+    verify_jwt = false
+  [functions.stripe-webhook]
+    verify_jwt = false
+  [functions.test-fwc-api]
+    verify_jwt = false
