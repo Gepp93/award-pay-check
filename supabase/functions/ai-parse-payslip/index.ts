@@ -30,7 +30,7 @@ const props = {
   total_paid: n("Total paid this period (usually gross)."),
   line_items: {
     type: "array",
-    description: "Every pay line printed (ordinary, weekend/public holiday penalties, overtime, allowances).",
+    description: "Every pay line printed (ordinary, weekend/public holiday penalties, overtime, allowances, paid leave). Paid leave lines such as annual leave or personal/carer's leave must be included with type \"leave\".",
     items: {
       type: "object",
       additionalProperties: false,
@@ -38,7 +38,7 @@ const props = {
       properties: {
         description: { type: "string", description: "Line description exactly as printed." },
         hours: n(), rate: n(), amount: n(),
-        type: e(["ordinary", "penalty", "overtime", "allowance", "other"]),
+        type: e(["ordinary", "penalty", "overtime", "allowance", "leave", "other"]),
       },
     },
   },
@@ -50,6 +50,7 @@ const instructions =
   "You read Australian payslips and extract structured data. Read ONLY what is printed. " +
   "If a field is not visible or you are unsure, return null — never guess, calculate or invent a value. " +
   "Do not infer an award, classification or employment type that is not printed. " +
+  "Separately itemised paid leave (annual leave, personal/carer's leave, sick leave, long service leave) is a leave line, never ordinary hours or overtime. " +
   "Money values are AUD as plain numbers (no $ or commas). Hours are decimal numbers. Dates are YYYY-MM-DD.";
 
 /** Drop nulls so clients see the same shape as before (missing = absent). */
