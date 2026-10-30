@@ -101,7 +101,9 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
   // No account required to buy: save the report (owned if signed in, otherwise
   // anonymous) and send the buyer straight to Stripe with the report id.
   const handleUnlock = async () => {
-    const product = "three_month_pass";
+    // Legacy label only — the database accepts "full_report"/"backpay_pack" here.
+    // It grants nothing: paid access comes from payment_status, set server-side only.
+    const product = "full_report";
     if (!result || !shiftDetails) return;
     if (unlocking) return;
     setUnlocking(true);
@@ -189,7 +191,7 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
           <article className="checker-sheet">
             <div className="checker-sheet-header">
               <span className="ledger-label">PAY CHECK</span>
-              {shiftDetails?.date && <span className="font-mono text-[13px] text-muted-foreground">{shiftDetails.date}</span>}
+              {shiftDetails?.date && <span className="font-mono text-[13px] text-muted-foreground">Pay period starting {new Date(`${shiftDetails.date}T12:00:00`).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}</span>}
             </div>
             {isUnderpaid ? (
               <div className="checker-result-headline">

@@ -12,6 +12,8 @@ export interface Answers {
   shifts: RosterShift[]; conditions: Record<string, boolean>; allowances: { type: string; received: boolean; amount_per_period: number }[];
   fromPayslip: string[];
   rosterScope?: "period" | "typical-week";
+  /** Separately itemised paid leave from the payslip — recognised, never counted as worked hours. */
+  leaveHours?: number; leaveAmount?: number;
 }
 export const SAVE_KEY = "awardpay-guided-check";
 export const INDUSTRIES = ["Retail", "Hospitality", "Healthcare", "Construction", "Manufacturing", "Education", "Transport", "Other"];
