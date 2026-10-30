@@ -85,3 +85,9 @@
 - [x] Reset-password links back to normal /auth; test sign-in + reset
 - [x] Regression check of other unpublished customer-facing changes
 - [x] Published with 2.0 hidden (admin-only)
+
+## Public 2.0 website (preview, awaiting publish approval)
+- [x] 2.0 homepage, How it works, Pricing public; /v2/* stays admin-only
+- [x] Industry cards → live /check with exact mapping (Agriculture/Other unmapped)
+- [x] Tests + desktop/mobile browser checks
+- [ ] Publish (blocked: awaiting owner approval)
