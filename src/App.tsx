@@ -4,13 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Calculator from "./pages/Calculator";
 import Dashboard from "./pages/Dashboard";
 import Subscription from "./pages/Subscription";
-import Pricing from "./pages/Pricing";
-import HowItWorks from "./pages/HowItWorks";
 import WhyAwardPay from "./pages/WhyAwardPay";
 import Onboarding from "./pages/Onboarding";
 import AwardFinder from "./pages/AwardFinder";
@@ -53,7 +50,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          {/* Public AwardPay 2.0 site. Rollback: restore pages/Index, pages/Pricing, pages/HowItWorks here. */}
+          <Route element={<V2Layout />}>
+            <Route path="/" element={<V2Home />} />
+            <Route path="/how-it-works" element={<V2HowItWorks />} />
+            <Route path="/pricing" element={<V2Pricing />} />
+          </Route>
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/onboarding" element={<Onboarding />} />
@@ -66,8 +68,6 @@ const App = () => (
           <Route path="/app-dashboard" element={<AppDashboard />} />
           <Route path="/subscription" element={<Subscription />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/why-awardpay" element={<WhyAwardPay />} />
           <Route path="/check" element={<CheckUpload />} />
           <Route path="/new-check-step-1" element={<Navigate to="/check" replace />} />

@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { startSubscriptionCheckout } from "@/lib/paymentLinks";
 import { THREE_MONTH_PASS } from "@/lib/plans";
+import SEO from "@/components/SEO";
+import { usePublicSite } from "./publicSite";
 
 const INCLUDES = [
   `Payslip checks for ${THREE_MONTH_PASS.durationDays} days`,
@@ -16,6 +18,7 @@ const INCLUDES = [
 
 export default function Pricing() {
   const [busy, setBusy] = useState(false);
+  const publicSite = usePublicSite();
   // Same checkout as the live /pricing page: guests can buy, signed-in users are linked.
   const checkout = async () => {
     if (busy) return; setBusy(true);
@@ -28,6 +31,7 @@ export default function Pricing() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 md:py-14">
+      {publicSite && <SEO title={`AwardPay pricing — ${THREE_MONTH_PASS.name}`} description={`One ${THREE_MONTH_PASS.name}: ${THREE_MONTH_PASS.priceLabel} AUD for ${THREE_MONTH_PASS.durationDays} days of payslip checks and detailed reports.`} path="/pricing" />}
       <p className="text-sm font-bold uppercase tracking-wider text-primary">Pricing</p>
       <h1 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">One pass. Three months.</h1>
       <p className="mt-4 text-lg text-ink-2">See your headline result first. Unlock the details and keep checking your pay.</p>

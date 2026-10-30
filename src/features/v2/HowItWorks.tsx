@@ -4,6 +4,7 @@ import { ArrowRight, Check, ShieldCheck, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useV2 } from "./store";
 import { usePublicSite } from "./publicSite";
+import SEO from "@/components/SEO";
 
 const Line = ({ w }: { w: string }) => <span className={`block h-2 rounded-full bg-rule ${w}`} />;
 
@@ -51,6 +52,7 @@ export default function HowItWorks() {
   const publicSite = usePublicSite();
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 md:py-14">
+      {publicSite && <SEO title="How AwardPay works — check your pay in three steps" description="Share your pay details, confirm your award and classification, and compare your pay against published Australian award rates." path="/how-it-works" />}
       <p className="text-sm font-bold uppercase tracking-wider text-primary">How it works</p>
       <h1 className="mt-3 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">How AwardPay checks your pay</h1>
       <p className="mt-4 max-w-2xl text-lg text-ink-2">Compare your pay against Australian award rates, penalties and allowances — with a clear breakdown of what we find.</p>
