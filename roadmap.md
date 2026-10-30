@@ -41,7 +41,7 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - Further award batches paused by owner; no expansion during launch audit.
 
 ## Customer launch-readiness audit
-- [ ] Audit homepage → confirmed award/classification → scanner/manual → Engine v2 → itemised results → paid report.
-- [ ] Real authenticated browser tests with six synthetic payslips; desktop/mobile, Partial/Unsupported and access boundaries.
-- [ ] Audit existing Stripe and proposed $9/$29/$59 products without changing checkout or entitlements.
-- [ ] Run automated regression suite and report ranked blockers/minimum changes; no publication.
+- [x] Audit homepage → confirmed award/classification → scanner/manual → Engine v2 → itemised results → paid report (v2 paid reports absent; launch blocker documented).
+- [x] Real owner/admin browser tests with six synthetic payslips; desktop/mobile, Partial/Unsupported, live signed-out gate and anonymous function rejection. Signed-in non-admin remains unverified without an authorised account.
+- [x] Audit existing Stripe and proposed $9/$29/$59 products without changing checkout or entitlements; new Price IDs and product semantics require future approval/configuration.
+- [x] Full suite 250 passing; latest preview build OK. Ranked NO-GO report: tests/v2/LAUNCH-READINESS-AUDIT.md. No publication or application changes.
