@@ -1,64 +1,26 @@
-import { useState } from "react";
 import { ArrowRight, Check, Clock, FileText, Info, Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { startSubscriptionCheckout } from "@/lib/paymentLinks";
-import { THREE_MONTH_PASS } from "@/lib/plans";
+import PublicTierCards from "@/components/PublicTierCards";
 import SEO from "@/components/SEO";
 import { usePublicSite } from "./publicSite";
 import TierOffers from "./TierOffers";
 
-const INCLUDES = [
-  `Payslip checks for ${THREE_MONTH_PASS.durationDays} days`,
-  "Detailed pay comparisons, line by line",
-  "Award rates, penalties and supported allowances",
-  "Downloadable PDF reports",
-  "Reports saved to your account when signed in",
-];
 
 export default function Pricing() {
-  const [busy, setBusy] = useState(false);
   const publicSite = usePublicSite();
   if (!publicSite) return <main className="mx-auto max-w-6xl px-4 py-10 md:px-8"><p className="text-sm font-bold uppercase text-primary">Pricing preview</p><h1 className="mt-3 text-4xl font-extrabold">Choose your pay check</h1><p className="mb-8 mt-4 text-lg text-ink-2">Supported assessments. Clear reports. No promise of recovery.</p><TierOffers /></main>;
-  // Same checkout as the live /pricing page: guests can buy, signed-in users are linked.
-  const checkout = async () => {
-    if (busy) return; setBusy(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const url = await startSubscriptionCheckout("three_month_pass", user?.email, user?.id);
-      if (url) window.location.href = url; else toast.error("Could not start checkout — please try again.");
-    } finally { setBusy(false); }
-  };
-
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 md:py-14">
-      {publicSite && <SEO title={`AwardPay pricing — ${THREE_MONTH_PASS.name}`} description={`One ${THREE_MONTH_PASS.name}: ${THREE_MONTH_PASS.priceLabel} AUD for ${THREE_MONTH_PASS.durationDays} days of payslip checks and detailed reports.`} path="/pricing" />}
+    <main className="mx-auto max-w-5xl px-4 py-10 md:py-14">
+      <SEO title="AwardPay pricing — Pay Check, Underpayment Report, Pay Protection" description="Pay Check $9, Underpayment Report $29 or Pay Protection $59 a year. See your headline result before choosing." path="/pricing" />
       <p className="text-sm font-bold uppercase tracking-wider text-primary">Pricing</p>
-      <h1 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">One pass. Three months.</h1>
-      <p className="mt-4 text-lg text-ink-2">See your headline result first. Unlock the details and keep checking your pay.</p>
-
-      <section className="mt-8 rounded-2xl border-2 border-primary bg-card p-6 shadow-soft md:p-8" aria-labelledby="pass">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 id="pass" className="text-xl font-bold">{THREE_MONTH_PASS.name}</h2>
-            <p className="mt-2"><span className="text-5xl font-extrabold tabular-nums">{THREE_MONTH_PASS.priceLabel}</span> <span className="text-lg text-ink-2">AUD</span></p>
-          </div>
-          <p className="rounded-lg bg-primary-soft px-4 py-2 text-center text-sm font-semibold text-primary">One-time payment<br />No subscription</p>
-        </div>
-        <ul className="mt-6 space-y-3">
-          {INCLUDES.map((i) => <li key={i} className="flex gap-3"><Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />{i}</li>)}
-        </ul>
-        <Button size="lg" className="mt-7 h-14 w-full text-base" onClick={() => void checkout()} disabled={busy}>
-          {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Get the {THREE_MONTH_PASS.name} <ArrowRight className="h-5 w-5" /></>}
-        </Button>
-        <p className="mt-3 text-center text-sm text-ink-2">One-time payment. Your pass expires automatically after {THREE_MONTH_PASS.durationDays} days. No recurring charges.</p>
-      </section>
+      <h1 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">Choose the detail you need.</h1>
+      <p className="mt-4 mb-10 text-lg text-ink-2">Check your payslip and see your headline result first. Then choose a report for that payslip, or protect every payslip for a year.</p>
+      <PublicTierCards />
 
       <ul className="mt-8 grid gap-6 text-center sm:grid-cols-3">
         {[
           { icon: FileText, t: "Clear reports", d: "Understand the differences between your pay and the rates used." },
-          { icon: Clock, t: `${THREE_MONTH_PASS.durationDays}-day access`, d: "Continue checking during your pass period." },
+          { icon: Clock, t: "Saved to your account", d: "Reports you buy stay in My Reports." },
           { icon: Lock, t: "Secure payment", d: "Payments are handled by Stripe, our payment provider." },
         ].map(({ icon: I, t, d }) => (
           <li key={t}><I className="mx-auto h-8 w-8 text-primary" aria-hidden /><p className="mt-2 font-bold">{t}</p><p className="mt-1 text-sm text-ink-2">{d}</p></li>

@@ -15,7 +15,6 @@ import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 import { useUserCredits } from "@/hooks/useUserCredits";
 import { startSubscriptionCheckout } from "@/lib/paymentLinks";
-import { THREE_MONTH_PASS } from "@/lib/plans";
 import { useSubscription } from "@/hooks/useSubscription";
 
 interface PotentialAllowance {
@@ -141,9 +140,8 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
         return;
       }
 
-      const checkout = await startSubscriptionCheckout("three_month_pass", leadEmail || user?.email || undefined, user?.id, reportId);
-      if (!checkout) throw new Error("Checkout unavailable");
-      window.location.href = checkout;
+      // Tier choice and checkout happen on the saved report, which binds payment to an account.
+      navigate(`/report/${reportId}`);
     } catch (e: any) {
       console.error("Error creating report:", e);
       toast.error("Couldn't start your report — please try again.");
@@ -247,8 +245,8 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
           {(
             <aside className="checker-unlock no-print">
               <h2>Get your full report</h2>
-              {!isUnderpaid && <p className="text-sm text-ink-2 mb-4">Want to keep checking every payslip for the next 3 months?</p>}
-              <div className="figure text-[32px] mb-4">{THREE_MONTH_PASS.priceLabel}<span className="font-sans text-sm text-ink-3"> / {THREE_MONTH_PASS.name}</span></div>
+              {!isUnderpaid && <p className="text-sm text-ink-2 mb-4">Want to check every payslip? Pay Protection covers a full year.</p>}
+              <p className="text-sm text-ink-2 mb-4">Pay Check $9 · Underpayment Report $29 (recommended) · Pay Protection $59/year</p>
               <ReportIncludes />
                 {user && credits > 0 && (
                   <div className="text-sm text-center text-muted-foreground">
@@ -269,11 +267,11 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
                       ? "Open full report"
                       : credits > 0
                       ? `Unlock with 1 credit (${credits} left)`
-                      : `Unlock with ${THREE_MONTH_PASS.name} — ${THREE_MONTH_PASS.priceLabel}`}
+                      : "See report options"}
                   </Button>
                 </div>
                 <p className="text-[13px] text-center text-muted-foreground">
-                  One payment · no subscription · secure checkout by Stripe
+                  Secure checkout by Stripe
                 </p>
 
             </aside>

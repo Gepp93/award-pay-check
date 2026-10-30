@@ -95,14 +95,7 @@ const UnderpaidAward = () => {
   }, [slug]);
 
   const handleCta = async () => {
-    setCtaLoading(true);
-    const url = await startSubscriptionCheckout("three_month_pass");
-    if (url) {
-      window.location.href = url;
-    } else {
-      setCtaLoading(false);
-      navigate("/check");
-    }
+    navigate("/check");
   };
 
   if (loading) {
@@ -290,7 +283,7 @@ const UnderpaidAward = () => {
       <section className="ap-wrap ap-home-section" >
         <div className="mx-auto" >
           <h2 className="ap-h2" data-reveal >
-            {THREE_MONTH_PASS.name}
+            Check your payslip
           </h2>
           <div data-reveal>
             <Button
@@ -298,14 +291,14 @@ const UnderpaidAward = () => {
               onClick={handleCta}
               disabled={ctaLoading}
             >
-              {ctaLoading ? "Opening checkout…" : `Get ${THREE_MONTH_PASS.name} — ${THREE_MONTH_PASS.priceLabel}`}
+              Check my payslip
             </Button>
           </div>
           <p
             data-reveal
             
           >
-            One payment. Unlimited payslip checks for 90 days.
+            See your headline result, then choose Pay Check ($9), Underpayment Report ($29) or Pay Protection ($59/year).
           </p>
         </div>
       </section>

@@ -149,7 +149,8 @@ export default function Report() {
     if (!row || row.payment_status === "paid") return;
     const pending = (window.history.state?.usr?.pendingProduct ||
       params.get("auto")) as "full_report" | "backpay_pack" | null;
-    if (!pending) return;
+    // The $30 pass is no longer sold, so auto-checkout only applies to legacy credits.
+    if (!pending || credits <= 0) return;
     // Don't auto-burn a credit on the $10 tier — let the user click.
     if (pending === "full_report" && credits > 0) return;
     autoLaunchedRef.current = true;
@@ -282,8 +283,8 @@ export default function Report() {
                     credit{credits === 1 ? "" : "s"} left from your Back-Pay Pack.
                   </div>
                 )}
-                {!tier?.assessment && <aside className="checker-unlock"><h2>Or use the {THREE_MONTH_PASS.name}</h2>
-                <p className="figure text-[32px] mb-4">{THREE_MONTH_PASS.priceLabel} · {THREE_MONTH_PASS.name}</p><ReportIncludes />
+                {!tier?.assessment && user && credits > 0 && <aside className="checker-unlock"><h2>Use a report credit</h2>
+                
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     type="button"
@@ -295,11 +296,11 @@ export default function Report() {
                       ? "Unlocking…"
                       : user && credits > 0
                       ? `Unlock with 1 credit (${credits} left)`
-                      : `Unlock with ${THREE_MONTH_PASS.name} — ${THREE_MONTH_PASS.priceLabel}`}
+                      : "Unlock"}
                   </Button>
                 </div>
                 <p className="text-[13px] text-center text-muted-foreground">
-                  One payment · no subscription · secure checkout by Stripe
+                  Uses one credit from your earlier purchase.
                 </p></aside>}
               </>
             )}

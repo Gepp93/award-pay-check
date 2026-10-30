@@ -6,7 +6,7 @@ import { ArrowRight, Calculator, Clock, FileSearch, Lock, ShieldCheck } from "lu
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import SEO from "@/components/SEO";
 import { INDUSTRIES, type IndustryId } from "./industries";
-import { THREE_MONTH_PASS } from "@/lib/plans";
+import PublicTierCards from "@/components/PublicTierCards";
 import { cn } from "@/lib/utils";
 import { EXAMPLES, exampleTotalCents, rowDiffCents } from "./examples";
 
@@ -163,21 +163,12 @@ export default function V2Home() {
 
       {/* Pricing */}
       <section className="bg-surface-sunk py-12">
-        <div className="mx-auto max-w-3xl px-4 md:px-8">
+        <div className="mx-auto max-w-5xl px-4 md:px-8">
           <h2 className="text-center text-3xl font-extrabold">Simple pricing</h2>
           <p className="mt-2 text-center text-ink-2">Your headline result is shown before you pay anything.</p>
-          <div className="mt-6 rounded-lg border-2 border-primary bg-card p-6 shadow-sheet">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="text-xl font-extrabold">{THREE_MONTH_PASS.name}</p>
-              <p><span className="tabular text-3xl font-extrabold">{THREE_MONTH_PASS.priceLabel}</span> <span className="text-sm text-ink-3">AUD, one payment</span></p>
-            </div>
-            <ul className="mt-4 space-y-2 text-sm">
-              {[`Full itemised report for every check you run in the next ${THREE_MONTH_PASS.durationDays} days`, "Line-by-line comparison of your pay with award rates, penalties and the allowances we support", "Downloadable PDF of each report", "Reports saved to your account when you sign in"].map((x) => (
-                <li key={x} className="flex gap-2"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{x}</li>
-              ))}
-            </ul>
-            <p className="mt-4 text-xs text-ink-3">No subscription — it doesn't renew. A report is an assessment, not a guarantee you've been underpaid or that money will be recovered.</p>
-          </div>
+          <div className="mt-6"><PublicTierCards compact /></div>
+          <p className="mt-4 text-center text-sm"><Link to="/pricing" className="font-semibold text-primary underline underline-offset-4">Compare what each option includes</Link></p>
+          <p className="mt-3 text-center text-xs text-ink-3">A report is an assessment, not a guarantee you've been underpaid or that money will be recovered.</p>
         </div>
       </section>
 

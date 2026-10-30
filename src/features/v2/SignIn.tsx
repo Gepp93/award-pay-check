@@ -38,9 +38,7 @@ export default function SignIn() {
       if (claimError) console.error("claim_my_passes error:", claimError);
     }
     if (redirect === "checkout") {
-      const { data: { user } } = await supabase.auth.getUser();
-      const url = await startSubscriptionCheckout("three_month_pass", user?.email || email, user?.id);
-      if (url) window.location.href = url; else toast.error("Could not start checkout — please try again.");
+      navigate("/pricing");
     } else if (redirect && redirect.startsWith("/") && !redirect.startsWith("//")) navigate(redirect);
     else if (returnTo) navigate(returnTo);
     else navigate("/reports");
@@ -74,9 +72,9 @@ export default function SignIn() {
 
   const title = mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password";
   const sub = redirect === "checkout"
-    ? `Sign ${mode === "signup" ? "up" : "in"} to continue to your ${THREE_MONTH_PASS.name}.`
+    ? `Sign ${mode === "signup" ? "up" : "in"} to choose your AwardPay option.`
     : mode === "signin" ? "Sign in to access your payslip checks, reports and account."
-    : mode === "signup" ? "Save your reports and keep your pass in one place."
+    : mode === "signup" ? "Save your reports and purchases in one place."
     : "Enter your email and we'll send you a reset link.";
 
   return (

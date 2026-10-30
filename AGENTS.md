@@ -6,7 +6,7 @@
 - Keep guided checker questions in one `/check` route with hash history and a versioned answers-only draft; this preserves Back/resume without storing the payslip image.
 - Adapt guided answers to the existing official single-shift calculation contract and aggregate returned results; never change or duplicate award rate math in the flow.
 - Send printed hour buckets only in payslip-hours mode and next-day finish hours above 24 for overnight rosters; this preserves the engine's overtime logic and clock subtraction without altering it.
-- Define the current pass in `src/lib/plans.ts` and render shared offers; this prevents price, duration and link drift across pages.
+- Render public offers from `TIER_PRODUCTS` via `PublicTierCards`; the legacy pass stays in `src/lib/plans.ts` only for existing entitlements, with new sales gated by `LEGACY_PASS_ON_SALE`, so prices and links never drift across pages.
 - Finalize pass payments through a service-role-only transactional function with purchase locking and report linking; this makes extension and report unlock idempotent.
 - Guard billing columns with invoker triggers and restrict purchase inserts to pending rows; clients cannot mint paid entitlements or change report payment status.
 - Create checkout references client-side without reading pending purchase rows; expose only minimal status RPCs so guest checkout does not reveal purchase emails.
