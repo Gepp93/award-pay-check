@@ -20,11 +20,11 @@ export default function PayProtectionControls() {
         if (session) {
           setConfirming(true);
           for (let i = 0; !data?.active && i < 20 && !cancelled; i++) {
-            await tierCall({ action: "confirm", sessionId: session }).catch(() => null);
+            const r = await tierCall({ action: "confirm", sessionId: session }).catch(() => null);
+            if (r?.confirmed === true) trackPurchaseOnce(session, { tier: "pay_protection" });
             data = await tierCall({ action: "status" });
             if (!data?.active) await new Promise(r => setTimeout(r, 3000));
           }
-          if (data?.active) trackPurchaseOnce(session, { tier: "pay_protection" });
           if (!data?.active && !cancelled) toast.message("Payment is still being confirmed. Refresh this page in a minute.");
         }
         if (!cancelled) setState(data);
