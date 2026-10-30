@@ -6,15 +6,19 @@ import hospitality from "./data/MA000009.json" with { type: "json" };
 import fastFood from "./data/MA000003.json" with { type: "json" };
 import construction from "./data/MA000020.json" with { type: "json" };
 import electrical from "./data/MA000025.json" with { type: "json" };
+import restaurant from "./data/MA000119.json" with { type: "json" };
+import clubs from "./data/MA000058.json" with { type: "json" };
+import pharmacy from "./data/MA000012.json" with { type: "json" };
+import hairBeauty from "./data/MA000005.json" with { type: "json" };
 import holidaysData from "./data/public-holidays.json" with { type: "json" };
 import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules, type PenaltyRef } from "./rulepacks.ts";
 
-export const ENGINE_VERSION = "v2.2.0";
+export const ENGINE_VERSION = "v2.3.0";
 
 /** Award-text penalty record for awards the Fair Work pay database doesn't cover (MA000020). See scripts/engine-v2/inline_penalties.json. */
 interface InlinePenalty { id: string; rate: number; description: string; clause: string; operativeFrom: string; operativeTo: string | null; sourceUrl: string; verifiedOn: string }
 type Snapshot = typeof retail & { inlinePenalties?: InlinePenalty[] };
-const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot };
+const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot, MA000119: restaurant as Snapshot, MA000058: clubs as Snapshot, MA000012: pharmacy as Snapshot, MA000005: hairBeauty as Snapshot };
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"] as const;
 export type State = typeof STATES[number];
 
@@ -306,10 +310,16 @@ export function assess(input: AssessmentInput): AssessmentResult {
     const ordId = (x: M): { id: PenaltyRef; label: string; kind: LineKind } | null => {
       if (x.day === "ph") return { id: ord.publicHoliday, label: "Public holiday", kind: "public_holiday" };
       if (x.day === "sunday") {
+        const band = ord.sundayBands?.find(b => x.tod >= b.from && x.tod < b.to);
+        if (band) return { id: band.penaltyId, label: band.label, kind: "sunday" };
         const id = ord.sunday == null ? null : typeof ord.sunday === "object" ? ord.sunday.byGroup[cls.sundayGroup ?? ""] : ord.sunday;
         return id == null ? null : { id, label: "Sunday", kind: "sunday" };
       }
-      if (x.day === "saturday") return ord.saturday == null ? null : { id: ord.saturday, label: "Saturday", kind: "saturday" };
+      if (x.day === "saturday") {
+        const band = ord.saturdayBands?.find(b => x.tod >= b.from && x.tod < b.to);
+        if (band) return { id: band.penaltyId, label: band.label, kind: "saturday" };
+        return ord.saturday == null ? null : { id: ord.saturday, label: "Saturday", kind: "saturday" };
+      }
       const band = ord.weekdayBands.find(b => x.tod >= b.from && x.tod < b.to);
       return band ? { id: band.penaltyId, label: band.label, kind: "evening" } : { id: ord.weekday, label: "Weekday ordinary hours", kind: "ordinary" };
     };
@@ -438,8 +448,10 @@ export function assess(input: AssessmentInput): AssessmentResult {
           let id: PenaltyRef; let label: string;
           if (x.day === "ph") { id = ot.publicHoliday; label = "Overtime — public holiday"; }
           else if (ot.tierDays.includes(x.dow)) {
-            if (ot.saturdayNoonAllAfter && x.dow === 6 && x.tod >= 720) { id = ot.after; label = "Overtime — Saturday after 12 noon"; }
-            else if (tierUsed < ot.tierMinutes) { id = ot.first; label = `Overtime — first ${ot.tierMinutes / 60} hours`; } else { id = ot.after; label = `Overtime — after ${ot.tierMinutes / 60} hours`; }
+            const tr = ot.tierRates?.[x.dow];
+            const firstId = tr?.first ?? ot.first, afterId = tr?.after ?? ot.after;
+            if (ot.saturdayNoonAllAfter && x.dow === 6 && x.tod >= 720) { id = afterId; label = "Overtime — Saturday after 12 noon"; }
+            else if (tierUsed < ot.tierMinutes) { id = firstId; label = `Overtime — first ${ot.tierMinutes / 60} hours`; } else { id = afterId; label = `Overtime — after ${ot.tierMinutes / 60} hours`; }
             tierUsed++;
           } else {
             const flat = x.dow === 0 ? ot.flat.sunday : ot.flat.saturday;

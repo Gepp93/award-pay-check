@@ -88,6 +88,61 @@ const ENTRIES: AwardCoverage[] = [
       "Shiftwork", "Classifications not listed in the pack",
     ],
   },
+  {
+    code: "MA000119",
+    name: "Restaurant Industry Award 2020",
+    snapshot: "Fair Work pay database, 2023–2026, fetched 2026-10-30",
+    supported: [
+      "Weekday, Saturday (125%/150%) and Sunday ordinary hours; casual Sunday differs by level (Introductory–L2 vs L3–6, cl 24.2 Table 8)",
+      "Late-night Monday–Friday additions ($2.95/h 10pm–midnight, $4.42/h midnight–6am, cl 24.2)",
+      "Overtime including Saturday's 175%/200% tiers; public holidays (225%/250%); casual 2-hour minimum engagement",
+    ],
+    partial: ["Unpaid breaks whose start time is unknown across different pay rates", "Gross-only payslips"],
+    unsupported: ["Shiftwork", "Split-shift allowance conditions (cl 21.3)", "Classifications not listed in the pack"],
+  },
+  {
+    code: "MA000058",
+    name: "Registered and Licensed Clubs Award 2020",
+    snapshot: "Fair Work pay database, 2023–2026, fetched 2026-10-30",
+    supported: [
+      "Weekday, Saturday (150%) and Sunday (175%) ordinary hours; public holidays (250%)",
+      "Late/early Monday–Friday additions ($2.95/h 7pm–midnight, $4.42/h midnight–7am, cl 24.4)",
+      "Full-time/part-time overtime including Saturday 175%/200% tiers; 8-hour daily maximum (cl 15.3)",
+    ],
+    partial: ["Unpaid breaks whose start time is unknown", "Gross-only payslips"],
+    unsupported: [
+      "Maintenance and horticultural employees (different Saturday structure, cl 15.6)",
+      "Casual overtime — no Fair Work pay-database records",
+      "Bingo caller / fitness instructor minimum engagements", "Shiftwork",
+    ],
+  },
+  {
+    code: "MA000012",
+    name: "Pharmacy Industry Award 2020",
+    snapshot: "Fair Work pay database, 2023–2026, fetched 2026-10-30",
+    supported: [
+      "Time-of-day banded ordinary rates every day of the week (cl 25 Table 5), including early-morning, evening and late-night bands",
+      "Full-time/part-time overtime (Mon–Sat 150%/200%, Sunday 200%, public holiday 250%)",
+      "12-hour daily maximum (cl 13.3); 3-hour minimum engagement (cl 10.7, 11.1)",
+    ],
+    partial: ["Unpaid breaks whose start time is unknown across bands", "Gross-only payslips"],
+    unsupported: ["Casual overtime — no Fair Work pay-database records", "2-hour school-student minimum engagement exception", "Shiftwork"],
+  },
+  {
+    code: "MA000005",
+    name: "Hair and Beauty Industry Award 2010",
+    snapshot: "Fair Work pay database, 2023–2026, fetched 2026-10-30",
+    supported: [
+      "Span of ordinary hours (cl 15 Table 2): Mon–Fri 7am–9pm, Saturday 7am–6pm (133%), Sunday 10am–5pm (200%)",
+      "Casual rates inside and outside the span (125%/150% weekdays, 158%/150% Saturday, 225% Sunday)",
+      "Overtime with 3-hour tiers (150% then 200%); public holidays (250%); 3-hour minimum engagement",
+    ],
+    partial: [
+      "Full-time/part-time work outside the span not entered as overtime — it is overtime but can't be priced without the minutes",
+      "Gross-only payslips",
+    ],
+    unsupported: ["More than one 10.5-hour day in a week (needs agreement, cl 15.1(e))", "Shiftwork"],
+  },
 ];
 
 export function coverageRegistry(): AwardCoverage[] {

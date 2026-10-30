@@ -12,6 +12,10 @@ export const AWARDS = [
   { code: "MA000003", label: "Fast Food Industry Award" },
   { code: "MA000020", label: "Building and Construction General On-site Award" },
   { code: "MA000025", label: "Electrical, Electronic and Communications Contracting Award" },
+  { code: "MA000119", label: "Restaurant Industry Award" },
+  { code: "MA000058", label: "Registered and Licensed Clubs Award" },
+  { code: "MA000012", label: "Pharmacy Industry Award" },
+  { code: "MA000005", label: "Hair and Beauty Industry Award" },
 ] as const;
 export const OTHER_AWARD = "OTHER";
 
