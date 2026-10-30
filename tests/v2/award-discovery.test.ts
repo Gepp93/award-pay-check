@@ -8,7 +8,7 @@ describe("award discovery", () => {
   test("Civil Crew Foreman: only Building and Construction, never cabin crew/fast food/newspapers or Electrical", () => {
     const s = discoverAwards({ jobTitle: "Civil Crew Foreman", industry: "construction" });
     expect(s.map(x => x.code)).toEqual(["MA000020"]);
-    expect(s[0].supported).toBe(false);
+    expect(s[0].supported).toBe(true); // supported since Batch 1 — still a suggestion, never auto-selected
     expect(s[0].evidence).toEqual(["civil"]);
   });
   test("employer name is not evidence", () => expect(codes("Crew Foreman", "construction")).toEqual([]));
@@ -25,12 +25,12 @@ describe("award discovery", () => {
 
 describe("classifications", () => {
   test("unique ids that belong to the award", () => {
-    for (const code of ["MA000004", "MA000009", "MA000003"]) {
+    for (const code of ["MA000004", "MA000009", "MA000003", "MA000020", "MA000025"]) {
       const ids = classificationsFor(code).map(c => c.id);
       expect(ids.length).toBeGreaterThan(0);
       expect(new Set(ids).size).toBe(ids.length);
     }
-    expect(classificationsFor("MA000020")).toEqual([]);
+    expect(classificationsFor("MA000010")).toEqual([]); // Manufacturing: no rule pack yet
   });
   test("switching award clears classification", () => {
     const id = classificationsFor("MA000004")[0].id;
@@ -44,7 +44,8 @@ describe("classifications", () => {
     expect(sanitizeDraft({ ...emptyDraft, awardCode: "MA000009", classificationFixedId: id }).classificationFixedId).toBeNull();
   });
   test("unsupported award stops at the award question", () => {
-    expect(stepsFor({ ...emptyDraft, awardCode: "MA000020", enterpriseAgreement: "no" })).toEqual(["award"]);
+    expect(stepsFor({ ...emptyDraft, awardCode: "MA000010", enterpriseAgreement: "no" })).toEqual(["award"]);
     expect(stepsFor({ ...emptyDraft, awardCode: "MA000004", enterpriseAgreement: "no" })).toContain("classification");
+    expect(stepsFor({ ...emptyDraft, awardCode: "MA000020", enterpriseAgreement: "no" })).toContain("classification");
   });
 });

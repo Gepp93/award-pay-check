@@ -4,13 +4,17 @@
 import retail from "./data/MA000004.json" with { type: "json" };
 import hospitality from "./data/MA000009.json" with { type: "json" };
 import fastFood from "./data/MA000003.json" with { type: "json" };
+import construction from "./data/MA000020.json" with { type: "json" };
+import electrical from "./data/MA000025.json" with { type: "json" };
 import holidaysData from "./data/public-holidays.json" with { type: "json" };
-import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules } from "./rulepacks.ts";
+import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules, type PenaltyRef } from "./rulepacks.ts";
 
-export const ENGINE_VERSION = "v2.1.0";
+export const ENGINE_VERSION = "v2.2.0";
 
-type Snapshot = typeof retail;
-const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot };
+/** Award-text penalty record for awards the Fair Work pay database doesn't cover (MA000020). See scripts/engine-v2/inline_penalties.json. */
+interface InlinePenalty { id: string; rate: number; description: string; clause: string; operativeFrom: string; operativeTo: string | null; sourceUrl: string; verifiedOn: string }
+type Snapshot = typeof retail & { inlinePenalties?: InlinePenalty[] };
+const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot };
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"] as const;
 export type State = typeof STATES[number];
 
@@ -43,6 +47,8 @@ export interface Arrangement {
   rosterCycleWeeks?: number;
   /** Span-of-hours exceptions that apply at the workplace (Retail cl 15.2). Undefined = not known; [] = none apply. */
   spanExceptions?: string[];
+  /** Awards with an RDO accrual system (MA000020 cl 16.2): is the employee on it? Undefined = not known. */
+  rdoAccrual?: boolean;
 }
 
 export interface AssessmentInput {
@@ -169,7 +175,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
   const pack = RULE_PACKS[input.awardCode];
   if (input.flags?.enterpriseAgreement) return unsupported(input, "You're covered by an enterprise agreement. AwardPay can't assess enterprise agreement pay — your agreement's rates and rules apply instead of the award.");
   if (input.flags?.awardFree) return unsupported(input, "You're award-free. AwardPay's award calculator can't assess your pay.");
-  if (!pack) return unsupported(input, `Award ${input.awardCode} isn't supported by engine v2 yet. Only the General Retail (MA000004), Hospitality (MA000009) and Fast Food (MA000003) awards can be assessed.`);
+  if (!pack) return unsupported(input, `Award ${input.awardCode} isn't supported by engine v2 yet. Only these awards can be assessed: ${Object.values(RULE_PACKS).map(p => `${p.name} (${p.awardCode})`).join(", ")}.`);
   const snap = SNAPSHOTS[pack.awardCode];
   for (const flag of pack.unsupportedFlags) if (input.flags?.[flag]) {
     const what = { shiftworker: "shiftworker rates (separate award tables)", casinoGaming: "casino gaming employee rates", managerial: "managerial staff (hotels) salaries" }[flag];
@@ -224,7 +230,13 @@ export function assess(input: AssessmentInput): AssessmentResult {
   result.rate = { hourlyCents: baseCents, operativeFrom: rateRec.operativeFrom, operativeTo: rateRec.operativeTo, publishedYear: rateRec.publishedYear, referenceDate: ref, rule };
   const rateSource: Source = { type: "pay_rate", id: input.classificationFixedId, description: `${cls.label} adult minimum hourly rate`, operativeFrom: rateRec.operativeFrom, clause: pack.clauses.minimumRates, url: pack.awardUrl };
 
-  const penalty = (id: number) => {
+  const penalty = (id: PenaltyRef) => {
+    if (typeof id === "string") {
+      // Inline penalty: percentage copied from the award text (pay database has no records for this award).
+      const rec = pick((snap.inlinePenalties ?? []).filter(p => p.id === id), ref);
+      if (!rec) throw new Error(`Missing inline penalty ${id} for ${ref}`);
+      return { penaltyFixedId: id as unknown as number, rate: rec.rate, clauseDescription: rec.description, penaltyDescription: `${rec.clause} (award text, verified ${rec.verifiedOn})`, operativeFrom: rec.operativeFrom };
+    }
     const rec = pick(snap.penalties.filter(p => p.penaltyFixedId === id), ref);
     if (!rec) throw new Error(`Missing penalty ${id} for ${ref}`);
     return rec;
@@ -232,8 +244,19 @@ export function assess(input: AssessmentInput): AssessmentResult {
   const isCasual = emp === "casual";
   const ord: OrdinaryRules = isCasual ? pack.ordinary.casual : pack.ordinary.ftpt;
   const ot: OvertimeRules | null = isCasual ? pack.overtime.casual : pack.overtime.ftpt;
-  const sundayId = typeof ord.sunday === "number" ? ord.sunday : ord.sunday.byGroup[cls.sundayGroup ?? ""];
   const dailyMax = pack.dailyMaxByEmployment?.[emp] ?? pack.dailyMaxOrdinaryMinutes;
+
+  // ---- RDO accrual (MA000020 cl 16.2): never guessed ----
+  const rdo = pack.rdoAccrual && emp !== "casual" ? pack.rdoAccrual : null;
+  let rdoScale = 1;
+  if (rdo) {
+    if (arr.rdoAccrual === true) {
+      rdoScale = rdo.paidPerWorked;
+      result.notes.push(`RDO system confirmed (${rdo.clause}): each ordinary day is part paid, part accrued towards a rostered day off, which is paid when taken.`);
+    } else if (arr.rdoAccrual !== false) {
+      material("Rostered day off", `This award's standard hours system accrues part of each day towards a rostered day off (${rdo.clause}). Whether you're on it changes how many hours are paid each day.`, undefined, "Are you on the RDO system (for example, you work 8 hours and are paid 7.6, building up a paid day off)?");
+    }
+  }
 
   // Weeks: 7-day blocks from the pay period start.
   const weekOf = (d: string) => input.payPeriod ? Math.floor(daysBetween(input.payPeriod.start, d) / 7) : -1;
@@ -279,10 +302,14 @@ export function assess(input: AssessmentInput): AssessmentResult {
       if (k === "official") result.notes.push(`Shift ${si + 1}: ${d} is ${name} in ${input.state} (source: ${extra}).`);
     }
 
-    const ordId = (x: M): { id: number; label: string; kind: LineKind } => {
+    // null = the award has no ordinary hours on that day (all weekend work is overtime).
+    const ordId = (x: M): { id: PenaltyRef; label: string; kind: LineKind } | null => {
       if (x.day === "ph") return { id: ord.publicHoliday, label: "Public holiday", kind: "public_holiday" };
-      if (x.day === "sunday") return { id: sundayId, label: "Sunday", kind: "sunday" };
-      if (x.day === "saturday") return { id: ord.saturday, label: "Saturday", kind: "saturday" };
+      if (x.day === "sunday") {
+        const id = ord.sunday == null ? null : typeof ord.sunday === "object" ? ord.sunday.byGroup[cls.sundayGroup ?? ""] : ord.sunday;
+        return id == null ? null : { id, label: "Sunday", kind: "sunday" };
+      }
+      if (x.day === "saturday") return ord.saturday == null ? null : { id: ord.saturday, label: "Saturday", kind: "saturday" };
       const band = ord.weekdayBands.find(b => x.tod >= b.from && x.tod < b.to);
       return band ? { id: band.penaltyId, label: band.label, kind: "evening" } : { id: ord.weekday, label: "Weekday ordinary hours", kind: "ordinary" };
     };
@@ -299,7 +326,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
         if (b + breakMin > finish) { material("Break", `The break on ${s.date} runs past the end of the shift.`, si); return; }
         for (let m = b; m < b + breakMin; m++) mins[m - start].paid = false;
       } else {
-        const keys = new Set(mins.map(x => `${ordId(x).id}|${inAddition(x) ? pack.additions.find(a => x.tod >= a.from && x.tod < a.to)?.wageAllowanceId : ""}|${x.date}`));
+        const keys = new Set(mins.map(x => { const o = ordId(x); return `${o ? o.id : "weekend-overtime"}|${inAddition(x) ? pack.additions.find(a => x.tod >= a.from && x.tod < a.to)?.wageAllowanceId : ""}|${x.date}`; }));
         const uniform = keys.size === 1 && !(otStated && otStated > 0);
         if (uniform) {
           // Every minute of the shift is paid the same way, so the break's position can't change the result.
@@ -307,7 +334,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
         } else {
           material("Break", `Shift ${si + 1} has different pay rates at different times, so the start time of the ${breakMin}-minute unpaid break changes the result.`, si, `What time did your unpaid break start on ${s.date}?`);
           // Lower-bound figure only: remove the break from the highest-paid minutes.
-          const order = mins.map((x, i) => ({ i, r: Number(penalty(ordId(x).id).rate) })).sort((a, b) => b.r - a.r || a.i - b.i);
+          const order = mins.map((x, i) => { const o = ordId(x); return { i, r: o ? Number(penalty(o.id).rate) : 0 }; }).sort((a, b) => b.r - a.r || a.i - b.i);
           for (let r = 0; r < breakMin; r++) mins[order[r].i].paid = false;
           result.notes.push(`Shift ${si + 1}: until the break time is known, the figure shown removes the break from the highest-paid time, so it's a lower-bound estimate.`);
         }
@@ -323,8 +350,18 @@ export function assess(input: AssessmentInput): AssessmentResult {
 
     // ---- overtime: stated minutes are the last N worked minutes ----
     const otMinutes = otStated == null ? 0 : Math.min(otStated, worked.length);
-    const ordinaryWorked = worked.slice(0, worked.length - otMinutes);
+    const ordinaryWorkedAll = worked.slice(0, worked.length - otMinutes);
     const otWorked = worked.slice(worked.length - otMinutes);
+
+    // Awards with no ordinary weekend hours (MA000020, MA000025): weekend minutes are
+    // overtime. Unless they were entered as overtime they can't be priced — never pay
+    // them at an ordinary rate.
+    const ordinaryWorked = ordinaryWorkedAll.filter(x => ordId(x) != null);
+    const weekendOvertime = ordinaryWorkedAll.filter(x => ordId(x) == null);
+    if (weekendOvertime.length) {
+      const days = [...new Set(weekendOvertime.map(x => x.day === "saturday" ? "Saturday" : "Sunday"))].join(" and ");
+      material("Overtime", `Shift ${si + 1}: ${hrs(weekendOvertime.length)} hours on ${days} are overtime under this award (${pack.clauses.overtime}), but they weren't entered as overtime, so AwardPay can't price them.`, si, `How many minutes of the shift on ${s.date} were paid as overtime? Enter them as overtime minutes.`);
+    }
 
     // Daily maximum (stated overtime does not excuse ordinary minutes still above the maximum).
     if (ordinaryWorked.length > dailyMax) {
@@ -360,18 +397,22 @@ export function assess(input: AssessmentInput): AssessmentResult {
     for (const x of ordinaryWorked) { const w = weekOf(x.date); weeklyOrdinary.set(w, (weeklyOrdinary.get(w) ?? 0) + 1); }
 
     // ---- ordinary lines ----
-    const groups = new Map<string, { id: number; label: string; kind: LineKind; minutes: number; date: string }>();
+    const groups = new Map<string, { id: PenaltyRef; label: string; kind: LineKind; minutes: number; date: string }>();
     for (const x of ordinaryWorked) {
-      const o = ordId(x); const key = `${o.id}|${x.date}`;
+      const o = ordId(x)!; const key = `${o.id}|${x.date}`;
       const g = groups.get(key) ?? { ...o, minutes: 0, date: x.date }; g.minutes++; groups.set(key, g);
     }
     for (const g of groups.values()) {
       const rec = penalty(g.id); const rate = penaltyRateCents(baseCents, Number(rec.rate));
+      // RDO system: only part of each ordinary day is paid; the rest accrues towards the RDO.
+      const paidMinutes = rdoScale !== 1 ? Math.round(g.minutes * rdoScale) : g.minutes;
       result.lines.push({
-        shiftIndex: si, date: g.date, category: g.label, kind: g.kind, minutes: g.minutes, percent: Number(rec.rate), hourlyCents: rate,
-        amountCents: divRound(rate * g.minutes, 60),
+        shiftIndex: si, date: g.date, category: g.label, kind: g.kind, minutes: paidMinutes, percent: Number(rec.rate), hourlyCents: rate,
+        amountCents: divRound(rate * paidMinutes, 60),
         sources: [rateSource, { type: "penalty", id: rec.penaltyFixedId, description: `${rec.clauseDescription}: ${rec.penaltyDescription}`, operativeFrom: rec.operativeFrom, clause: pack.clauses.penalties, url: pack.awardUrl }],
-        explanation: `${hrs(g.minutes)} h × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`,
+        explanation: rdoScale !== 1
+          ? `${hrs(g.minutes)} h worked, ${hrs(paidMinutes)} h paid (RDO accrual, ${rdo!.clause}) × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`
+          : `${hrs(g.minutes)} h × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`,
       });
     }
     for (const add of pack.additions) {
@@ -392,12 +433,13 @@ export function assess(input: AssessmentInput): AssessmentResult {
       if (!ot) { material("Overtime", (isCasual && pack.overtimeMissingReason?.casual) || "Overtime isn't assessed for this employment type.", si); }
       else {
         let tierUsed = 0;
-        const og = new Map<string, { id: number; label: string; minutes: number; date: string }>();
+        const og = new Map<string, { id: PenaltyRef; label: string; minutes: number; date: string }>();
         for (const x of otWorked) {
-          let id: number; let label: string;
+          let id: PenaltyRef; let label: string;
           if (x.day === "ph") { id = ot.publicHoliday; label = "Overtime — public holiday"; }
           else if (ot.tierDays.includes(x.dow)) {
-            if (tierUsed < ot.tierMinutes) { id = ot.first; label = `Overtime — first ${ot.tierMinutes / 60} hours`; } else { id = ot.after; label = `Overtime — after ${ot.tierMinutes / 60} hours`; }
+            if (ot.saturdayNoonAllAfter && x.dow === 6 && x.tod >= 720) { id = ot.after; label = "Overtime — Saturday after 12 noon"; }
+            else if (tierUsed < ot.tierMinutes) { id = ot.first; label = `Overtime — first ${ot.tierMinutes / 60} hours`; } else { id = ot.after; label = `Overtime — after ${ot.tierMinutes / 60} hours`; }
             tierUsed++;
           } else {
             const flat = x.dow === 0 ? ot.flat.sunday : ot.flat.saturday;
@@ -433,10 +475,12 @@ export function assess(input: AssessmentInput): AssessmentResult {
   } else {
     const days = daysBetween(input.payPeriod.start, input.payPeriod.end) + 1;
     if (days % 7 !== 0) material("Overtime", `The pay period is ${days} days, not whole weeks, so weekly overtime can't be checked reliably.`);
+    // On a confirmed RDO system, worked minutes include accrual time: 38 paid hours = 40 worked.
+    const weeklyLimit = rdoScale !== 1 ? Math.round(38 * 60 / rdoScale) : 38 * 60;
     for (const [w, m] of weeklyOrdinary) {
       const wkStart = addDays(input.payPeriod.start, w * 7);
-      if (m > 38 * 60) {
-        material("Overtime", `${hrs(m)} ordinary hours in the week starting ${wkStart}, more than 38 (${clause}). Some of these hours are likely overtime${(arr.rosterCycleWeeks ?? 1) > 1 ? " unless hours are averaged across your roster cycle" : ""}.`, undefined, `How many hours in the week starting ${wkStart} were paid as overtime?`);
+      if (m > weeklyLimit) {
+        material("Overtime", `${hrs(m)} ordinary hours in the week starting ${wkStart}, more than ${rdoScale !== 1 ? "40 worked (38 paid plus RDO accrual)" : "38"} (${clause}). Some of these hours are likely overtime${(arr.rosterCycleWeeks ?? 1) > 1 ? " unless hours are averaged across your roster cycle" : ""}.`, undefined, `How many hours in the week starting ${wkStart} were paid as overtime?`);
       }
       if (needs.includes("guaranteed") && arr.guaranteedMinutesPerWeek != null && m > arr.guaranteedMinutesPerWeek) {
         material("Overtime", `${hrs(m)} ordinary hours in the week starting ${wkStart}, more than your ${hrs(arr.guaranteedMinutesPerWeek)} guaranteed hours. Hours beyond guaranteed hours are overtime (${clause}).`, undefined, `How many hours in the week starting ${wkStart} were paid as overtime?`);

@@ -23,7 +23,7 @@ export interface Case {
   working: string; source: string;
 }
 
-const R = "MA000004", H = "MA000009", F = "MA000003";
+const R = "MA000004", H = "MA000009", F = "MA000003", C = "MA000020", E = "MA000025";
 const adult = { rateType: "adult" as const };
 // Arrangement facts a real user would confirm: every shift in the period is listed, and
 // (full-time / part-time) every non-overtime hour was rostered ordinary time.
@@ -32,6 +32,8 @@ const ARR = {
   pt: { allShiftsInPeriodIncluded: true, workedToRoster: true, guaranteedMinutesPerWeek: 20 * 60 },
   cas: { allShiftsInPeriodIncluded: true },
 };
+// Construction full-time: also confirms the RDO question (cl 16.2) — here, not on it.
+const ARR_C = { ft: { allShiftsInPeriodIncluded: true, workedToRoster: true, rdoAccrual: false } };
 const SB = (award: string) => `Schedule B, ${award} award text (awards.fairwork.gov.au/${award}.html)`;
 
 export const CASES: Case[] = [
@@ -164,9 +166,104 @@ export const CASES: Case[] = [
   { id: "F6", title: "Fast Food 12 h shift, no overtime stated (> 11 h max)",
     input: { awardCode: F, classificationFixedId: 108, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "08:00", breakMinutes: 0, finish: "20:00" }] },
     expect: { status: "partial" }, working: "cl 13.5", source: "cl 13.5" },
-  { id: "X1", title: "Unsupported award (Building and Construction MA000020)",
-    input: { awardCode: "MA000020", classificationFixedId: 1, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", breakMinutes: 0, finish: "15:00" }] },
-    expect: { status: "unsupported" }, working: "Not in v2 scope", source: "—" },
+  // ---------------- Construction (MA000020) ----------------
+  // Base: CW/ECW 1(a) $26.67 from 2026-07-01 (FWC API id 680, verified against cl 19.1(a)
+  // table: $1013.50/week, $26.67/hour). Percentages from the award text (the Fair Work pay
+  // database has no penalty records for this award): weekday 100%; OT Mon–Sat 150% first 2 h
+  // then 200% (cl 29.4(a), 30.1(a)); all Saturday OT after 12 noon 200% (cl 30.1(b)); Sunday
+  // 200% (cl 30.1(d)); public holiday 250% (cl 29.9, 30.1(e)); casual 125% (cl 12.4), casual
+  // OT/weekend 175%/225% (cl 12.5), casual PH 275% (cl 12.6). All Saturday/Sunday work is
+  // overtime (cl 29.12). RDO: 8 h day = 7.6 h paid + 0.4 h accrual (cl 16.2).
+  // Worked rates: 150% $40.01, 200% $53.34, 250% $66.68, 125% $33.34, 175% $46.67, 225% $60.01.
+  { id: "C1", title: "Construction CW1(a) full-time, weekday ordinary (no RDO system)",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00", overtimeMinutes: 0 }] },
+    expect: { status: "complete", entitlementCents: 21336 }, working: "8 h × $26.67 = $213.36", source: `cl 19.1(a), ${C} award text; FWC API id 680` },
+  { id: "C2", title: "Construction CW1(a) full-time, weekday with 2 h overtime",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", finish: "17:30", breakMinutes: 30, breakStart: "12:00", overtimeMinutes: 120 }] },
+    expect: { status: "complete", entitlementCents: 29338 }, working: "8 h × $26.67 = $213.36; OT 2 h × $40.01 (150%) = $80.02 → $293.38", source: "cl 29.4(a)" },
+  { id: "C3", title: "Construction CW1(a) full-time, Saturday 6 h (all overtime)",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "07:00", finish: "13:00", breakMinutes: 0, overtimeMinutes: 360 }] },
+    expect: { status: "complete", entitlementCents: 29338 }, working: "OT first 2 h × $40.01 = $80.02; 4 h × $53.34 (200%) = $213.36 → $293.38", source: "cl 30.1(a)" },
+  { id: "C4", title: "Construction CW1(a) full-time, Sunday 4 h (all overtime)",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-12", start: "08:00", finish: "12:00", breakMinutes: 0, overtimeMinutes: 240 }] },
+    expect: { status: "complete", entitlementCents: 21336 }, working: "4 h × $53.34 (200%) = $213.36", source: "cl 30.1(d)" },
+  { id: "C5", title: "Construction CW1(a) full-time, Christmas Day 2026 (NSW)",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2026-12-21", end: "2027-01-03" }, shifts: [{ date: "2026-12-25", start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00" }] },
+    expect: { status: "complete", entitlementCents: 53344 }, working: "8 h × $66.68 (250%) = $533.44", source: "cl 29.9, 30.1(e); nsw.gov.au public holidays 2026" },
+  { id: "C6", title: "Construction CW1(a) casual, weekday 4 h",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "casual", ...adult, arrangement: ARR.cas, state: "VIC", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "08:00", finish: "12:00", breakMinutes: 0 }] },
+    expect: { status: "complete", entitlementCents: 13336 }, working: "4 h × $33.34 (125%) = $133.36", source: "cl 12.4" },
+  { id: "C7", title: "Construction CW1(a) casual, Saturday 5 h overtime",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "casual", ...adult, arrangement: ARR.cas, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "07:00", finish: "12:00", breakMinutes: 0, overtimeMinutes: 300 }] },
+    expect: { status: "complete", entitlementCents: 27337 }, working: "2 h × $46.67 (175%) = $93.34; 3 h × $60.01 (225%) = $180.03 → $273.37", source: "cl 12.5, 30.1(a)" },
+  { id: "C8", title: "Construction full-time Saturday with no overtime stated → Partial",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "07:00", finish: "11:00", breakMinutes: 0 }] },
+    expect: { status: "partial", underpaymentCents: null }, working: "All Saturday work is overtime (cl 29.12); not entered as overtime, so it can't be priced", source: "cl 29.12, 30.1" },
+  { id: "C9", title: "Construction Saturday overtime crossing 12 noon (cl 30.1(b))",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "11:00", finish: "14:00", breakMinutes: 0, overtimeMinutes: 180 }] },
+    expect: { status: "complete", entitlementCents: 14669 }, working: "11:00–12:00 × $40.01 (first 2 h) + 12:00–14:00 × $53.34 (all OT after noon is 200%) = $40.01 + $106.68 = $146.69", source: "cl 30.1(a)-(b)" },
+  { id: "C10", title: "Construction full-time on the RDO system: 5 × 8 h days, 7.6 h paid each",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: { allShiftsInPeriodIncluded: true, workedToRoster: true, rdoAccrual: true }, state: "QLD", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: ["2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17"].map(date => ({ date, start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00", overtimeMinutes: 0 })) },
+    expect: { status: "complete", entitlementCents: 101345 }, working: "7.6 h paid × $26.67 = $202.69 per day (456 min: divRound(2667×456,60) = 20269); 5 days = $1013.45; 40 worked hours a week is not overtime on the RDO system", source: "cl 16.1–16.2" },
+  { id: "C11", title: "Construction full-time, RDO system not known → Partial",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00" }] },
+    expect: { status: "partial", underpaymentCents: null }, working: "7.6 vs 8 paid hours a day depends on the RDO system (cl 16.2)", source: "cl 16.2" },
+  { id: "C12", title: "Construction shiftworker → not assessed",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00" }], flags: { shiftworker: true } },
+    expect: { status: "unsupported" }, working: "Shiftwork (cl 17) not mapped", source: "—" },
+  { id: "C13", title: "Construction CW1(a) full-time compared against confirmed pay lines",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00" }], paid: { lines: [{ kind: "ordinary", amountCents: 20000 }], linesCoverAllWages: true } },
+    expect: { status: "complete", entitlementCents: 21336, comparableCents: 20000, underpaymentCents: 1336 }, working: "$213.36 − $200.00 = $13.36", source: "cl 19.1(a)" },
+  { id: "C14", title: "Construction historical rate: October 2024 uses the 2024-25 rate ($24.60)",
+    input: { awardCode: C, classificationFixedId: 680, employmentType: "full_time", ...adult, arrangement: ARR_C.ft, state: "NSW", payPeriod: { start: "2024-10-14", end: "2024-10-27" }, shifts: [{ date: "2024-10-15", start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00" }] },
+    expect: { status: "complete", entitlementCents: 19680 }, working: "8 h × $24.60 = $196.80", source: "FWC API id 680 operative 2024-07-01" },
+
+  // ---------------- Electrical (MA000025) ----------------
+  // Base: Electrical worker grade 5 $29.45 from 2026-07-01 (FWC API id 854, verified against
+  // cl 16.2 table: $1119.10/week, $29.45/hour). Percentages are FWC pay-database records:
+  // FT/PT ordinary 100% (id 2449), PH 250% (2450); OT Mon–Sat 150% first 2 h (2451) then 200%
+  // (2452), Sunday 200% (2453), PH 250% (2454); casual day 125% (2467), casual PH 312.5%
+  // (2468). Day workers' ordinary hours are Monday to Friday only (cl 13.2): weekend work is
+  // overtime (cl 20.1, 20.4). The database has no casual overtime or casual Sunday records.
+  // Worked rates: 150% $44.18, 200% $58.90, 250% $73.63, 125% $36.81, 312.5% $92.03.
+  { id: "E1", title: "Electrical EW5 full-time, weekday ordinary",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00", overtimeMinutes: 0 }] },
+    expect: { status: "complete", entitlementCents: 23560 }, working: "8 h × $29.45 = $235.60", source: `cl 16.2, ${E} award text; FWC API id 854` },
+  { id: "E2", title: "Electrical EW5 full-time, weekday with 2 h overtime",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", finish: "17:30", breakMinutes: 30, breakStart: "12:00", overtimeMinutes: 120 }] },
+    expect: { status: "complete", entitlementCents: 32396 }, working: "8 h × $29.45 = $235.60; OT 2 h × $44.18 (150%) = $88.36 → $323.96", source: "cl 20.1(a); FWC API penalties 2451" },
+  { id: "E3", title: "Electrical EW5 full-time, Sunday 4 h (all overtime)",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-12", start: "08:00", finish: "12:00", breakMinutes: 0, overtimeMinutes: 240 }] },
+    expect: { status: "complete", entitlementCents: 23560 }, working: "4 h × $58.90 (200%) = $235.60", source: "cl 20.4(a)(i); FWC API 2453" },
+  { id: "E4", title: "Electrical EW5 full-time, Christmas Day 2026 (NSW)",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-12-21", end: "2027-01-03" }, shifts: [{ date: "2026-12-25", start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00" }] },
+    expect: { status: "complete", entitlementCents: 58904 }, working: "8 h × $73.63 (250%) = $589.04", source: "cl 20.4(b)(i); FWC API 2450; nsw.gov.au public holidays 2026" },
+  { id: "E5", title: "Electrical EW5 casual, weekday 4 h",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "casual", ...adult, arrangement: ARR.cas, state: "VIC", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "08:00", finish: "12:00", breakMinutes: 0 }] },
+    expect: { status: "complete", entitlementCents: 14724 }, working: "4 h × $36.81 (125%) = $147.24", source: "cl 11.2; FWC API 2467" },
+  { id: "E6", title: "Electrical EW5 casual, Christmas Day 2026 (NSW) 4 h",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "casual", ...adult, arrangement: ARR.cas, state: "NSW", payPeriod: { start: "2026-12-21", end: "2027-01-03" }, shifts: [{ date: "2026-12-25", start: "09:00", finish: "13:00", breakMinutes: 0 }] },
+    expect: { status: "complete", entitlementCents: 36812 }, working: "4 h × $92.03 (312.5%) = $368.12", source: "cl 20.4(b)(ii); FWC API 2468" },
+  { id: "E7", title: "Electrical casual Saturday overtime → not in Fair Work data",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "casual", ...adult, arrangement: ARR.cas, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "08:00", finish: "12:00", breakMinutes: 0, overtimeMinutes: 240 }] },
+    expect: { status: "partial", underpaymentCents: null }, working: "Casual overtime (cl 20.1(b): 187.5%/250%) has no pay-database records", source: "FWC API penalties MA000025" },
+  { id: "E8", title: "Electrical EW5 full-time, Saturday 4 h overtime",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "08:00", finish: "12:00", breakMinutes: 0, overtimeMinutes: 240 }] },
+    expect: { status: "complete", entitlementCents: 20616 }, working: "2 h × $44.18 (150%) = $88.36; 2 h × $58.90 (200%) = $117.80 → $206.16", source: "cl 20.1(a); FWC API 2451/2452" },
+  { id: "E9", title: "Electrical full-time Saturday with no overtime stated → Partial",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-06", end: "2026-07-19" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-11", start: "08:00", finish: "12:00", breakMinutes: 0 }] },
+    expect: { status: "partial", underpaymentCents: null }, working: "Weekend work is overtime for day workers (cl 13.2, 20.1); not entered as overtime", source: "cl 13.2, 20.1" },
+  { id: "E10", title: "Electrical 12 h weekday shift with no overtime stated (> 8 h standard day)",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "06:00", finish: "18:30", breakMinutes: 30, breakStart: "12:00" }] },
+    expect: { status: "partial" }, working: "More than 8 ordinary hours needs a majority agreement (cl 13.5), which isn't known", source: "cl 13.4–13.5" },
+  { id: "E11", title: "Electrical historical rate: October 2024 uses the 2024-25 rate ($27.17)",
+    input: { awardCode: E, classificationFixedId: 854, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2024-10-14", end: "2024-10-27" }, shifts: [{ date: "2024-10-15", start: "07:00", finish: "15:30", breakMinutes: 30, breakStart: "12:00" }] },
+    expect: { status: "complete", entitlementCents: 21736 }, working: "8 h × $27.17 = $217.36", source: "FWC API id 854 operative 2024-07-01" },
+
+  // ---------------- Unsupported ----------------
+  { id: "X1", title: "Unsupported award (Manufacturing MA000010)",
+    input: { awardCode: "MA000010", classificationFixedId: 1, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", breakMinutes: 0, finish: "15:00" }] },
+    expect: { status: "unsupported" }, working: "Not in v2 scope yet", source: "—" },
   { id: "X2", title: "Award-free worker",
     input: { awardCode: R, classificationFixedId: 112, employmentType: "full_time", ...adult, arrangement: ARR.ft, state: "NSW", payPeriod: { start: "2026-07-13", end: "2026-07-26" }, holidayConfirmation: { publicHolidayDates: [] }, shifts: [{ date: "2026-07-14", start: "07:00", breakMinutes: 0, finish: "15:00" }], flags: { awardFree: true } },
     expect: { status: "unsupported" }, working: "—", source: "—" },
