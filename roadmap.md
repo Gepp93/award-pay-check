@@ -67,4 +67,4 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [x] Mobile-only swipe carousel for homepage industry cards
 - [x] /employers page, nav links, sitemap
 - [x] Secure enquiry storage + spam protection
-- [ ] Email notifications to support@ (blocked: sending domain notify.awardpay.com.au must be set up by owner)
+- [ ] Connect support notifications on the verified domain, verify one saved enquiry and send event, then delete only the test enquiry.

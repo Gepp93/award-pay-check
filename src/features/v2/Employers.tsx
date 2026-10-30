@@ -39,6 +39,7 @@ function EnquiryForm() {
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [failure, setFailure] = useState("");
   const started = useRef(Date.now());
+  const submissionId = useRef(crypto.randomUUID());
   const set = (k: keyof Form) => (v: any) => setF((p) => ({ ...p, [k]: v }));
 
   const submit = async (e: React.FormEvent) => {
@@ -52,7 +53,7 @@ function EnquiryForm() {
     }
     setErrors({}); setState("sending");
     const { data, error } = await supabase.functions.invoke("employer-enquiry", {
-      body: { ...p.data, website: hp, elapsedMs: Date.now() - started.current },
+      body: { ...p.data, website: hp, elapsedMs: Date.now() - started.current, submissionId: submissionId.current },
     });
     if (error || !data?.ok) {
       let msg = "We couldn't send your enquiry. Please try again, or email support@awardpay.com.au.";
