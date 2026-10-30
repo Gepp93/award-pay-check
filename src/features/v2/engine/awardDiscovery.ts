@@ -17,6 +17,16 @@ export const CANDIDATES: AwardCandidate[] = [
     terms: ["civil", "construction", "building site", "concreter", "scaffolder", "formwork", "formworker", "steel fixer", "plant operator", "labourer", "pipelayer", "bricklayer"] },
   { code: "MA000025", name: "Electrical, Electronic and Communications Contracting Award 2020", industries: ["construction"],
     terms: ["electrician", "electrical", "electronic", "data cabling", "cabler", "sparky", "communications technician"] },
+  { code: "MA000018", name: "Aged Care Award 2010", industries: ["healthcare"],
+    terms: ["aged care", "personal care worker", "care worker", "home care", "residential care", "aged care employee"] },
+  { code: "MA000120", name: "Children's Services Award 2010", industries: ["education"],
+    terms: ["childcare", "child care", "early childhood educator", "educator", "room leader", "childcare educator", "out of school hours", "oshc"] },
+  { code: "MA000010", name: "Manufacturing and Associated Industries and Occupations Award 2020", industries: ["manufacturing"],
+    terms: ["factory", "machinist", "fitter", "welder", "boilermaker", "production worker", "process worker", "assembler", "metal fabrication"] },
+  { code: "MA000038", name: "Road Transport and Distribution Award 2020", industries: ["transport"],
+    terms: ["truck driver", "truckie", "delivery driver", "courier driver", "distribution facility", "transport worker", "road transport"] },
+  { code: "MA000028", name: "Horticulture Award 2020", industries: ["agriculture"],
+    terms: ["fruit picking", "fruit picker", "harvest", "packing shed", "horticulture", "orchard", "vegetable picking", "farm hand"] },
 ];
 
 /** Words that never establish award coverage on their own. */

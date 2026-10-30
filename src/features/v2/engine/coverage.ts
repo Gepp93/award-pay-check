@@ -143,6 +143,88 @@ const ENTRIES: AwardCoverage[] = [
     ],
     unsupported: ["More than one 10.5-hour day in a week (needs agreement, cl 15.1(e))", "Shiftwork"],
   },
+  {
+    code: "MA000018",
+    name: "Aged Care Award 2010",
+    snapshot: "Fair Work pay database 2023–2026 (rates, allowances) + award-text penalty percentages, verified 2026-10-30",
+    supported: [
+      "Weekday ordinary hours 6am–6pm; Saturday 150% / Sunday 175% ordinary (cl 23.1); casual 125%/175%/200%",
+      "Overtime Mon–Fri 150%/200%, weekends 200%, public holidays 250% (cl 25.1); casual overtime 187.5%/250%/312.5%",
+      "Public holidays at 250% (payment election) and 275% casual; ADO accrual (cl 22.1(b)) when confirmed",
+    ],
+    partial: [
+      "ADO system not confirmed — 7.6 vs 8 paid hours a day can't be decided",
+      "Public holiday annual-leave election (cl 29.2) — assessed at the 250% payment rate",
+      "Unpaid breaks whose start time is unknown across different pay rates",
+    ],
+    unsupported: ["Shiftwork (cl 26)", "Classifications not listed in the pack"],
+  },
+  {
+    code: "MA000120",
+    name: "Children's Services Award 2010",
+    snapshot: "Fair Work pay database 2023–2026 (rates, allowances) + award-text penalty percentages, verified 2026-10-30",
+    supported: [
+      "Weekday ordinary hours 6am–6.30pm, up to 8 a day (cl 21); casual 125%",
+      "All Saturday work as overtime 150%/200% (cl 23.5(a)); Sunday 200% (cl 23.5(c)); public holidays 250% (cl 23.5(d))",
+      "Casual weekday overtime 175%/225% (cl 23.2(b)); 4-hour weekend/public-holiday minimum payment flagged",
+    ],
+    partial: ["Weekend work not entered as overtime — it is overtime under this award but can't be priced without the minutes", "Gross-only payslips"],
+    unsupported: [
+      "Casual Saturday, Sunday and public holiday work — the award text states no separate casual rates",
+      "Shiftwork", "Classifications not listed in the pack",
+    ],
+  },
+  {
+    code: "MA000010",
+    name: "Manufacturing and Associated Industries and Occupations Award 2020",
+    snapshot: "Fair Work pay database, 2023–2026, fetched 2026-10-30",
+    supported: [
+      "Day-worker ordinary hours Mon–Fri 6am–6pm, up to 8 a day (cl 17.2); casual 125%",
+      "Overtime 150% first 3 hours then 200% (cl 32.2); Saturday overtime with 4-hour minimum; Sunday 200%; public holidays 250%",
+      "Casual overtime at the same percentages of the casual ordinary rate (cl 32.1)",
+    ],
+    partial: [
+      "Weekend work not entered as overtime — weekend ordinary hours need a facilitative agreement (cl 17.2(c)) that isn't known",
+      "Spread-of-hours variations by agreement (cl 17.2(d))",
+    ],
+    unsupported: ["Shiftwork (cl 33)", "Vehicle manufacturing special rates (cl 48)", "Classifications not listed in the pack"],
+  },
+  {
+    code: "MA000038",
+    name: "Road Transport and Distribution Award 2020",
+    snapshot: "Fair Work pay database, 2023–2026, fetched 2026-10-30",
+    supported: [
+      "Transport and distribution facility employees (other than shiftworkers): ordinary Mon–Fri 5.30am–6.30pm, up to 8 a day (cl 13)",
+      "Saturday 150%/175% and Sunday 200%/225% ordinary penalties; Good Friday and Christmas Day at different public holiday rates",
+      "Overtime 150%/200% (160%/210% casual); Good Friday and Christmas Day overtime 300%",
+    ],
+    partial: [
+      "Early-morning (+30%) delivery arrangements (cl 13.6(d)) — hours before 5.30 am raise the outside-span question",
+      "Sunday overtime — no separate rate record exists",
+    ],
+    unsupported: [
+      "Oil distribution workers (cl 17.2 rates)", "Shiftworkers (cl 14)",
+      "Casual public holiday overtime — no Fair Work pay-database records",
+    ],
+  },
+  {
+    code: "MA000028",
+    name: "Horticulture Award 2020",
+    snapshot: "Fair Work pay database, 2023–2026, fetched 2026-10-30",
+    supported: [
+      "Full-time/part-time ordinary hours Mon–Fri 6am–6pm, up to 8 a day, 152 hours over 4 weeks (cl 13.1)",
+      "Casual ordinary hours at any time on any day at 125% (cl 13.2); public holidays 200%/225%",
+      "Overtime Monday–Saturday flat 150% (cl 21); casual overtime 175% (over 12 hours a day or 304 in 8 weeks)",
+    ],
+    partial: [
+      "Weekend work by full-time/part-time employees not entered as overtime — Saturday ordinary hours need an arrangement (cl 13.1(a)(i)) that isn't known",
+      "Gross-only payslips",
+    ],
+    unsupported: [
+      "Sunday overtime — the rate depends on whether it is harvest season (cl 21), which AwardPay cannot know",
+      "Shiftwork", "Piecework", "Classifications not listed in the pack",
+    ],
+  },
 ];
 
 export function coverageRegistry(): AwardCoverage[] {
