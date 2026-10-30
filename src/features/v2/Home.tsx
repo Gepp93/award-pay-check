@@ -49,7 +49,7 @@ export default function V2Home() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-10 md:grid-cols-[1.05fr_1fr] md:gap-12 md:px-8 md:py-16">
-          <div>
+          <div className="min-w-0">
             <span className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">Australian pay checker</span>
             <h1 className="mt-6 text-4xl font-extrabold leading-[1.05] md:text-6xl">Working hard.<br />Getting paid <span className="text-primary">right?</span></h1>
             <p className="mt-6 max-w-lg text-lg text-ink-2">Check your payslip against Australian award rates. Understand your overtime, penalties and allowances — and what to do next.</p>
