@@ -87,6 +87,8 @@ export interface RulePack {
   minimumClause: string;
   /** Situations the pack refuses to assess. */
   unsupportedFlags: Array<"shiftworker" | "casinoGaming" | "managerial">;
+  /** RDO accrual system (MA000020 cl 16.2): of each ordinary day, only paidPerWorked is paid; the rest accrues towards a rostered day off. Applies to non-casuals when the user confirms the RDO system. */
+  rdoAccrual?: { paidPerWorked: number; clause: string };
 }
 
 const h = (hh: number, mm = 0) => hh * 60 + mm;
