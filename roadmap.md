@@ -26,9 +26,19 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [x] End-to-end: deployed function returns exact hand-worked amounts for Construction, Electrical and Pharmacy cases (validator fixed to pass rdoAccrual through)
 - [x] Full suite green (229 tests), typecheck clean, build OK; Engine v1, Stripe, auth, customer data untouched; nothing published
 
+## Batch 3 (revised, cost-efficient) — one award per uncovered homepage industry [done]
+- [x] MA000018 Aged Care (Healthcare) — award-text inline penalties (no DB records); Sat/Sun ordinary, OT tiers, casual OT, PH 250%/275%, ADO accrual via RDO mechanism
+- [x] MA000120 Children's Services (Education) — inline penalties; weekend = overtime; casual weekend/PH Not assessed (no casual rates in award text)
+- [x] MA000010 Manufacturing — DB penalties; day workers Mon–Fri 6am–6pm; weekend = overtime; OT 150%/200% (3h tiers); casual OT supported
+- [x] MA000038 Road Transport — DB penalties; transport + distribution facility streams (penaltyGroup overrides); Sat/Sun ordinary penalties; Good Friday/Christmas Day distinct PH rates; oil distribution + shiftworkers excluded
+- [x] MA000028 Horticulture — DB penalties; casuals any day 125%; FT/PT weekend = overtime; flat 150% OT (tierMinutes 0); Sunday OT Not assessed (harvest season)
+- [x] Engine extensions: publicHolidayGfcd, nullable publicHoliday refs, penaltyGroup overrides, flat-OT label, generalized unpriced-day message
+- [x] 20 hand-worked cases (AC1–4, CS1–4, MF1–4, RT1–5, HO1–4); full suite 250 green; typecheck clean
+- [x] Coverage registry + award discovery + model.ts AWARDS updated; all 8 homepage industries now have a supported award
+- [x] Temporary fwc-fetch-raw function deleted after snapshot download
+
 ## Later batches (not started)
-- Batch 3: Healthcare MA000034, MA000027, MA000018, MA000100
-- Batch 4: Manufacturing MA000010, MA000073, MA000089; Transport MA000038, MA000039, MA000063, MA000015
-- Batch 5: Agriculture MA000035, MA000028, MA000090, MA000114; Education MA000120, MA000076, MA000077, MA000075
+- Batch 4: Healthcare MA000034, MA000027, MA000100; Manufacturing MA000073, MA000089; Transport MA000039, MA000063, MA000015
+- Batch 5: Agriculture MA000035, MA000090, MA000114; Education MA000076, MA000077, MA000075
 - Batch 6: MA000036, MA000029; cross-industry integration; full regression; coverage review
 - Payslip scanner → Engine v2 prefill integration (supported cases)
