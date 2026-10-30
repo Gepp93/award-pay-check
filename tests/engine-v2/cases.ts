@@ -24,6 +24,7 @@ export interface Case {
 }
 
 const R = "MA000004", H = "MA000009", F = "MA000003", C = "MA000020", E = "MA000025";
+const RES = "MA000119", CLU = "MA000058", PHA = "MA000012", HB = "MA000005";
 const adult = { rateType: "adult" as const };
 // Arrangement facts a real user would confirm: every shift in the period is listed, and
 // (full-time / part-time) every non-overtime hour was rostered ordinary time.
