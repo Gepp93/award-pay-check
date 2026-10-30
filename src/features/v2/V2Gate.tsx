@@ -9,10 +9,8 @@ export function isLiveHost(host: string) {
 }
 
 export default function V2Gate() {
-  const live = isLiveHost(window.location.hostname);
-  const [state, setState] = useState<"checking" | "allowed" | "denied">(live ? "checking" : "allowed");
+  const [state, setState] = useState<"checking" | "allowed" | "denied">("checking");
   useEffect(() => {
-    if (!live) return;
     let cancelled = false;
     (async () => {
       const { data } = await supabase.auth.getUser();
@@ -22,7 +20,7 @@ export default function V2Gate() {
       if (!cancelled) setState(roles && roles.length > 0 ? "allowed" : "denied");
     })().catch(() => { if (!cancelled) setState("denied"); });
     return () => { cancelled = true; };
-  }, [live]);
+  }, []);
   if (state === "checking") return null;
   if (state === "denied") return <NotFound />;
   return <Outlet />;

@@ -40,6 +40,8 @@ import V2SignIn from "./features/v2/SignIn";
 import V2HowItWorks from "./features/v2/HowItWorks";
 import V2Coverage from "./features/v2/Coverage";
 import ResetPassword from "./pages/ResetPassword";
+import V2PaidReport from "./features/v2/PaidReport";
+import V2PaidReports from "./features/v2/PaidReports";
 
 const queryClient = new QueryClient();
 
@@ -88,6 +90,8 @@ const App = () => (
             <Route path="upload" element={<V2Upload />} />
             <Route path="questions" element={<V2Questions />} />
             <Route path="results" element={<V2Results />} />
+            <Route path="report/:id" element={<V2PaidReport />} />
+            <Route path="reports" element={<V2PaidReports />} />
             <Route path="coverage" element={<V2Coverage />} />
             <Route path="pricing-preview" element={<Navigate to="/v2/pricing" replace />} />
             <Route path="pricing" element={<V2Pricing />} />

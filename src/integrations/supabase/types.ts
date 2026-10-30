@@ -309,6 +309,107 @@ export type Database = {
           },
         ]
       }
+      tier_purchases: {
+        Row: {
+          created_at: string
+          id: string
+          payment_link_id: string
+          price_id: string
+          product: string
+          report_id: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_session_id: string | null
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payment_link_id: string
+          price_id: string
+          product: string
+          report_id?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payment_link_id?: string
+          price_id?: string
+          product?: string
+          report_id?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tier_purchases_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "v2_paid_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tier_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          last_event_created: number
+          paid_through: string | null
+          price_id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          last_event_created?: number
+          paid_through?: string | null
+          price_id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          last_event_created?: number
+          paid_through?: string | null
+          price_id?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tier_webhook_events: {
+        Row: {
+          created_at: string
+          event_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+        }
+        Relationships: []
+      }
       user_credits: {
         Row: {
           credits: number
@@ -345,6 +446,39 @@ export type Database = {
         }
         Relationships: []
       }
+      v2_paid_reports: {
+        Row: {
+          assessment_status: string
+          assessment_unlocked: boolean
+          created_at: string
+          id: string
+          pdf_unlocked: boolean
+          request: Json
+          result: Json
+          user_id: string
+        }
+        Insert: {
+          assessment_status: string
+          assessment_unlocked?: boolean
+          created_at?: string
+          id?: string
+          pdf_unlocked?: boolean
+          request: Json
+          result: Json
+          user_id: string
+        }
+        Update: {
+          assessment_status?: string
+          assessment_unlocked?: boolean
+          created_at?: string
+          id?: string
+          pdf_unlocked?: boolean
+          request?: Json
+          result?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -359,6 +493,17 @@ export type Database = {
           p_session_id: string
         }
         Returns: undefined
+      }
+      fulfil_tier_purchase: {
+        Args: {
+          p_customer_id: string
+          p_event_id: string
+          p_price_id: string
+          p_purchase_id: string
+          p_session_id: string
+          p_subscription_id: string
+        }
+        Returns: boolean
       }
       get_purchase_status: {
         Args: { p_id: string }
@@ -399,6 +544,23 @@ export type Database = {
           report_id: string
           status: string
         }[]
+      }
+      revoke_tier_purchase: {
+        Args: { p_event_id: string; p_session_id: string }
+        Returns: boolean
+      }
+      sync_tier_subscription: {
+        Args: {
+          p_cancel_at_period_end: boolean
+          p_customer_id: string
+          p_event_created: number
+          p_event_id: string
+          p_paid_through: string
+          p_price_id: string
+          p_status: string
+          p_subscription_id: string
+        }
+        Returns: boolean
       }
       unlock_report_with_pass: {
         Args: { p_report_id: string }

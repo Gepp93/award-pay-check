@@ -7,6 +7,7 @@ import { startSubscriptionCheckout } from "@/lib/paymentLinks";
 import { THREE_MONTH_PASS } from "@/lib/plans";
 import SEO from "@/components/SEO";
 import { usePublicSite } from "./publicSite";
+import TierOffers from "./TierOffers";
 
 const INCLUDES = [
   `Payslip checks for ${THREE_MONTH_PASS.durationDays} days`,
@@ -19,6 +20,7 @@ const INCLUDES = [
 export default function Pricing() {
   const [busy, setBusy] = useState(false);
   const publicSite = usePublicSite();
+  if (!publicSite) return <main className="mx-auto max-w-6xl px-4 py-10 md:px-8"><p className="text-sm font-bold uppercase text-primary">Pricing preview</p><h1 className="mt-3 text-4xl font-extrabold">Choose your pay check</h1><p className="mb-8 mt-4 text-lg text-ink-2">Supported assessments. Clear reports. No promise of recovery.</p><TierOffers /></main>;
   // Same checkout as the live /pricing page: guests can buy, signed-in users are linked.
   const checkout = async () => {
     if (busy) return; setBusy(true);

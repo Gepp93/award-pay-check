@@ -33,9 +33,9 @@ function Choice({ value, onChange, options, label }: { value: string; onChange: 
   return (
     <div role="radiogroup" aria-label={label} className="grid gap-3 sm:grid-cols-2">
       {options.map(([v, l]) => (
-        <button key={v} type="button" role="radio" aria-checked={value === v} onClick={() => onChange(v)}
+        <Button variant="outline" key={v} type="button" role="radio" aria-checked={value === v} onClick={() => onChange(v)}
           className={cn("min-h-14 rounded-lg border-2 bg-card px-4 py-3 text-left font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            value === v ? "border-primary bg-primary-soft" : "border-border hover:border-primary/50")}>{l}</button>
+            value === v ? "border-primary bg-primary-soft" : "border-border hover:border-primary/50")}>{l}</Button>
       ))}
     </div>
   );
@@ -75,6 +75,7 @@ export default function EngineQuestions() {
     classification: d.classificationFixedId !== null, employment: !!d.employmentType, rate: !!d.rateType, state: !!d.state,
     period: true, shifts: d.shifts.some(s => s.date && s.start && s.finish), allShifts: !!d.allShifts, roster: !!d.workedToRoster,
     guaranteed: true, cycle: true, extended: d.spanExceptions !== undefined, pay: d.payLines.every(lineReady),
+    eligibility: !!d.shiftworker && !!d.specialArrangement, rdo: !!d.rdoAccrual,
   };
 
   const submit = async () => {
@@ -152,6 +153,22 @@ export default function EngineQuestions() {
           <h1 className="text-3xl font-extrabold">Where do you work?</h1>
           <p className="text-ink-2">Public holidays depend on your state or territory.</p>
           <Choice label="State" value={d.state} onChange={v => set({ state: v })} options={STATES.map(s => [s, s] as [string, string])} />
+        </>)}
+
+        {step === "eligibility" && (<>
+          <h1 className="text-3xl font-extrabold">Does this award check cover your work?</h1>
+          <p className="font-bold">Are you employed as a shiftworker?</p>
+          <Choice label="Shiftworker arrangement" value={d.shiftworker} onChange={v => set({ shiftworker: v as Tri })} options={TRI} />
+          <p className="pt-3 font-bold">Do any of these special arrangements apply?</p>
+          <p className="text-ink-2">Daily hire, piecework, oil distribution, vehicle-manufacturing special rates, casino gaming, or managerial salary arrangements.</p>
+          <Choice label="Special arrangement" value={d.specialArrangement} onChange={v => set({ specialArrangement: v as Tri })} options={TRI} />
+          <p className="text-sm text-ink-2">If your coverage is uncertain or outside the supported scope, no paid report will be offered.</p>
+        </>)}
+
+        {step === "rdo" && (<>
+          <h1 className="text-3xl font-extrabold">Does your roster accrue a paid day off?</h1>
+          <p className="text-ink-2">An RDO or ADO arrangement changes the hours paid now versus accrued towards a later paid day off. Check your roster or agreement rather than guessing.</p>
+          <Choice label="RDO or ADO accrual" value={d.rdoAccrual} onChange={v => set({ rdoAccrual: v as Tri })} options={TRI} />
         </>)}
 
         {step === "period" && (<>

@@ -64,6 +64,9 @@ export interface EngineDraft {
   employmentType: Emp | "";
   rateType: "adult" | "junior" | "apprentice" | "trainee" | "";
   enterpriseAgreement: Tri;
+  shiftworker: Tri;
+  specialArrangement: Tri;
+  rdoAccrual: Tri;
   state: string;
   periodStart: string; periodEnd: string;
   shifts: ShiftDraft[];
@@ -81,7 +84,7 @@ export interface EngineDraft {
 
 export const emptyDraft: EngineDraft = {
   jobTitle: "", jobTitleSource: "", duties: "",
-  awardCode: "", classificationFixedId: null, employmentType: "", rateType: "", enterpriseAgreement: "", state: "",
+  awardCode: "", classificationFixedId: null, employmentType: "", rateType: "", enterpriseAgreement: "", shiftworker: "", specialArrangement: "", rdoAccrual: "", state: "",
   periodStart: "", periodEnd: "", shifts: [], allShifts: "", workedToRoster: "", guaranteedHours: "", rosterCycleWeeks: "",
   payLines: [], grossPay: "", grossSource: "", linesCoverAllWages: "", holidayAnswers: {}, spanExceptions: null,
 };
@@ -167,6 +170,7 @@ export function buildRequest(d: EngineDraft) {
     arrangement: {
       allShiftsInPeriodIncluded: tri(d.allShifts),
       workedToRoster: tri(d.workedToRoster),
+      rdoAccrual: tri(d.rdoAccrual),
       guaranteedMinutesPerWeek: g ?? undefined,
       rosterCycleWeeks: cycle ?? undefined,
       spanExceptions: outsideStandardSpan(d) && d.spanExceptions ? d.spanExceptions : undefined,
@@ -174,15 +178,25 @@ export function buildRequest(d: EngineDraft) {
     holidayConfirmation: Object.keys(d.holidayAnswers).length ? { publicHolidayDates: holidayDates } : undefined,
     paid: lines.length || gross != null ? { lines: lines.length ? lines : undefined, grossCents: gross ?? undefined, linesCoverAllWages: tri(d.linesCoverAllWages) } : undefined,
     flags: d.enterpriseAgreement === "yes" ? { enterpriseAgreement: true } : undefined,
+    eligibility: {
+      enterpriseAgreement: d.enterpriseAgreement === "yes" || d.enterpriseAgreement === "no" ? d.enterpriseAgreement : "unknown" as const,
+      shiftworker: d.shiftworker === "yes" || d.shiftworker === "no" ? d.shiftworker : "unknown" as const,
+      specialArrangement: d.specialArrangement === "yes" || d.specialArrangement === "no" ? d.specialArrangement : "unknown" as const,
+      awardConfirmed: !!d.awardCode && d.awardCode !== OTHER_AWARD,
+      classificationConfirmed: typeof d.classificationFixedId === "number" && d.classificationFixedId > 0,
+      rateConfirmed: !!d.rateType,
+    },
   };
 }
 
 /** Which questions apply. Order matters: the questionnaire shows them one at a time. */
-export type StepId = "award" | "classification" | "employment" | "rate" | "state" | "period" | "shifts" | "allShifts" | "roster" | "guaranteed" | "cycle" | "extended" | "pay";
+export type StepId = "award" | "classification" | "employment" | "rate" | "eligibility" | "rdo" | "state" | "period" | "shifts" | "allShifts" | "roster" | "guaranteed" | "cycle" | "extended" | "pay";
 export function stepsFor(d: EngineDraft): StepId[] {
   const s: StepId[] = ["award"];
   if (d.awardCode === OTHER_AWARD || d.enterpriseAgreement === "yes" || (d.awardCode && !RULE_PACKS[d.awardCode])) return s;
-  s.push("classification", "employment", "rate", "state", "period", "shifts", "allShifts");
+  s.push("classification", "employment", "rate", "eligibility");
+  if (RULE_PACKS[d.awardCode]?.rdoAccrual && d.employmentType !== "casual") s.push("rdo");
+  s.push("state", "period", "shifts", "allShifts");
   const rules = d.awardCode && d.employmentType ? overtimeRules(d.awardCode, d.employmentType) : null;
   if (rules?.needs.includes("roster")) s.push("roster");
   if (rules?.needs.includes("guaranteed")) s.push("guaranteed");

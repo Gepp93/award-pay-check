@@ -7,6 +7,8 @@ import { useV2 } from "./store";
 import { buildRequest } from "./engine/model";
 import { runEngine } from "./engine/api";
 import type { AssessmentResult } from "../../../supabase/functions/_shared/engine-v2/engine";
+import { reportSellable } from "../../../supabase/functions/_shared/engine-v2/eligibility";
+import { tierCall, billingError } from "./tierApi";
 
 const $ = (c: number | null | undefined) => (c == null ? "—" : `${c < 0 ? "−" : ""}$${(Math.abs(c) / 100).toFixed(2)}`);
 const KIND: Record<string, string> = { ordinary: "Ordinary hours", evening: "Evening / night", saturday: "Saturday", sunday: "Sunday", public_holiday: "Public holiday", overtime: "Overtime" };
@@ -16,6 +18,7 @@ export default function Results() {
   const { answers, update } = useV2();
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const r = answers.result as AssessmentResult | null;
 
   if (!r) {
@@ -49,7 +52,7 @@ export default function Results() {
     <main className="mx-auto max-w-4xl px-4 py-10 md:px-8">
       <Stepper current={2} />
       <IndustryChip />
-      <p className="mb-6 rounded-md bg-gold-soft px-3 py-2 text-xs font-bold">Internal Engine v2 test — calculated by engine {r.engineVersion}. Reports and passes are switched off in this preview.</p>
+      <p className="mb-6 rounded-md bg-gold-soft px-3 py-2 text-xs font-bold">Internal Engine v2 test — calculated by engine {r.engineVersion}. Paid reports remain restricted to authorised testers.</p>
 
       <section className={`rounded-lg p-6 ${head.tone}`} data-status={r.status}>
         <p className="flex items-center gap-2 text-xl font-extrabold"><Icon className="h-6 w-6" /> {head.t}</p>
@@ -115,7 +118,7 @@ export default function Results() {
 
       {holidayQs.length > 0 && (
         <section className="mt-6 rounded-lg border border-gold bg-card p-6">
-          {holidayQs.map((n, k) => { const date = n.question!.match(/\d{4}-\d{2}-\d{2}/)![0]; return (
+          {holidayQs.map((n, k) => { const date = n.question?.match(/\d{4}-\d{2}-\d{2}/)?.[0]; if (!date) return null; return (
             <div key={k} className="mb-3"><p className="font-bold">{n.question}</p><p className="text-sm text-ink-2">{n.reason}</p>
               <div className="mt-2 flex gap-3"><Button size="sm" disabled={busy} onClick={() => answerHoliday(date, true)}>Yes</Button><Button size="sm" variant="outline" disabled={busy} onClick={() => answerHoliday(date, false)}>No</Button>{busy && <Loader2 className="animate-spin" />}</div>
             </div>); })}
@@ -143,7 +146,10 @@ export default function Results() {
 
       <div className="mt-8 flex flex-wrap gap-3">
         <Button variant="outline" onClick={() => navigate("/v2/questions")}><ArrowLeft /> {r.status === "unsupported" ? "Change award or classification" : "Change my answers"}</Button>
+        {reportSellable(r) && <Button disabled={busy} onClick={async () => { setBusy(true); setSaveError(""); try { const data = await tierCall({ action: "save", request: buildRequest(answers.engine) }); navigate(`/v2/report/${data.reportId}`); } catch (e) { setSaveError(billingError(e)); } finally { setBusy(false); } }}>{busy ? <Loader2 className="animate-spin" /> : "Save assessment and view report options"}</Button>}
       </div>
+      {!reportSellable(r) && <p className="mt-4 text-sm text-ink-2">This calculation is incomplete or unsupported. No paid underpayment report is available.</p>}
+      {saveError && <p role="alert" className="mt-4 text-destructive">{saveError}</p>}
     </main>
   );
 }
