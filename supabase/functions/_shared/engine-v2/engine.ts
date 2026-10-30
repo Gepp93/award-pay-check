@@ -4,13 +4,17 @@
 import retail from "./data/MA000004.json" with { type: "json" };
 import hospitality from "./data/MA000009.json" with { type: "json" };
 import fastFood from "./data/MA000003.json" with { type: "json" };
+import construction from "./data/MA000020.json" with { type: "json" };
+import electrical from "./data/MA000025.json" with { type: "json" };
 import holidaysData from "./data/public-holidays.json" with { type: "json" };
-import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules } from "./rulepacks.ts";
+import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules, type PenaltyRef } from "./rulepacks.ts";
 
-export const ENGINE_VERSION = "v2.1.0";
+export const ENGINE_VERSION = "v2.2.0";
 
-type Snapshot = typeof retail;
-const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot };
+/** Award-text penalty record for awards the Fair Work pay database doesn't cover (MA000020). See scripts/engine-v2/inline_penalties.json. */
+interface InlinePenalty { id: string; rate: number; description: string; clause: string; operativeFrom: string; operativeTo: string | null; sourceUrl: string; verifiedOn: string }
+type Snapshot = typeof retail & { inlinePenalties?: InlinePenalty[] };
+const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot };
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"] as const;
 export type State = typeof STATES[number];
 
@@ -43,6 +47,8 @@ export interface Arrangement {
   rosterCycleWeeks?: number;
   /** Span-of-hours exceptions that apply at the workplace (Retail cl 15.2). Undefined = not known; [] = none apply. */
   spanExceptions?: string[];
+  /** Awards with an RDO accrual system (MA000020 cl 16.2): is the employee on it? Undefined = not known. */
+  rdoAccrual?: boolean;
 }
 
 export interface AssessmentInput {
