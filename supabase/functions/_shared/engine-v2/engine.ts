@@ -10,15 +10,20 @@ import restaurant from "./data/MA000119.json" with { type: "json" };
 import clubs from "./data/MA000058.json" with { type: "json" };
 import pharmacy from "./data/MA000012.json" with { type: "json" };
 import hairBeauty from "./data/MA000005.json" with { type: "json" };
+import agedCare from "./data/MA000018.json" with { type: "json" };
+import childrensServices from "./data/MA000120.json" with { type: "json" };
+import manufacturing from "./data/MA000010.json" with { type: "json" };
+import roadTransport from "./data/MA000038.json" with { type: "json" };
+import horticulture from "./data/MA000028.json" with { type: "json" };
 import holidaysData from "./data/public-holidays.json" with { type: "json" };
 import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules, type PenaltyRef } from "./rulepacks.ts";
 
-export const ENGINE_VERSION = "v2.3.0";
+export const ENGINE_VERSION = "v2.4.0";
 
-/** Award-text penalty record for awards the Fair Work pay database doesn't cover (MA000020). See scripts/engine-v2/inline_penalties.json. */
+/** Award-text penalty record for awards the Fair Work pay database doesn't cover (MA000020, MA000018, MA000120). See scripts/engine-v2/inline_penalties.json. */
 interface InlinePenalty { id: string; rate: number; description: string; clause: string; operativeFrom: string; operativeTo: string | null; sourceUrl: string; verifiedOn: string }
 type Snapshot = typeof retail & { inlinePenalties?: InlinePenalty[] };
-const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot, MA000119: restaurant as Snapshot, MA000058: clubs as Snapshot, MA000012: pharmacy as Snapshot, MA000005: hairBeauty as Snapshot };
+const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot, MA000119: restaurant as Snapshot, MA000058: clubs as Snapshot, MA000012: pharmacy as Snapshot, MA000005: hairBeauty as Snapshot, MA000018: agedCare as Snapshot, MA000120: childrensServices as Snapshot, MA000010: manufacturing as Snapshot, MA000038: roadTransport as Snapshot, MA000028: horticulture as Snapshot };
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"] as const;
 export type State = typeof STATES[number];
 
@@ -155,6 +160,8 @@ export function holidayStatus(date: string, state: State): HolidayStatus {
   if (h.scope === "regional") return { kind: "regional", holiday: h };
   return { kind: "restricted", holiday: h };
 }
+/** MA000038: Good Friday and Christmas Day attract different rates from other public holidays. */
+const isGfcd = (name?: string) => !!name && /good friday|christmas day/i.test(name);
 
 // ---------- main ----------
 const EXCLUSIONS = [
@@ -246,8 +253,9 @@ export function assess(input: AssessmentInput): AssessmentResult {
     return rec;
   };
   const isCasual = emp === "casual";
-  const ord: OrdinaryRules = isCasual ? pack.ordinary.casual : pack.ordinary.ftpt;
-  const ot: OvertimeRules | null = isCasual ? pack.overtime.casual : pack.overtime.ftpt;
+  const grp = cls.penaltyGroup;
+  const ord: OrdinaryRules = (grp && pack.ordinaryOverrides?.[grp] ? pack.ordinaryOverrides[grp] : pack.ordinary)[isCasual ? "casual" : "ftpt"];
+  const ot: OvertimeRules | null = (grp && pack.overtimeOverrides?.[grp] ? pack.overtimeOverrides[grp] : pack.overtime)[isCasual ? "casual" : "ftpt"];
   const dailyMax = pack.dailyMaxByEmployment?.[emp] ?? pack.dailyMaxOrdinaryMinutes;
 
   // ---- RDO accrual (MA000020 cl 16.2): never guessed ----
@@ -274,7 +282,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
     const breakMin = Math.max(0, Math.round(s.breakMinutes ?? 0));
     if (breakMin >= total) { material("Shift", "The break is as long as the shift.", si); return; }
 
-    type M = { date: string; tod: number; dow: Dow; day: "weekday" | "saturday" | "sunday" | "ph"; paid: boolean };
+    type M = { date: string; tod: number; dow: Dow; day: "weekday" | "saturday" | "sunday" | "ph"; paid: boolean; phName?: string };
     const mins: M[] = [];
     const holidayNotes = new Set<string>();
     for (let m = start; m < finish; m++) {
@@ -294,7 +302,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
       }
       if (ph && hs.holiday) holidayNotes.add(`official|${date}|${hs.holiday.name}|${hs.holiday.source}${hs.kind === "part" ? ` (from ${hrs(hs.fromMinute ?? 0).replace(".00", "")}:00 to midnight)` : ""}`);
       const day = ph ? "ph" : dow === 0 ? "sunday" : dow === 6 ? "saturday" : "weekday";
-      mins.push({ date, tod, dow, day, paid: true });
+      mins.push({ date, tod, dow, day, paid: true, phName: ph ? hs.holiday?.name : undefined });
     }
     for (const n of holidayNotes) {
       const [k, d, name, extra] = n.split("|");
@@ -308,7 +316,10 @@ export function assess(input: AssessmentInput): AssessmentResult {
 
     // null = the award has no ordinary hours on that day (all weekend work is overtime).
     const ordId = (x: M): { id: PenaltyRef; label: string; kind: LineKind } | null => {
-      if (x.day === "ph") return { id: ord.publicHoliday, label: "Public holiday", kind: "public_holiday" };
+      if (x.day === "ph") {
+        const id = isGfcd(x.phName) && ord.publicHolidayGfcd ? ord.publicHolidayGfcd : ord.publicHoliday;
+        return id == null ? null : { id, label: "Public holiday", kind: "public_holiday" };
+      }
       if (x.day === "sunday") {
         const band = ord.sundayBands?.find(b => x.tod >= b.from && x.tod < b.to);
         if (band) return { id: band.penaltyId, label: band.label, kind: "sunday" };
@@ -367,10 +378,15 @@ export function assess(input: AssessmentInput): AssessmentResult {
     // overtime. Unless they were entered as overtime they can't be priced — never pay
     // them at an ordinary rate.
     const ordinaryWorked = ordinaryWorkedAll.filter(x => ordId(x) != null);
-    const weekendOvertime = ordinaryWorkedAll.filter(x => ordId(x) == null);
-    if (weekendOvertime.length) {
-      const days = [...new Set(weekendOvertime.map(x => x.day === "saturday" ? "Saturday" : "Sunday"))].join(" and ");
-      material("Overtime", `Shift ${si + 1}: ${hrs(weekendOvertime.length)} hours on ${days} are overtime under this award (${pack.clauses.overtime}), but they weren't entered as overtime, so AwardPay can't price them.`, si, `How many minutes of the shift on ${s.date} were paid as overtime? Enter them as overtime minutes.`);
+    const unpriced = ordinaryWorkedAll.filter(x => ordId(x) == null);
+    if (unpriced.length) {
+      const dayName = (x: M) => x.day === "saturday" ? "Saturday" : x.day === "sunday" ? "Sunday" : "a public holiday";
+      const days = [...new Set(unpriced.map(dayName))].join(" and ");
+      if (unpriced.every(x => x.day === "ph")) {
+        material("Public holiday", `Shift ${si + 1}: public holiday work can't be priced for this employment type under this award (${pack.clauses.penalties}).`, si);
+      } else {
+        material("Overtime", `Shift ${si + 1}: ${hrs(unpriced.length)} hours on ${days} are overtime under this award (${pack.clauses.overtime}), but they weren't entered as overtime, so AwardPay can't price them.`, si, `How many minutes of the shift on ${s.date} were paid as overtime? Enter them as overtime minutes.`);
+      }
     }
 
     // Daily maximum (stated overtime does not excuse ordinary minutes still above the maximum).
@@ -446,11 +462,16 @@ export function assess(input: AssessmentInput): AssessmentResult {
         const og = new Map<string, { id: PenaltyRef; label: string; minutes: number; date: string }>();
         for (const x of otWorked) {
           let id: PenaltyRef; let label: string;
-          if (x.day === "ph") { id = ot.publicHoliday; label = "Overtime — public holiday"; }
+          if (x.day === "ph") {
+            const phId = isGfcd(x.phName) && ot.publicHolidayGfcd ? ot.publicHolidayGfcd : ot.publicHoliday;
+            if (phId == null) { material("Overtime", (isCasual && pack.overtimeMissingReason?.casual) || "Public holiday overtime isn't assessed for this employment type.", si); continue; }
+            id = phId; label = "Overtime — public holiday";
+          }
           else if (ot.tierDays.includes(x.dow)) {
             const tr = ot.tierRates?.[x.dow];
             const firstId = tr?.first ?? ot.first, afterId = tr?.after ?? ot.after;
             if (ot.saturdayNoonAllAfter && x.dow === 6 && x.tod >= 720) { id = afterId; label = "Overtime — Saturday after 12 noon"; }
+            else if (ot.tierMinutes === 0) { id = afterId; label = "Overtime"; }
             else if (tierUsed < ot.tierMinutes) { id = firstId; label = `Overtime — first ${ot.tierMinutes / 60} hours`; } else { id = afterId; label = `Overtime — after ${ot.tierMinutes / 60} hours`; }
             tierUsed++;
           } else {
