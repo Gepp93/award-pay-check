@@ -10,6 +10,8 @@ export const AWARDS = [
   { code: "MA000004", label: "General Retail Industry Award" },
   { code: "MA000009", label: "Hospitality Industry (General) Award" },
   { code: "MA000003", label: "Fast Food Industry Award" },
+  { code: "MA000020", label: "Building and Construction General On-site Award" },
+  { code: "MA000025", label: "Electrical, Electronic and Communications Contracting Award" },
 ] as const;
 export const OTHER_AWARD = "OTHER";
 
