@@ -597,4 +597,294 @@ export const HAIR_BEAUTY: RulePack = {
   unsupportedFlags: ["shiftworker"],
 };
 
-export const RULE_PACKS: Record<string, RulePack> = { MA000004: RETAIL, MA000009: HOSPITALITY, MA000003: FAST_FOOD, MA000020: CONSTRUCTION, MA000025: ELECTRICAL, MA000119: RESTAURANT, MA000058: CLUBS, MA000012: PHARMACY, MA000005: HAIR_BEAUTY };
+// MA000018 — verified against the consolidated award text (up to 1 July 2026,
+// PR813673) on 2026-10-30. The Fair Work pay database has no penalty records for
+// this award, so every percentage comes from the snapshot's inlinePenalties
+// (award text, see scripts/engine-v2/inline_penalties.json). Day-worker ordinary
+// hours are Monday-Friday 6am-6pm (cl 22.2(a)); Saturday 150% / Sunday 175%
+// ordinary (cl 23.1); casual Saturday 175% / Sunday 200% (cl 23.2). Full-time and
+// part-time public holiday work is assessed at 250% (ordinary pay + 150%, cl
+// 29.2(a),(c)) — the award lets the employee elect annual leave instead of the
+// 150% payment, which AwardPay cannot know; the election is disclosed in the
+// penalty source description. The ADO arrangement (cl 22.1(b)) is handled like
+// the Construction RDO: only assessed when the user confirms it.
+export const AGED_CARE: RulePack = {
+  awardCode: "MA000018",
+  name: "Aged Care Award 2010",
+  version: "2026-10-30.1",
+  awardUrl: "https://awards.fairwork.gov.au/MA000018.html",
+  classifications: {
+    656: { label: "Aged care employee—general—level 1" }, 657: { label: "Aged care employee—general—level 2" },
+    658: { label: "Aged care employee—general—level 3" }, 659: { label: "Aged care employee—general—level 4" },
+    660: { label: "Aged care employee—general—level 5" }, 661: { label: "Aged care employee—general—level 6" },
+    662: { label: "Aged care employee—general—level 7" },
+  },
+  clauses: {
+    minimumRates: "cl 15 (minimum rates; verified against the pay database)",
+    penalties: "cl 23 (Saturday and Sunday work); cl 29.2 (public holidays)",
+    overtime: "cl 25.1 (overtime penalty rates)",
+    hours: "cl 22 (38 hours a week, averagable; day workers 6.00 am–6.00 pm Monday to Friday)",
+    casual: "cl 10.4(b) (25% casual loading)",
+    schedule: "cl 15 rate table (this award has no Schedule B hourly summary)",
+  },
+  ordinary: {
+    ftpt: { weekday: "MA000018-ORD", weekdayBands: [], saturday: "MA000018-SAT", sunday: "MA000018-SUN", publicHoliday: "MA000018-PH" },
+    casual: { weekday: "MA000018-CAS-ORD", weekdayBands: [], saturday: "MA000018-CAS-SAT", sunday: "MA000018-CAS-SUN", publicHoliday: "MA000018-CAS-PH" },
+  },
+  overtime: {
+    ftpt: { tierDays: [1, 2, 3, 4, 5], tierMinutes: 120, first: "MA000018-OT-1", after: "MA000018-OT-2", flat: { saturday: "MA000018-OT-WEND", sunday: "MA000018-OT-WEND" }, publicHoliday: "MA000018-OT-PH" },
+    casual: { tierDays: [1, 2, 3, 4, 5], tierMinutes: 120, first: "MA000018-CAS-OT-1", after: "MA000018-CAS-OT-2", flat: { saturday: "MA000018-CAS-OT-WEND", sunday: "MA000018-CAS-OT-WEND" }, publicHoliday: "MA000018-CAS-OT-PH" },
+  },
+  additions: [],
+  dailyMaxOrdinaryMinutes: h(10),
+  dailyMaxClause: "cl 22.1(c) (8 hours on a day shift, 10 on a night shift); cl 25.1(b)(ii) (part-time overtime beyond 10 hours a day)",
+  span: {
+    byDow: { 0: [0, 1440], 1: [h(6), h(18)], 2: [h(6), h(18)], 3: [h(6), h(18)], 4: [h(6), h(18)], 5: [h(6), h(18)], 6: [0, 1440] },
+    extendedEnd: h(18), clause: "cl 22.2(a) (day workers 6.00 am–6.00 pm Monday to Friday)",
+  },
+  overtimeNeeds: { full_time: ["roster"], part_time: ["roster", "guaranteed"], casual: [] },
+  overtimeNeedsClause: { full_time: "cl 25.1(a) (work beyond rostered ordinary hours)", part_time: "cl 25.1(b) (beyond 38 a week, 10 a day or rostered hours)", casual: "cl 25.1(c) (more than 38 a week or 10 a day)" },
+  rdoAccrual: { paidPerWorked: 0.95, clause: "cl 22.1(b) (ADO: 19 eight-hour days per 28-day cycle, the twentieth day a paid accrued day off)" },
+  unpaidBreakAfterMinutes: h(5), breakClause: "cl 24.1 (unpaid meal break of 30–60 minutes for shifts over 5 hours)",
+  minimumEngagement: { full_time: h(4), part_time: h(2), casual: h(2) },
+  minimumClause: "cl 22.7 (full-time 4 hours; part-time and casual 2 hours each engagement)",
+  unsupportedFlags: ["shiftworker"],
+};
+
+// MA000120 — verified against the consolidated award text (up to 1 July 2026,
+// PR810424/PR811403) on 2026-10-30. The Fair Work pay database has no penalty
+// records for this award, so every percentage comes from the snapshot's
+// inlinePenalties (award text). Ordinary hours are Monday-Friday only, 6am-
+// 6.30pm, up to 8 a day (cl 21): all Saturday work is overtime (cl 23.5(a)),
+// all Sunday work 200% (cl 23.5(c)), all public holiday work 250% (cl 23.5(d)).
+// The award text states no separate casual rates for Saturday, Sunday or public
+// holiday work, so those are Not assessed for casuals. Classifications use the
+// restructured levels operative 1 July 2026 (PR810424); the pre-2026 level
+// labels are kept for historical checks.
+export const CHILDRENS_SERVICES: RulePack = {
+  awardCode: "MA000120",
+  name: "Children's Services Award 2010",
+  version: "2026-10-30.1",
+  awardUrl: "https://awards.fairwork.gov.au/MA000120.html",
+  classifications: {
+    200021: { label: "Level 1—Introductory Educator" }, 200022: { label: "Level 2—Educator" },
+    200023: { label: "Level 3—Qualified Educator" }, 200024: { label: "Level 4—Experienced Educator" },
+    200025: { label: "Level 5—Advanced Educator" }, 200026: { label: "Level 6—Room Leader" },
+    200027: { label: "Level 7—Assistant Director" }, 200028: { label: "Level 8—Director" },
+    4591: { label: "Level 1.1 (pre-1 July 2026 structure)" }, 4592: { label: "Level 2.1 (pre-1 July 2026 structure)" },
+    4593: { label: "Level 2.2 (pre-1 July 2026 structure)" }, 4594: { label: "Level 3.1 (pre-1 July 2026 structure)" },
+    4602: { label: "Level 3.2 (pre-1 July 2026 structure)" }, 4603: { label: "Level 3.3 (pre-1 July 2026 structure)" },
+    4604: { label: "Level 3.4 Diploma (pre-1 July 2026 structure)" }, 4610: { label: "Level 4.1 (pre-1 July 2026 structure)" },
+    4616: { label: "Level 5.1 (pre-1 July 2026 structure)" }, 4624: { label: "Level 6.1 (pre-1 July 2026 structure)" },
+  },
+  clauses: {
+    minimumRates: "cl 14 (minimum wages; verified against the pay database)",
+    penalties: "cl 23.5 (weekend and public holiday work)",
+    overtime: "cl 23.2 (overtime rates)",
+    hours: "cl 21 (average 38 hours a week; Monday to Friday, 6.00 am–6.30 pm, up to 8 hours a day)",
+    casual: "cl 10.5 (25% casual loading; 2-hour minimum engagement)",
+    schedule: "Schedule B—Classification Structure (this award has no hourly summary schedule)",
+  },
+  ordinary: {
+    ftpt: { weekday: "MA000120-ORD", weekdayBands: [], saturday: null, sunday: null, publicHoliday: "MA000120-PH" },
+    casual: { weekday: "MA000120-CAS-ORD", weekdayBands: [], saturday: null, sunday: null, publicHoliday: null },
+  },
+  overtime: {
+    ftpt: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 120, first: "MA000120-OT-1", after: "MA000120-OT-2", flat: { sunday: "MA000120-SUN" }, publicHoliday: "MA000120-PH" },
+    casual: { tierDays: [1, 2, 3, 4, 5], tierMinutes: 120, first: "MA000120-CAS-OT-1", after: "MA000120-CAS-OT-2", flat: {}, publicHoliday: null },
+  },
+  overtimeMissingReason: { casual: "The award text states no separate casual rates for Saturday, Sunday or public holiday work (cl 23.5), so those hours aren't assessed for casuals." },
+  additions: [],
+  dailyMaxOrdinaryMinutes: h(8),
+  dailyMaxClause: "cl 21.2 (ordinary hours in periods not exceeding 8 hours, Monday to Friday)",
+  span: {
+    byDow: { 0: [0, 1440], 1: [h(6), h(18, 30)], 2: [h(6), h(18, 30)], 3: [h(6), h(18, 30)], 4: [h(6), h(18, 30)], 5: [h(6), h(18, 30)], 6: [0, 1440] },
+    extendedEnd: h(18, 30), clause: "cl 21.2 (6.00 am–6.30 pm Monday to Friday; broken shifts spread up to 12 hours)",
+  },
+  overtimeNeeds: { full_time: ["roster"], part_time: ["roster", "guaranteed"], casual: [] },
+  overtimeNeedsClause: { full_time: "cl 23.1(a) (work outside ordinary hours)", part_time: "cl 23.1(b) and cl 10 (hours beyond the agreed part-time hours)", casual: "cl 10.5(e) and 23.2(b) (hours beyond the casual ordinary hours)" },
+  unpaidBreakAfterMinutes: h(5), breakClause: "cl 22.1 (unpaid meal break of 30–60 minutes after 5 hours; may be foregone for shifts up to 6 hours)",
+  minimumEngagement: { casual: h(2) }, publicHolidayMinimum: { full_time: h(4), part_time: h(4), casual: h(4) },
+  minimumClause: "cl 10.5(c) (casual 2 hours); cl 23.5(e) (Saturday, Sunday or public holiday work: minimum 4 hours — only the public holiday minimum is modelled)",
+  unsupportedFlags: ["shiftworker"],
+};
+
+// MA000010 — verified against the consolidated award text (up to 1 July 2026) on
+// 2026-10-30. All percentages are Fair Work pay-database records. Day workers:
+// ordinary hours Monday-Friday 6am-6pm, up to 8 a day (cl 17.2); weekend ordinary
+// hours only by facilitative agreement (cl 17.2(c)), so weekend work is assessed
+// as overtime. Overtime 150% first 3 hours then 200% (cl 32.2, 32.5), Sunday 200%
+// (cl 32.6), public holiday 250% (cl 32.7(a)). Casual rates include the 25%
+// loading (cl 11.1(a)); casual overtime percentages apply to the casual ordinary
+// rate (cl 32.1). Shiftwork (cl 33) and vehicle-manufacturing special rates are
+// not modelled.
+export const MANUFACTURING: RulePack = {
+  awardCode: "MA000010",
+  name: "Manufacturing and Associated Industries and Occupations Award 2020",
+  version: "2026-10-30.1",
+  awardUrl: "https://awards.fairwork.gov.au/MA000010.html",
+  classifications: {
+    312: { label: "C14 / V1" }, 313: { label: "C13 / V2" }, 314: { label: "C12 / V3" }, 315: { label: "C11 / V4" },
+    316: { label: "C10 / V5 (tradesperson)" }, 317: { label: "C9 / V6" }, 318: { label: "C8 / V7" }, 319: { label: "C7" },
+    320: { label: "C6 / V9" }, 321: { label: "C5 / V10" }, 322: { label: "C4 / V11" }, 323: { label: "C3 / V12" },
+    324: { label: "C2(a) / V13" }, 325: { label: "C2(b) / V14" }, 90272: { label: "V8" },
+    90274: { label: "D1 (vehicle industry driver)" }, 90275: { label: "D2 (vehicle industry driver)" },
+    90276: { label: "D3 (vehicle industry driver)" }, 90277: { label: "D4 (vehicle industry driver)" },
+  },
+  clauses: {
+    minimumRates: "cl 20 (minimum rates; verified against the pay database)",
+    penalties: "cl 32.5–32.7 (Saturday, Sunday and public holiday work)",
+    overtime: "cl 32.2 (overtime: 150% first 3 hours, 200% after)",
+    hours: "cl 17.2 (average 38 hours a week; day workers 6.00 am–6.00 pm Monday to Friday, up to 8 hours a day)",
+    casual: "cl 11.1(a) (25% casual loading)",
+    schedule: "Schedule B—Summary of Hourly Rates of Pay",
+  },
+  ordinary: {
+    ftpt: { weekday: 2089, weekdayBands: [], saturday: null, sunday: null, publicHoliday: 2097 },
+    casual: { weekday: 2102, weekdayBands: [], saturday: null, sunday: null, publicHoliday: 2106 },
+  },
+  overtime: {
+    ftpt: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 180, first: 2095, after: 2096, flat: { sunday: 2096 }, publicHoliday: 2097 },
+    casual: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 180, first: 2104, after: 2105, flat: { sunday: 2105 }, publicHoliday: 2106 },
+  },
+  additions: [],
+  dailyMaxOrdinaryMinutes: h(8),
+  dailyMaxClause: "cl 17.2(b) (8 ordinary hours a day unless varied by agreement under cl 17.5)",
+  span: {
+    byDow: { 0: [0, 1440], 1: [h(6), h(18)], 2: [h(6), h(18)], 3: [h(6), h(18)], 4: [h(6), h(18)], 5: [h(6), h(18)], 6: [0, 1440] },
+    extendedEnd: h(18), clause: "cl 17.2(d) (6.00 am–6.00 pm Monday to Friday; the spread can move up to one hour by agreement)",
+  },
+  overtimeNeeds: { full_time: ["roster"], part_time: ["roster", "guaranteed"], casual: [] },
+  overtimeNeedsClause: { full_time: "cl 32.1 (work outside ordinary hours or beyond 38 a week)", part_time: "cl 10 and 32 (hours beyond the agreed part-time hours)", casual: "cl 11 and 32 (more than 38 ordinary hours a week)" },
+  unpaidBreakAfterMinutes: h(5), breakClause: "cl 18.1 (unpaid meal break of at least 20 minutes; no more than 5 hours without a break)",
+  minimumEngagement: { casual: h(4) },
+  minimumClause: "cl 11.2 (casual minimum 4 consecutive hours; 3 hours by agreement — not modelled); cl 32.5–32.7 (Saturday overtime minimum 4 hours, Sunday and public holiday 3 hours — not modelled)",
+  unsupportedFlags: ["shiftworker"],
+};
+
+// MA000038 — verified against the consolidated award text (up to 1 July 2026) on
+// 2026-10-30. All percentages are Fair Work pay-database records. Transport and
+// distribution facility employees (other than shiftworkers) share the same
+// percentages but have separate pay-database record sets — distribution facility
+// classifications carry penaltyGroup "df" and use the overrides below. Ordinary
+// hours: average 38 a week, up to 8 a day, Monday-Friday 5.30am-6.30pm (cl 13.5,
+// 13.6(a)); Saturday 150%/Sunday 200% ordinary penalties (Schedule C). Good
+// Friday and Christmas Day attract different public holiday rates from other
+// public holidays. Oil distribution workers (cl 17.2 rates) and shiftworkers
+// (cl 14) are not modelled. The early-morning +30% arrangement (cl 13.6(d)) for
+// newspaper, meat, live poultry and fish/fruit/vegetable deliveries is not
+// modelled — hours before 5.30 am raise the standard outside-span question.
+export const ROAD_TRANSPORT: RulePack = {
+  awardCode: "MA000038",
+  name: "Road Transport and Distribution Award 2020",
+  version: "2026-10-30.1",
+  awardUrl: "https://awards.fairwork.gov.au/MA000038.html",
+  classifications: {
+    1479: { label: "Transport Worker Grade 1" }, 1480: { label: "Transport Worker Grade 2" },
+    1481: { label: "Transport Worker Grade 3" }, 1482: { label: "Transport Worker Grade 4" },
+    1483: { label: "Transport Worker Grade 5" }, 1484: { label: "Transport Worker Grade 6" },
+    1485: { label: "Transport Worker Grade 7" }, 1486: { label: "Transport Worker Grade 8" },
+    1487: { label: "Transport Worker Grade 9" }, 1488: { label: "Transport Worker Grade 10" },
+    89808: { label: "Distribution facility employee level 1", penaltyGroup: "df" },
+    89809: { label: "Distribution facility employee level 2", penaltyGroup: "df" },
+    89810: { label: "Distribution facility employee level 3", penaltyGroup: "df" },
+    89811: { label: "Distribution facility employee level 4", penaltyGroup: "df" },
+  },
+  clauses: {
+    minimumRates: "cl 17.1 (minimum rates; verified against the pay database)",
+    penalties: "cl 15 and Schedule C (Saturday, Sunday and public holiday penalty rates)",
+    overtime: "cl 21 (overtime rates; Good Friday and Christmas Day 300%)",
+    hours: "cl 13 (average 38 hours a week; up to 8 a day; 5.30 am–6.30 pm Monday to Friday)",
+    casual: "cl 11.2 (25% casual loading)",
+    schedule: "Schedule C—Summary of Hourly Rates of Pay",
+  },
+  ordinary: {
+    ftpt: { weekday: 3024, weekdayBands: [], saturday: 3026, sunday: 3027, publicHoliday: 3029, publicHolidayGfcd: 3028 },
+    casual: { weekday: 3082, weekdayBands: [], saturday: 3084, sunday: 3085, publicHoliday: 3087, publicHolidayGfcd: 3086 },
+  },
+  overtime: {
+    ftpt: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 120, first: 3064, after: 3065, flat: {}, publicHoliday: 3066, publicHolidayGfcd: 3067 },
+    casual: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 120, first: 6063, after: 6064, flat: {}, publicHoliday: null },
+  },
+  overtimeMissingReason: { casual: "The Fair Work pay database has no casual public holiday overtime records for this award, so casual public holiday overtime isn't assessed." },
+  ordinaryOverrides: {
+    df: {
+      ftpt: { weekday: 3051, weekdayBands: [], saturday: 3052, sunday: 3053, publicHoliday: 3055, publicHolidayGfcd: 3054 },
+      casual: { weekday: 3109, weekdayBands: [], saturday: 3110, sunday: 3111, publicHoliday: 3113, publicHolidayGfcd: 3112 },
+    },
+  },
+  overtimeOverrides: {
+    df: {
+      ftpt: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 120, first: 3076, after: 3077, flat: {}, publicHoliday: 3078, publicHolidayGfcd: 3079 },
+      casual: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 120, first: 6067, after: 6068, flat: {}, publicHoliday: null },
+    },
+  },
+  additions: [],
+  dailyMaxOrdinaryMinutes: h(8),
+  dailyMaxClause: "cl 13.5 (ordinary hours must not exceed 8 hours per day)",
+  span: {
+    byDow: { 0: [0, 1440], 1: [h(5, 30), h(18, 30)], 2: [h(5, 30), h(18, 30)], 3: [h(5, 30), h(18, 30)], 4: [h(5, 30), h(18, 30)], 5: [h(5, 30), h(18, 30)], 6: [0, 1440] },
+    extendedEnd: h(18, 30), clause: "cl 13.6(a) (5.30 am–6.30 pm Monday to Friday; the spread can move one hour each end by agreement)",
+  },
+  overtimeNeeds: { full_time: ["roster"], part_time: ["roster", "guaranteed"], casual: [] },
+  overtimeNeedsClause: { full_time: "cl 21.1 (work beyond ordinary hours or the cl 13 arrangement)", part_time: "cl 10 and 21 (hours beyond the agreed part-time hours)", casual: "cl 11 and 21 (more than 38 ordinary hours a week)" },
+  unpaidBreakAfterMinutes: h(5), breakClause: "cl 16.1 (regular unpaid meal break during ordinary hours)",
+  minimumEngagement: { part_time: h(4), casual: h(4) },
+  minimumClause: "cl 10.8 (part-time minimum payment 4 hours a day); cl 11.3 (casual minimum payment 4 hours each engagement)",
+  unsupportedFlags: ["shiftworker"],
+};
+
+// MA000028 — verified against the consolidated award text (up to 1 July 2026) on
+// 2026-10-30. All percentages are Fair Work pay-database records. Full-time and
+// part-time ordinary hours: Monday-Friday 6am-6pm, up to 8 a day, 152 hours over
+// 4 weeks (cl 13.1); Saturday ordinary hours only by arrangement, so weekend work
+// is assessed as overtime. Casual ordinary hours can be worked at any time on any
+// day (cl 13.2) at 125%. Overtime: Monday-Saturday flat 150% (cl 21), public
+// holidays 200%; Sunday overtime depends on whether it is harvest season
+// (cl 21: 150%/200% during harvest, 200% outside), which AwardPay cannot know,
+// so Sunday overtime is Not assessed. Casual overtime 175% (over 12 hours a day
+// or 304 hours in 8 weeks), public holidays 225%. Shiftwork (cl 13.3+) and
+// piecework are not modelled.
+export const HORTICULTURE: RulePack = {
+  awardCode: "MA000028",
+  name: "Horticulture Award 2020",
+  version: "2026-10-30.1",
+  awardUrl: "https://awards.fairwork.gov.au/MA000028.html",
+  classifications: {
+    903: { label: "Level 1" }, 904: { label: "Level 2" }, 905: { label: "Level 3" },
+    906: { label: "Level 4" }, 907: { label: "Level 5" },
+  },
+  clauses: {
+    minimumRates: "cl 15 (minimum rates; verified against the pay database)",
+    penalties: "cl 21 (overtime and public holiday rates); cl 13.2 (casual ordinary hours any day)",
+    overtime: "cl 21 (overtime: Monday to Saturday 150%, public holidays 200%)",
+    hours: "cl 13.1 (152 hours over 4 weeks; 6.00 am–6.00 pm Monday to Friday, up to 8 hours a day); cl 13.2 (casuals: any time, up to 304 hours over 8 weeks)",
+    casual: "cl 11.2 (25% casual loading)",
+    schedule: "Schedule B—Summary of Hourly Rates of Pay",
+  },
+  ordinary: {
+    ftpt: { weekday: 2561, weekdayBands: [], saturday: null, sunday: null, publicHoliday: 2562 },
+    casual: { weekday: 2572, weekdayBands: [], saturday: 2572, sunday: 2572, publicHoliday: 2573 },
+  },
+  overtime: {
+    ftpt: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 0, first: 2567, after: 2567, flat: {}, publicHoliday: 2571 },
+    casual: { tierDays: [1, 2, 3, 4, 5, 6], tierMinutes: 0, first: 6095, after: 6095, flat: {}, publicHoliday: 6097 },
+  },
+  additions: [],
+  dailyMaxOrdinaryMinutes: h(8),
+  dailyMaxByEmployment: { casual: h(12) },
+  dailyMaxClause: "cl 13.1(a)(iii) (8 ordinary hours a day; up to 12 by majority arrangement — not modelled); cl 13.2 (casual: overtime beyond 12 hours a day)",
+  span: {
+    byDow: { 0: [0, 1440], 1: [h(6), h(18)], 2: [h(6), h(18)], 3: [h(6), h(18)], 4: [h(6), h(18)], 5: [h(6), h(18)], 6: [0, 1440] },
+    extendedEnd: h(18), clause: "cl 13.1(a)(ii) (6.00 am–6.00 pm Monday to Friday; variable by majority arrangement)",
+  },
+  spanAppliesTo: ["full_time", "part_time"],
+  overtimeNeeds: { full_time: ["roster"], part_time: ["roster", "guaranteed"], casual: [] },
+  overtimeNeedsClause: { full_time: "cl 13.1(a)(iv) and 21 (all time beyond or outside ordinary hours)", part_time: "cl 10 and 21 (hours beyond the agreed part-time hours)", casual: "cl 13.2 (more than 304 ordinary hours in 8 weeks or 12 hours a day)" },
+  unpaidBreakAfterMinutes: h(5), breakClause: "cl 14.1 (meal break of 30–60 minutes, not later than 5 hours after starting)",
+  minimumEngagement: { casual: h(2) },
+  minimumClause: "cl 11.4 (casual minimum 2 consecutive hours each engagement)",
+  unsupportedFlags: ["shiftworker"],
+};
+
+export const RULE_PACKS: Record<string, RulePack> = { MA000004: RETAIL, MA000009: HOSPITALITY, MA000003: FAST_FOOD, MA000020: CONSTRUCTION, MA000025: ELECTRICAL, MA000119: RESTAURANT, MA000058: CLUBS, MA000012: PHARMACY, MA000005: HAIR_BEAUTY, MA000018: AGED_CARE, MA000120: CHILDRENS_SERVICES, MA000010: MANUFACTURING, MA000038: ROAD_TRANSPORT, MA000028: HORTICULTURE };
