@@ -41,3 +41,31 @@ describe("guided payslip suggestions", () => {
     expect(typicalShifts("2026-10-10").every(s => !["Saturday", "Sunday"].includes(s.day_of_week))).toBe(true);
   });
 });
+describe("paid leave extraction", () => {
+  test("itemised paid leave is recognised separately, never as worked hours or overtime", () => {
+    const p = {
+      ordinary_hours: 73, gross_pay: 2500,
+      line_items: [
+        { description: "Ordinary hours", hours: 73, amount: 2400, type: "ordinary" },
+        { description: "Annual Leave", hours: 3, amount: 100, type: "leave" },
+      ],
+    };
+    const a = applyPayslip(defaults(), p, awards, new Set());
+    expect(a.hours).toBe("73");
+    expect(a.leaveHours).toBe(3);
+    expect(a.leaveAmount).toBe(100);
+    expect(a.hours150).toBe(0);
+    expect(a.hours200).toBe(0);
+  });
+  test("leave lines matched by description alone are still excluded from overtime buckets", () => {
+    const p = { ordinary_hours: 70, line_items: [{ description: "Personal/Carer's Leave", hours: 6, amount: 200 }] };
+    const a = applyPayslip(defaults(), p, awards, new Set());
+    expect(a.leaveHours).toBe(6);
+    expect(a.hours150).toBe(0);
+    expect(a.hours200).toBe(0);
+  });
+  test("no leave lines means no leave fields", () => {
+    const a = applyPayslip(defaults(), { ordinary_hours: 38 }, awards, new Set());
+    expect(a.leaveHours).toBeUndefined();
+  });
+});
