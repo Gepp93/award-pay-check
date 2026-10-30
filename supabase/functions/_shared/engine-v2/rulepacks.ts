@@ -2,31 +2,41 @@
 // Commission record IDs (penalty_fixed_id / wage_allowance_fixed_id). Packs hold
 // NO dollar amounts or percentages: those are read from the dated snapshots in
 // ./data, copied verbatim from api.fwc.gov.au. Clause numbers were read from
-// the award text at awards.fairwork.gov.au on 2026-10-29.
+// the award text at awards.fairwork.gov.au on 2026-10-29 (MA000020/MA000025:
+// 2026-10-30). Exception: the pay database has no penalty records for MA000020,
+// so that pack references string IDs resolved from the snapshot's
+// inlinePenalties — percentages copied verbatim from the award text, dated and
+// cited in scripts/engine-v2/inline_penalties.json.
 
 export type Employment = "full_time" | "part_time" | "casual";
 export type Dow = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Sunday
 
+/** A Fair Work pay-database record id (number) or a snapshot inline-penalty id (string, for awards the database doesn't cover). */
+export type PenaltyRef = number | string;
+
 /** A time band within a day, minutes from midnight [from, to). */
-export interface Band { from: number; to: number; penaltyId: number; label: string }
+export interface Band { from: number; to: number; penaltyId: PenaltyRef; label: string }
 
 export interface OrdinaryRules {
-  weekday: number; // penalty id for weekday ordinary hours outside any band
+  weekday: PenaltyRef; // penalty id for weekday ordinary hours outside any band
   weekdayBands: Band[]; // Monday-Friday bands with their own percentage
-  saturday: number;
-  sunday: number | { byGroup: Record<string, number> };
-  publicHoliday: number;
+  /** null = the award has no ordinary hours on this day (all work is overtime). */
+  saturday: PenaltyRef | null;
+  sunday: PenaltyRef | { byGroup: Record<string, number> } | null;
+  publicHoliday: PenaltyRef;
 }
 
 export interface OvertimeRules {
   /** Days where overtime is paid in tiers: first `tierMinutes` then the second rate. */
   tierDays: Dow[];
   tierMinutes: number;
-  first: number;
-  after: number;
+  first: PenaltyRef;
+  after: PenaltyRef;
   /** Flat overtime rates for days outside tierDays. */
-  flat: Partial<Record<"saturday" | "sunday", number>>;
-  publicHoliday: number;
+  flat: Partial<Record<"saturday" | "sunday", PenaltyRef>>;
+  publicHoliday: PenaltyRef;
+  /** MA000020 cl 30.1(b): all Saturday overtime after 12 noon is at the "after" rate, even within the first 2 hours. */
+  saturdayNoonAllAfter?: boolean;
 }
 
 /** Flat dollar additions per hour or part of an hour (e.g. Hospitality cl 29.2). */
