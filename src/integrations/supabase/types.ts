@@ -115,6 +115,54 @@ export type Database = {
         }
         Relationships: []
       }
+      employer_enquiries: {
+        Row: {
+          business_name: string
+          consent: boolean
+          contact_name: string
+          created_at: string
+          employee_count: string
+          id: string
+          industry: string
+          message: string
+          notified_at: string | null
+          phone: string | null
+          sender_hash: string
+          service: string
+          work_email: string
+        }
+        Insert: {
+          business_name: string
+          consent: boolean
+          contact_name: string
+          created_at?: string
+          employee_count: string
+          id?: string
+          industry: string
+          message: string
+          notified_at?: string | null
+          phone?: string | null
+          sender_hash: string
+          service: string
+          work_email: string
+        }
+        Update: {
+          business_name?: string
+          consent?: boolean
+          contact_name?: string
+          created_at?: string
+          employee_count?: string
+          id?: string
+          industry?: string
+          message?: string
+          notified_at?: string | null
+          phone?: string | null
+          sender_hash?: string
+          service?: string
+          work_email?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           calculation_data: Json | null

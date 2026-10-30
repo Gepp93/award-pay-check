@@ -62,3 +62,9 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [ ] At publish time: re-apply `REVOKE SELECT ON public.reports FROM anon, authenticated` + column grants (migration 0009) — temporarily re-granted (0010) so the currently published site keeps working.
 - [ ] Owner-approved live purchase per tier (declined for now).
 - [ ] AwardPay For Employers page (plan pending).
+
+## Mobile carousel + For Employers [done except email]
+- [x] Mobile-only swipe carousel for homepage industry cards
+- [x] /employers page, nav links, sitemap
+- [x] Secure enquiry storage + spam protection
+- [ ] Email notifications to support@ (blocked: sending domain notify.awardpay.com.au must be set up by owner)
