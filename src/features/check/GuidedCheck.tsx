@@ -91,14 +91,14 @@ export default function GuidedCheck() {
   }
   useEffect(() => {
     mounted.current = true; void loadAwards();
-    try { const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? "null"); if (saved?.version === 1 && saved.answers && VALID_STEPS.includes(saved.step)) { setResume(saved); go("start", true); } } catch { localStorage.removeItem(SAVE_KEY); }
+    try { const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? "null"); if (saved?.version === 2 && saved.answers && VALID_STEPS.includes(saved.step)) { setResume(saved); go("start", true); } } catch { localStorage.removeItem(SAVE_KEY); }
     setRestored(true);
     const file = takePreloadedPayslip(); if (file) void handleFile(file);
     return () => { mounted.current = false; controller.current?.abort(); };
   }, []);
   useEffect(() => {
     if (!restored || resume || resultMade.current || step === "start" || step === "result") return;
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ version: 1, answers: a, step: step === "loading" ? "review" : step })); } catch { /* Storage unavailable: flow remains usable. */ }
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ version: 2, answers: a, step: step === "loading" ? "review" : step })); } catch { /* Storage unavailable: flow remains usable. */ }
   }, [a, step, restored, resume]);
   useEffect(() => { if (step === "result" && !resultState) go("review", true); }, [step, resultState]);
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function GuidedCheck() {
     let cancelled = false; setLoadingClasses(true); setClasses([]);
     supabase.functions.invoke("get-classifications", { body: { awardId: a.awardCode } }).then(({ data, error }) => {
       if (cancelled) return;
-      if (error) { setFetchError("Levels couldn't load. You can still choose not sure."); return; }
+      if (error) { setFetchError("Levels couldn't load. Please try again — you need to confirm your classification before we can estimate your pay."); return; }
       const rows: Classification[] = dedupeClassifications(data?.results ?? []); setClasses(rows);
       const printed = parsed?.classification_or_role?.toLowerCase();
       const match = printed && rows.find(c => c.classification?.toLowerCase() === printed);
