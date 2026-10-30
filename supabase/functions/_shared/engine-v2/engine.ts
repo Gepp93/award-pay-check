@@ -444,8 +444,10 @@ export function assess(input: AssessmentInput): AssessmentResult {
           let id: PenaltyRef; let label: string;
           if (x.day === "ph") { id = ot.publicHoliday; label = "Overtime — public holiday"; }
           else if (ot.tierDays.includes(x.dow)) {
-            if (ot.saturdayNoonAllAfter && x.dow === 6 && x.tod >= 720) { id = ot.after; label = "Overtime — Saturday after 12 noon"; }
-            else if (tierUsed < ot.tierMinutes) { id = ot.first; label = `Overtime — first ${ot.tierMinutes / 60} hours`; } else { id = ot.after; label = `Overtime — after ${ot.tierMinutes / 60} hours`; }
+            const tr = ot.tierRates?.[x.dow];
+            const firstId = tr?.first ?? ot.first, afterId = tr?.after ?? ot.after;
+            if (ot.saturdayNoonAllAfter && x.dow === 6 && x.tod >= 720) { id = afterId; label = "Overtime — Saturday after 12 noon"; }
+            else if (tierUsed < ot.tierMinutes) { id = firstId; label = `Overtime — first ${ot.tierMinutes / 60} hours`; } else { id = afterId; label = `Overtime — after ${ot.tierMinutes / 60} hours`; }
             tierUsed++;
           } else {
             const flat = x.dow === 0 ? ot.flat.sunday : ot.flat.saturday;

@@ -35,6 +35,8 @@ export interface OvertimeRules {
   tierMinutes: number;
   first: PenaltyRef;
   after: PenaltyRef;
+  /** Per-day tier rates when they differ from first/after (e.g. Restaurant/Clubs Saturday 175%/200% vs Monday-Friday 150%/200%). */
+  tierRates?: Partial<Record<Dow, { first: PenaltyRef; after: PenaltyRef }>>;
   /** Flat overtime rates for days outside tierDays. */
   flat: Partial<Record<"saturday" | "sunday", PenaltyRef>>;
   publicHoliday: PenaltyRef;
