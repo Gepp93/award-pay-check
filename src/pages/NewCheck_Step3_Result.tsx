@@ -187,6 +187,11 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
           <p>{result.comparisonScope === "typical-week" ? "One typical week, compared with 1/4.33 of your monthly gross pay." : "A preliminary estimate using official Fair Work rates and simplified pay rules."}</p>
         </header>
         <PreliminaryNotice className="mb-6" />
+        {result?.leave?.hours > 0 && (
+          <p className="text-sm text-muted-foreground mb-6">
+            Your payslip shows {result.leave.hours} hours of paid leave{result.leave.amount > 0 ? ` ($${Number(result.leave.amount).toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} paid)` : ""}. This check assesses worked hours only — leave pay and any leave loading are recognised but not assessed.
+          </p>
+        )}
         <div className="checker-result-layout">
           <article className="checker-sheet">
             <div className="checker-sheet-header">
