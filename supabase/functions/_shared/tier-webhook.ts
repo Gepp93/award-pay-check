@@ -21,19 +21,20 @@ export async function processTierEvent(event: any, db: any, get: (path: string, 
     if (intent && await invalidPayment(intent, get)) throw new Error("checkout_payment_revoked");
     if (sub && !customer) throw new Error("checkout_customer_missing");
     if (sub) await verifiedSubscription({ ...purchase, stripe_customer_id: customer, stripe_subscription_id: sub }, get);
-    const fulfilled = await db.rpc("fulfil_tier_purchase", { p_event_id: event.id, p_purchase_id: purchase.id, p_session_id: session.id, p_customer_id: customer ?? null, p_subscription_id: sub ?? null, p_price_id: purchase.price_id });
+    const fulfilled = await db.rpc("record_tier_transaction", { p_event_id: event.id, p_purchase_id: purchase.id, p_session_id: session.id, p_customer_id: customer ?? null, p_subscription_id: sub ?? null, p_price_id: purchase.price_id });
     if (fulfilled.error) throw fulfilled.error;
+    if (fulfilled.data !== true) throw new Error("transaction_not_recorded");
     if (sub) await syncSubscription(sub, event, db, get, `${event.id}:subscription`);
     return;
   }
   if (event.type.startsWith("customer.subscription.")) {
-    await syncSubscription(object.id, event, db, get, event.id);
+    // Access is reconciled from current Stripe payment state, never a cached notification.
     return;
   }
   if (["invoice.paid", "invoice.payment_failed", "invoice.payment_action_required"].includes(event.type)) {
     const invoice = await get(`invoices/${object.id}`);
     const subscription = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id;
-    if (subscription) await syncSubscription(subscription, event, db, get, event.id);
+    if (subscription) return;
     return;
   }
   if (["charge.refunded", "charge.dispute.created"].includes(event.type)) {
@@ -46,11 +47,10 @@ export async function processTierEvent(event: any, db: any, get: (path: string, 
       const invoice = await get(`invoices/${invoiceId}`);
       const subscription = typeof invoice.subscription === "string" ? invoice.subscription : invoice.subscription?.id;
       if (subscription) {
-        const { data: purchase, error } = await db.from("tier_purchases").select("*").eq("stripe_subscription_id", subscription).eq("status", "paid").maybeSingle();
+        const { data: purchase, error } = await db.from("tier_transactions").select("*").eq("stripe_subscription_id", subscription).maybeSingle();
         if (error) throw error;
         if (purchase?.product === "pay_protection" && purchase.stripe_customer_id === (typeof charge.customer === "string" ? charge.customer : charge.customer?.id)) {
-          const revoked = await db.rpc("revoke_tier_purchase", { p_event_id: event.id, p_session_id: purchase.stripe_session_id });
-          if (revoked.error) throw revoked.error;
+          await verifiedSubscription(purchase, get);
         }
         return;
       }
@@ -60,8 +60,8 @@ export async function processTierEvent(event: any, db: any, get: (path: string, 
     const sessions = await get("checkout/sessions", { payment_intent: intent, limit: "100" });
     if (sessions.has_more) throw new Error("refund_sessions_incomplete");
     for (const session of sessions.data ?? []) {
-      const revoked = await db.rpc("revoke_tier_purchase", { p_event_id: `${event.id}:${session.id}`, p_session_id: session.id });
-      if (revoked.error) throw revoked.error;
+      // No irreversible mutation: full refunds/disputes fail the current-state access check.
+      // Partial refunds leave the purchased scope in place; unrelated purchases are untouched.
     }
   }
 }
@@ -69,13 +69,20 @@ export async function processTierEvent(event: any, db: any, get: (path: string, 
 async function invalidPayment(id: string, get: (path: string, params?: Record<string, string>) => Promise<any>) {
   const charges = await get("charges", { payment_intent: id, limit: "100" });
   if (charges.has_more) throw new Error("payment_verification_incomplete");
-  return (charges.data ?? []).some((charge: any) => charge.refunded || charge.disputed || charge.amount_refunded > 0);
+  for (const charge of charges.data ?? []) {
+    if (charge.refunded) return true;
+    if (charge.disputed) {
+      const disputes = await get("disputes", { charge: charge.id, limit: "100" });
+      if (disputes.has_more || !disputes.data?.length || disputes.data.some((d: any) => d.status !== "won")) return true;
+    }
+  }
+  return false;
 }
 
 export async function verifiedOneTimeAccess(purchase: any, get: (path: string, params?: Record<string, string>) => Promise<any>) {
   if (!purchase.stripe_session_id || !purchase.checkout_account_email || !isTierProduct(purchase.product) || purchase.product === "pay_protection") return false;
   const session = await get(`checkout/sessions/${purchase.stripe_session_id}`);
-  if (!session.livemode || session.payment_status !== "paid" || session.currency !== "aud" || session.mode !== "payment" || session.client_reference_id !== purchase.id || session.payment_link !== purchase.payment_link_id || session.customer_details?.email?.toLowerCase() !== purchase.checkout_account_email.toLowerCase()) return false;
+  if (!session.livemode || session.payment_status !== "paid" || session.currency !== "aud" || session.mode !== "payment" || session.client_reference_id !== (purchase.purchase_id ?? purchase.id) || session.payment_link !== purchase.payment_link_id || session.customer_details?.email?.toLowerCase() !== purchase.checkout_account_email.toLowerCase()) return false;
   const lines = await get(`checkout/sessions/${session.id}/line_items`, { limit: "100" });
   if (lines.has_more || lines.data?.length !== 1 || lines.data[0].quantity !== 1 || lines.data[0].price?.id !== purchase.price_id) return false;
   const intent = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
@@ -98,7 +105,7 @@ export async function verifiedSubscription(purchase: any, get: (path: string, pa
 }
 
 async function syncSubscription(id: string, event: any, db: any, get: (path: string, params?: Record<string, string>) => Promise<any>, eventId: string) {
-  const { data: purchase, error } = await db.from("tier_purchases").select("*").eq("stripe_subscription_id", id).eq("status", "paid").maybeSingle();
+  const { data: purchase, error } = await db.from("tier_transactions").select("*").eq("stripe_subscription_id", id).maybeSingle();
   if (error) throw error;
   if (!purchase || purchase.product !== "pay_protection") return;
   const state = await verifiedSubscription(purchase, get);
