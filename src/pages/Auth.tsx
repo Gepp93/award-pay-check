@@ -47,11 +47,8 @@ const Auth = () => {
       if (claimError) console.error("claim_my_passes error:", claimError);
     }
     if (isCheckoutRedirect) {
-      // Redirect to Stripe checkout for 3-month pass
-      const { data: { user } } = await supabase.auth.getUser();
-      const url = await startSubscriptionCheckout("three_month_pass", user?.email || email, user?.id);
-      if (url) window.location.href = url;
-      else toast.error("Could not start checkout — please try again.");
+      // The $30 pass is retired for new buyers; choose a tier on Pricing.
+      navigate("/pricing");
     } else if (redirectParam) {
       // Generic redirect, e.g. app-dashboard after a subscription purchase
       navigate(redirectParam);
@@ -132,7 +129,7 @@ const Auth = () => {
           </h1>
           <p>
             {isCheckoutRedirect
-              ? `Sign ${isLogin ? "in" : "up"} to complete your 3-month access pass`
+              ? `Sign ${isLogin ? "in" : "up"} to choose your AwardPay option`
               : redirectParam
                 ? `Sign ${isLogin ? "in" : "up"} to keep your ${THREE_MONTH_PASS.name}`
                 : returnTo

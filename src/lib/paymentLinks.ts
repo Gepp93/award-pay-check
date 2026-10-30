@@ -7,6 +7,9 @@ import { THREE_MONTH_PASS } from "@/lib/plans";
 //   - set metadata.product = 'full_report' OR 'backpay_pack' (or rely on amount: 1000 / 3000)
 // Both links should redirect back to `${origin}/payment-complete` after success.
 
+/** New-customer sales of the $30 pass are off; set true only to re-open it in a rollback. */
+export const LEGACY_PASS_ON_SALE = false;
+
 export const FULL_REPORT_LINK = "https://buy.stripe.com/5kQ00k2ss5J7623gsd6AM05";
 export const BACKPAY_LINK = "https://buy.stripe.com/aFa4gA4AA5J7bmn1xj6AM06";
 
@@ -27,6 +30,8 @@ export async function startSubscriptionCheckout(
   userId?: string | null,
   reportId?: string | null
 ): Promise<string | null> {
+  // The $30 pass and legacy yearly offer are retired for new buyers; existing entitlements are untouched.
+  if (!LEGACY_PASS_ON_SALE) return null;
   // Generate the reference before INSERT: guests cannot SELECT purchase rows.
   const purchaseId = crypto.randomUUID();
   const { error } = await supabase
