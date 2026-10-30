@@ -84,4 +84,4 @@
 - [x] Gate /v2/* to admin testers on live hosts
 - [x] Reset-password links back to normal /auth; test sign-in + reset
 - [x] Regression check of other unpublished customer-facing changes
-- [ ] Stop for publish approval
+- [x] Published with 2.0 hidden (admin-only)

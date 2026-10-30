@@ -17,8 +17,9 @@ export default function V2Gate() {
     (async () => {
       const { data } = await supabase.auth.getUser();
       if (!data.user) { if (!cancelled) setState("denied"); return; }
-      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: data.user.id, _role: "admin" });
-      if (!cancelled) setState(isAdmin === true ? "allowed" : "denied");
+      // Users may read only their own role rows (RLS); the server re-checks admin for every 2.0 calculation.
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", data.user.id).eq("role", "admin");
+      if (!cancelled) setState(roles && roles.length > 0 ? "allowed" : "denied");
     })().catch(() => { if (!cancelled) setState("denied"); });
     return () => { cancelled = true; };
   }, [live]);
