@@ -6,15 +6,19 @@ import hospitality from "./data/MA000009.json" with { type: "json" };
 import fastFood from "./data/MA000003.json" with { type: "json" };
 import construction from "./data/MA000020.json" with { type: "json" };
 import electrical from "./data/MA000025.json" with { type: "json" };
+import restaurant from "./data/MA000119.json" with { type: "json" };
+import clubs from "./data/MA000058.json" with { type: "json" };
+import pharmacy from "./data/MA000012.json" with { type: "json" };
+import hairBeauty from "./data/MA000005.json" with { type: "json" };
 import holidaysData from "./data/public-holidays.json" with { type: "json" };
 import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules, type PenaltyRef } from "./rulepacks.ts";
 
-export const ENGINE_VERSION = "v2.2.0";
+export const ENGINE_VERSION = "v2.3.0";
 
 /** Award-text penalty record for awards the Fair Work pay database doesn't cover (MA000020). See scripts/engine-v2/inline_penalties.json. */
 interface InlinePenalty { id: string; rate: number; description: string; clause: string; operativeFrom: string; operativeTo: string | null; sourceUrl: string; verifiedOn: string }
 type Snapshot = typeof retail & { inlinePenalties?: InlinePenalty[] };
-const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot };
+const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot, MA000119: restaurant as Snapshot, MA000058: clubs as Snapshot, MA000012: pharmacy as Snapshot, MA000005: hairBeauty as Snapshot };
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"] as const;
 export type State = typeof STATES[number];
 
