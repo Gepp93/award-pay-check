@@ -314,6 +314,7 @@ export type Database = {
           checkout_account_email: string | null
           created_at: string
           id: string
+          legacy_report_id: string | null
           payment_link_id: string
           price_id: string
           product: string
@@ -328,6 +329,7 @@ export type Database = {
           checkout_account_email?: string | null
           created_at?: string
           id?: string
+          legacy_report_id?: string | null
           payment_link_id: string
           price_id: string
           product: string
@@ -342,6 +344,7 @@ export type Database = {
           checkout_account_email?: string | null
           created_at?: string
           id?: string
+          legacy_report_id?: string | null
           payment_link_id?: string
           price_id?: string
           product?: string
@@ -353,6 +356,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tier_purchases_legacy_report_id_fkey"
+            columns: ["legacy_report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tier_purchases_report_id_fkey"
             columns: ["report_id"]
@@ -385,6 +395,7 @@ export type Database = {
           checkout_account_email: string | null
           created_at: string
           id: string
+          legacy_report_id: string | null
           payment_link_id: string
           price_id: string
           product: string
@@ -399,6 +410,7 @@ export type Database = {
           checkout_account_email?: string | null
           created_at?: string
           id?: string
+          legacy_report_id?: string | null
           payment_link_id: string
           price_id: string
           product: string
@@ -413,6 +425,7 @@ export type Database = {
           checkout_account_email?: string | null
           created_at?: string
           id?: string
+          legacy_report_id?: string | null
           payment_link_id?: string
           price_id?: string
           product?: string
@@ -462,6 +475,7 @@ export type Database = {
         Row: {
           checkout_account_email: string
           created_at: string
+          legacy_report_id: string | null
           payment_link_id: string
           price_id: string
           product: string
@@ -475,6 +489,7 @@ export type Database = {
         Insert: {
           checkout_account_email: string
           created_at?: string
+          legacy_report_id?: string | null
           payment_link_id: string
           price_id: string
           product: string
@@ -488,6 +503,7 @@ export type Database = {
         Update: {
           checkout_account_email?: string
           created_at?: string
+          legacy_report_id?: string | null
           payment_link_id?: string
           price_id?: string
           product?: string
@@ -566,6 +582,7 @@ export type Database = {
         Row: {
           checkout_account_email: string
           created_at: string
+          legacy_report_id: string | null
           payment_link_id: string
           price_id: string
           product: string
@@ -579,6 +596,7 @@ export type Database = {
         Insert: {
           checkout_account_email: string
           created_at?: string
+          legacy_report_id?: string | null
           payment_link_id: string
           price_id: string
           product: string
@@ -592,6 +610,7 @@ export type Database = {
         Update: {
           checkout_account_email?: string
           created_at?: string
+          legacy_report_id?: string | null
           payment_link_id?: string
           price_id?: string
           product?: string
@@ -603,6 +622,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tier_transactions_legacy_report_id_fkey"
+            columns: ["legacy_report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tier_transactions_purchase_id_fkey"
             columns: ["purchase_id"]
@@ -737,6 +763,7 @@ export type Database = {
           status: string
         }[]
       }
+      get_report_view: { Args: { p_report_id: string }; Returns: Json }
       get_subscription_status: {
         Args: { purchase_id: string }
         Returns: {
@@ -758,6 +785,16 @@ export type Database = {
           allowed: boolean
           count: number
           retry_after: number
+        }[]
+      }
+      list_my_reports: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          owed_amount: number
+          payment_status: string
+          result: Json
         }[]
       }
       record_tier_sandbox_transaction: {
@@ -782,6 +819,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      report_teaser: { Args: { r: Json }; Returns: Json }
       resolve_pass_purchase: {
         Args: { p_purchase_id?: string; p_session_id?: string }
         Returns: {

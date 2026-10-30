@@ -64,6 +64,13 @@
       "when": 1793339857523,
       "tag": "0008_tier_transaction_ledger_and_isolated_sandbox",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793340861562,
+      "tag": "0009_tier_public_reports_and_report_privacy",
+      "breakpoints": true
     }
   ]
 }
