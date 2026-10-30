@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'bun:test';
 import { applyCheckout } from '../supabase/functions/stripe-webhook/payment.ts';
+import { TIER_PRODUCTS } from '../supabase/functions/_shared/tier-products.ts';
 const id='00000000-0000-4000-8000-000000000002';
 function fixture(purchase:any,report:any=null){
  const updates:any[]=[];
@@ -7,6 +8,7 @@ function fixture(purchase:any,report:any=null){
  return {admin,updates};
 }
 describe('verified checkout routing, no live services',()=>{
+  for(const product of Object.values(TIER_PRODUCTS)) test(`${product.name} cannot unlock legacy pass with substituted reference`,async()=>{const f=fixture({id,product:'three_month_pass'});await applyCheckout(f.admin,{id:'cs_tier',client_reference_id:id,amount_total:product.amountCents,currency:'aud',payment_status:'paid',payment_link:product.linkId});expect(f.updates).toEqual([]);});
   test('$30 pending purchase activates pass and linked report transaction',async()=>{const f=fixture({id,product:'three_month_pass',status:'pending',report_id:'report-1'});await applyCheckout(f.admin,{id:'cs_test',client_reference_id:id,amount_total:3000,currency:'aud',payment_status:'paid',metadata:{product:'backpay_pack'}});expect(f.updates).toEqual([{name:'complete_pass_purchase',args:{p_purchase_id:id,p_session_id:'cs_test',p_email:null,p_product:'three_month_pass'}}]);});
   test('legacy $10 pending yearly purchase preserved',async()=>{const f=fixture({id,product:'yearly_access',status:'pending'});await applyCheckout(f.admin,{id:'cs_legacy',client_reference_id:id,amount_total:1000,currency:'aud',payment_status:'paid'});expect(f.updates[0].args.p_product).toBe('yearly_access');});
   test('$30 report-only reference retains legacy backpay credits',async()=>{const f=fixture(null,{id,user_id:'owner'});await applyCheckout(f.admin,{id:'cs_pack',client_reference_id:id,amount_total:3000,currency:'aud',payment_status:'paid'});expect(f.updates[0].data.payment_status).toBe('paid');expect(f.updates[1].data.credits).toBe(7);});
