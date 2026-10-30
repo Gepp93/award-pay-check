@@ -27,6 +27,7 @@ const Body = z.object({
     guaranteedMinutesPerWeek: z.number().int().min(0).max(38 * 60).optional(),
     rosterCycleWeeks: z.number().int().min(1).max(4).optional(),
     spanExceptions: z.array(z.enum(["late_trading", "newsagency", "video_shop"])).max(3).optional(),
+    rdoAccrual: z.boolean().optional(),
   }).optional(),
   holidayConfirmation: z.object({ publicHolidayDates: z.array(day).max(40) }).optional(),
   paid: z.object({
