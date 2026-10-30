@@ -38,7 +38,10 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [x] Temporary fwc-fetch-raw function deleted after snapshot download
 
 ## Later batches (not started)
-- Batch 4: Healthcare MA000034, MA000027, MA000100; Manufacturing MA000073, MA000089; Transport MA000039, MA000063, MA000015
-- Batch 5: Agriculture MA000035, MA000090, MA000114; Education MA000076, MA000077, MA000075
-- Batch 6: MA000036, MA000029; cross-industry integration; full regression; coverage review
-- Payslip scanner → Engine v2 prefill integration (supported cases)
+- Further award batches paused by owner; no expansion during launch audit.
+
+## Customer launch-readiness audit
+- [x] Audit homepage → confirmed award/classification → scanner/manual → Engine v2 → itemised results → paid report (v2 paid reports absent; launch blocker documented).
+- [x] Real owner/admin browser tests with six synthetic payslips; desktop/mobile, Partial/Unsupported, live signed-out gate and anonymous function rejection. Signed-in non-admin remains unverified without an authorised account.
+- [x] Audit existing Stripe and proposed $9/$29/$59 products without changing checkout or entitlements; new Price IDs and product semantics require future approval/configuration.
+- [x] Full suite 250 passing; latest preview build OK. Ranked NO-GO report: tests/v2/LAUNCH-READINESS-AUDIT.md. No publication or application changes.
