@@ -26,11 +26,14 @@ export interface OrdinaryRules {
   /** Time-of-day bands on Saturday/Sunday (e.g. Pharmacy). Take precedence over the flat rate; a minute outside every band falls back to the flat rate (or overtime when the flat rate is null). */
   saturdayBands?: Band[];
   sundayBands?: Band[];
-  publicHoliday: PenaltyRef;
+  /** null = public holiday work can't be priced for this group (e.g. the award text states no casual rate). */
+  publicHoliday: PenaltyRef | null;
+  /** MA000038: Good Friday and Christmas Day attract a different rate from other public holidays. */
+  publicHolidayGfcd?: PenaltyRef;
 }
 
 export interface OvertimeRules {
-  /** Days where overtime is paid in tiers: first `tierMinutes` then the second rate. */
+  /** Days where overtime is paid in tiers: first `tierMinutes` then the second rate. tierMinutes 0 = one flat rate on those days. */
   tierDays: Dow[];
   tierMinutes: number;
   first: PenaltyRef;
@@ -39,7 +42,10 @@ export interface OvertimeRules {
   tierRates?: Partial<Record<Dow, { first: PenaltyRef; after: PenaltyRef }>>;
   /** Flat overtime rates for days outside tierDays. */
   flat: Partial<Record<"saturday" | "sunday", PenaltyRef>>;
-  publicHoliday: PenaltyRef;
+  /** null = public holiday overtime can't be priced for this group. */
+  publicHoliday: PenaltyRef | null;
+  /** MA000038: Good Friday and Christmas Day overtime attracts a different rate from other public holidays. */
+  publicHolidayGfcd?: PenaltyRef;
   /** MA000020 cl 30.1(b): all Saturday overtime after 12 noon is at the "after" rate, even within the first 2 hours. */
   saturdayNoonAllAfter?: boolean;
 }
