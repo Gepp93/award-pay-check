@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useV2 } from "./store";
 import { liveCheckUrl, usePublicSite } from "./publicSite";
@@ -31,6 +31,13 @@ export default function V2Home() {
   };
   const [preview, setPreview] = useState<IndustryId | null>(null);
   const photoIndustries = INDUSTRIES.filter((i) => i.image);
+  const rail = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const onRailScroll = () => {
+    const el = rail.current; const first = el?.children[0] as HTMLElement | undefined;
+    if (!el || !first) return;
+    setActive(Math.min(photoIndustries.length - 1, Math.round(el.scrollLeft / (first.offsetWidth + 12))));
+  };
   const shown = photoIndustries.find((i) => i.id === (preview ?? answers.industry)) ?? photoIndustries[0];
   const ex = EXAMPLES[shown.id as keyof typeof EXAMPLES];
   const total = exampleTotalCents(ex);
@@ -52,16 +59,26 @@ export default function V2Home() {
             </ul>
             <div className="mt-10">
               <p className="text-sm font-bold">Start with your industry</p>
-              <div role="group" aria-label="Choose your industry" onMouseLeave={() => setPreview(null)}
-                className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {photoIndustries.map((i) => (
+              <div ref={rail} role="group" aria-label="Choose your industry" onMouseLeave={() => setPreview(null)} onScroll={onRailScroll}
+                className="-mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 [scrollbar-width:none] motion-safe:scroll-smooth sm:mx-0 sm:grid sm:snap-none sm:grid-cols-4 sm:gap-2 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
+                {photoIndustries.map((i, idx) => (
                   <button key={i.id} type="button" onClick={() => pick(i.id)}
+                    aria-label={`${i.label} (industry ${idx + 1} of ${photoIndustries.length})`}
                     onPointerEnter={(e) => { if (e.pointerType === "mouse") setPreview(i.id); }}
                     onFocus={() => setPreview(i.id)} onBlur={() => setPreview(null)}
                     aria-pressed={answers.industry === i.id}
-                    className={cn("group flex min-h-12 items-center overflow-hidden rounded-md border bg-card text-left shadow-soft transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:block", answers.industry === i.id ? "border-2 border-primary" : "border-border")}>
-                    <img src={i.image} alt="" loading="eager" width={896} height={752} className="h-12 w-14 shrink-0 object-cover sm:aspect-[16/10] sm:h-auto sm:w-full" />
-                    <span className="block truncate px-2 py-1.5 text-[13px] font-bold">{i.label}</span>
+                    className={cn("group block w-[82%] shrink-0 snap-start overflow-hidden rounded-lg border bg-card text-left shadow-soft transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto sm:rounded-md", answers.industry === i.id ? "border-2 border-primary" : "border-border")}>
+                    <img src={i.image} alt="" loading="eager" width={896} height={752} className="aspect-[16/10] w-full object-cover" />
+                    <span className="flex items-center justify-between gap-2 px-3 py-3 text-base font-bold sm:block sm:truncate sm:px-2 sm:py-1.5 sm:text-[13px]">{i.label}<ArrowRight className="h-4 w-4 text-primary sm:hidden" aria-hidden /></span>
+                  </button>
+                ))}
+              </div>
+              <div className="mt-3 flex justify-center gap-1.5 sm:hidden">
+                {photoIndustries.map((i, idx) => (
+                  <button key={i.id} type="button" aria-label={`Show ${i.label}`} aria-current={active === idx}
+                    onClick={() => (rail.current?.children[idx] as HTMLElement | undefined)?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" })}
+                    className="grid h-6 w-6 place-items-center">
+                    <span className={cn("block h-1.5 rounded-full transition-all", active === idx ? "w-4 bg-primary" : "w-1.5 bg-rule-strong")} />
                   </button>
                 ))}
               </div>
