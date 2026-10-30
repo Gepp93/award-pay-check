@@ -31,6 +31,13 @@ function getOwed(result: any): number {
     : Number(result?.underpayment) || 0;
 }
 
+function leaveNote(result: any): string | null {
+  const leave = result?.leave;
+  if (!leave || !(Number(leave.hours) > 0)) return null;
+  const paid = Number(leave.amount) > 0 ? ` (${fmt(Number(leave.amount))} paid)` : "";
+  return `Paid leave: ${leave.hours} hours${paid} recognised from the payslip. This check assesses worked hours only; leave pay and any leave loading are not assessed.`;
+}
+
 function getPeriod(shiftDetails: any): string | null {
   const shifts = shiftDetails?.shifts;
   if (Array.isArray(shifts) && shifts.length > 0) {
