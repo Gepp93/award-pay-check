@@ -47,20 +47,22 @@ Deno.serve(async req => {
       if (!b.request) return json({ error: "request_required" }, 400);
       const result = assessConfirmed(b.request as Parameters<typeof assessConfirmed>[0], b.request.eligibility);
       if (!reportSellable(result)) return json({ error: "assessment_not_supported", result }, 422);
-      const { data: subscriptions, error: subError } = await db.from("tier_subscriptions").select("status,paid_through").eq("user_id", userId);
-      if (subError) throw subError;
-      const active = (subscriptions ?? []).some(s => subscriptionAccess(s.status, s.paid_through));
-      const { data, error } = await db.from("v2_paid_reports").insert({ user_id: userId, request: b.request, result, assessment_status: result.status, assessment_unlocked: active, pdf_unlocked: active }).select("id").single();
+      const { data, error } = await db.from("v2_paid_reports").insert({ user_id: userId, request: b.request, result, assessment_status: result.status }).select("id").single();
       if (error) throw error;
-      return json({ reportId: data.id, activeSubscription: active });
+      return json({ reportId: data.id });
     }
     const { data: report, error: reportError } = b.reportId ? await db.from("v2_paid_reports").select("*").eq("id", b.reportId).eq("user_id", userId).maybeSingle() : { data: null, error: null };
     if (reportError) throw reportError;
     if (b.action === "report") {
       if (!report) return json({ error: "not_found" }, 404);
       const r = report.result as any;
+      const { data: subscriptions, error: subError } = await db.from("tier_subscriptions").select("status,paid_through").eq("user_id", userId);
+      if (subError) throw subError;
+      const active = (subscriptions ?? []).some(s => subscriptionAccess(s.status, s.paid_through));
+      const assessmentUnlocked = report.assessment_unlocked || active;
+      const pdfUnlocked = report.pdf_unlocked || active;
       // No detailed result is sent to a locked client. PDF uses this same access-checked response.
-      return json({ id: report.id, createdAt: report.created_at, status: report.assessment_status, assessmentUnlocked: report.assessment_unlocked, pdfUnlocked: report.pdf_unlocked, result: report.assessment_unlocked ? r : null, summary: { status: r.status, underpaymentCents: r.status === "complete" ? r.underpaymentCents : null, exclusions: r.exclusions } });
+      return json({ id: report.id, createdAt: report.created_at, status: report.assessment_status, assessmentUnlocked, pdfUnlocked, result: assessmentUnlocked ? r : null, summary: { status: r.status, underpaymentCents: r.status === "complete" ? r.underpaymentCents : null, exclusions: r.exclusions } });
     }
     if (!isTierProduct(b.product)) return json({ error: "invalid_product" }, 400);
     if (!Deno.env.get("STRIPE_TIER_WEBHOOK_SECRET")) return json({ error: "webhook_not_configured" }, 503);
