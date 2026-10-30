@@ -174,6 +174,8 @@ function buildPdf(result: any, shiftDetails: any, advancedPayslip: any) {
   doc.setFont("helvetica", "bold");
   para(PRELIMINARY_NOTICE, 10, 0);
   y += 14;
+  const leave = leaveNote(result);
+  if (leave) { doc.setFont("helvetica", "normal"); para(leave, 10, 0); y += 8; }
 
   // Headline
   doc.setFontSize(11);
@@ -315,6 +317,9 @@ export function FullReport({ result, shiftDetails, advancedPayslip }: Props) {
       </header>
 
       <PreliminaryNotice />
+      {leaveNote(result) && (
+        <p className="text-sm text-muted-foreground">{leaveNote(result)}</p>
+      )}
 
       {/* Headline */}
       {isUnderpaid ? (
