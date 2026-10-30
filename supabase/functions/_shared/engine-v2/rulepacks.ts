@@ -74,6 +74,9 @@ export interface RulePack {
   clauses: { minimumRates: string; penalties: string; overtime: string; hours: string; casual: string; schedule: string };
   ordinary: { ftpt: OrdinaryRules; casual: OrdinaryRules };
   overtime: { ftpt: OvertimeRules; casual: OvertimeRules | null };
+  /** Per-group rule overrides keyed by Classification.penaltyGroup (e.g. MA000038 distribution facility employees use their own penalty record IDs at the same percentages). */
+  ordinaryOverrides?: Record<string, { ftpt: OrdinaryRules; casual: OrdinaryRules }>;
+  overtimeOverrides?: Record<string, { ftpt: OvertimeRules; casual: OvertimeRules | null }>;
   overtimeMissingReason?: { casual?: string };
   additions: Addition[];
   /** Maximum ordinary minutes in a day before overtime must apply. */
