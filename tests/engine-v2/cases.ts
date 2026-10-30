@@ -25,6 +25,7 @@ export interface Case {
 
 const R = "MA000004", H = "MA000009", F = "MA000003", C = "MA000020", E = "MA000025";
 const RES = "MA000119", CLU = "MA000058", PHA = "MA000012", HB = "MA000005";
+const AC = "MA000018", CS = "MA000120", MF = "MA000010", RT = "MA000038", HO = "MA000028";
 const adult = { rateType: "adult" as const };
 // Arrangement facts a real user would confirm: every shift in the period is listed, and
 // (full-time / part-time) every non-overtime hour was rostered ordinary time.
@@ -35,6 +36,8 @@ const ARR = {
 };
 // Construction full-time: also confirms the RDO question (cl 16.2) — here, not on it.
 const ARR_C = { ft: { allShiftsInPeriodIncluded: true, workedToRoster: true, rdoAccrual: false } };
+// Aged Care full-time: confirms the ADO question (cl 22.1(b)) — here, not on it.
+const ARR_A = { ft: { allShiftsInPeriodIncluded: true, workedToRoster: true, rdoAccrual: false } };
 const SB = (award: string) => `Schedule B, ${award} award text (awards.fairwork.gov.au/${award}.html)`;
 
 export const CASES: Case[] = [
