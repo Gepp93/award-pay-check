@@ -53,6 +53,8 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [x] Explicit eligibility, RDO/ADO questions and Complete-only report sales; keep engine formulas/private access.
 - [x] Automated security/entitlement tests (298 pass) and authenticated desktop/mobile locked-report checks; tests/TIER-PAYMENT-READINESS.md records PASS/FAIL and remaining limitations.
 - [ ] Paid report/PDF access and real database concurrency verification (approved isolated paid fixture required).
-- [ ] Stripe destination must include customer.subscription.updated and charge.dispute.created (owner configuration required).
+- [x] Stripe destination includes all 10 owner-selected events; configured secret signature/no-op and deployed readiness verified.
 - [ ] Real paid checkout → webhook → report/PDF and renewal/refund delivery verification (separate payment approval required).
 - [ ] Confirm partial-refund/dispute restoration policy and signed-out customer launch journey; implement recovery/return flow after decisions. No publication.
+- [ ] Fix duplicate-session false fulfillment handling and enforce tier-specific paid report/PDF delivery (current PDF boundary is UI-only).
+- [ ] Set up isolated Stripe sandbox mode/keys/links/data and run actual delivery/lifecycle matrix; production remains strict live-only.
