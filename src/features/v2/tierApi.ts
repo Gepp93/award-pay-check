@@ -11,6 +11,7 @@ export async function tierCall(body: Record<string, unknown>) {
 export const billingError = (e: unknown) => {
   const message = e instanceof Error ? e.message : "";
   if (message === "webhook_not_configured") return "Checkout is paused until Stripe payment confirmation is configured.";
+  if (message === "webhook_events_missing") return "Checkout is paused until all required Stripe payment events are enabled.";
   if (message === "assessment_not_supported" || message === "supported_report_required") return "Complete a supported assessment before purchasing this report.";
   if (message === "confirmed_account_required") return "Confirm your account email before starting checkout.";
   if (message === "forbidden" || message === "unauthorized") return "Sign in with your authorised tester account.";

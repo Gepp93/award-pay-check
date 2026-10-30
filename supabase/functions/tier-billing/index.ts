@@ -4,8 +4,8 @@ import { z } from "npm:zod@3.23.8";
 import { AssessmentBody } from "../_shared/engine-v2/requestSchema.ts";
 import { assessConfirmed, reportSellable } from "../_shared/engine-v2/eligibility.ts";
 import { isTierProduct, TIER_PRODUCTS, subscriptionAccess } from "../_shared/tier-products.ts";
-import { resolveLink, stripeGet } from "../_shared/tier-stripe.ts";
-import { verifiedSubscription } from "../_shared/tier-webhook.ts";
+import { resolveLink, stripeGet, webhookReadiness } from "../_shared/tier-stripe.ts";
+import { verifiedSubscription, verifiedOneTimeAccess } from "../_shared/tier-webhook.ts";
 
 const Body = z.object({ action: z.enum(["configuration", "save", "checkout", "report", "reports", "status"]), product: z.string().optional(), reportId: z.string().uuid().optional(), request: AssessmentBody.optional() });
 Deno.serve(async req => {
@@ -37,7 +37,7 @@ Deno.serve(async req => {
     if (b.action === "configuration") {
       const links = {} as Record<string, unknown>;
       for (const product of Object.keys(TIER_PRODUCTS)) if (isTierProduct(product)) links[product] = await resolveLink(product);
-      return json({ links, webhookConfigured: !!Deno.env.get("STRIPE_TIER_WEBHOOK_SECRET") });
+      return json({ links, webhookConfigured: !!Deno.env.get("STRIPE_TIER_WEBHOOK_SECRET"), webhook: await webhookReadiness() });
     }
     if (b.action === "status") {
       const data = await currentSubscriptions();
@@ -63,15 +63,17 @@ Deno.serve(async req => {
       const r = report.result as any;
       const subscriptions = await currentSubscriptions();
       const active = (subscriptions ?? []).some(s => subscriptionAccess(s.status, s.paid_through));
-      const { data: purchases, error: accessError } = await db.from("tier_purchases").select("product").eq("user_id", userId).eq("report_id", report.id).eq("status", "paid");
+      const { data: purchases, error: accessError } = await db.from("tier_purchases").select("*").eq("user_id", userId).eq("report_id", report.id).eq("status", "paid");
       if (accessError) throw accessError;
-      const assessmentUnlocked = active || (purchases ?? []).some(p => p.product === "pay_check" || p.product === "underpayment_report");
-      const pdfUnlocked = active || (purchases ?? []).some(p => p.product === "underpayment_report");
+      const verified = await Promise.all((purchases ?? []).map(async p => ({ product: p.product, valid: await verifiedOneTimeAccess(p, stripeGet) })));
+      const assessmentUnlocked = active || verified.some(p => p.valid);
+      const pdfUnlocked = active || verified.some(p => p.valid && p.product === "underpayment_report");
       // No detailed result is sent to a locked client. PDF uses this same access-checked response.
       return json({ id: report.id, createdAt: report.created_at, status: report.assessment_status, assessmentUnlocked, pdfUnlocked, result: assessmentUnlocked ? r : null, summary: { status: r.status, underpaymentCents: r.status === "complete" ? r.underpaymentCents : null, exclusions: r.exclusions } });
     }
     if (!isTierProduct(b.product)) return json({ error: "invalid_product" }, 400);
     if (!Deno.env.get("STRIPE_TIER_WEBHOOK_SECRET")) return json({ error: "webhook_not_configured" }, 503);
+    if (!(await webhookReadiness()).ready) return json({ error: "webhook_events_missing" }, 503);
     if (b.product !== "pay_protection" && !report) return json({ error: "supported_report_required" }, 422);
     if (report && !reportSellable(report.result as any)) return json({ error: "assessment_not_supported" }, 422);
     const config = await resolveLink(b.product);

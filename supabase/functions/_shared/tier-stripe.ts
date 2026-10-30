@@ -1,5 +1,13 @@
 import { TIER_PRODUCTS, type TierProduct } from "./tier-products.ts";
 export const STRIPE_VERSION = "2024-06-20";
+export const TIER_EVENTS = ["checkout.session.completed", "checkout.session.async_payment_succeeded", "customer.subscription.updated", "customer.subscription.deleted", "invoice.paid", "invoice.payment_failed", "charge.refunded", "charge.dispute.created"] as const;
+export async function webhookReadiness() {
+  const url = `${Deno.env.get("SUPABASE_URL")}/functions/v1/stripe-tier-webhook`;
+  const endpoints = await stripeGet("webhook_endpoints", { limit: "100" });
+  const endpoint = endpoints.data?.find((e: any) => e.url === url && e.livemode === true && e.status === "enabled");
+  const missingEvents = TIER_EVENTS.filter(event => !endpoint?.enabled_events?.includes(event) && !endpoint?.enabled_events?.includes("*"));
+  return { ready: !!endpoint && missingEvents.length === 0 && !endpoints.has_more, missingEvents };
+}
 export async function stripeGet(path: string, params: Record<string, string> = {}) {
   const key = Deno.env.get("STRIPE_SECRET_KEY");
   if (!key) throw new Error("stripe_not_configured");

@@ -3,7 +3,7 @@ import { TIER_PRODUCTS, subscriptionAccess } from "../supabase/functions/_shared
 import { assessConfirmed, eligibilityIssues, reportSellable, type Eligibility } from "../supabase/functions/_shared/engine-v2/eligibility";
 import { buildRequest, emptyDraft } from "../src/features/v2/engine/model";
 import { CASES } from "./engine-v2/cases";
-import { processTierEvent } from "../supabase/functions/_shared/tier-webhook";
+import { processTierEvent, verifiedOneTimeAccess, verifiedSubscription } from "../supabase/functions/_shared/tier-webhook";
 import { makeTierPdf } from "../src/features/v2/reportPdf";
 const confirmed: Eligibility = { enterpriseAgreement: "no", shiftworker: "no", specialArrangement: "no", awardConfirmed: true, classificationConfirmed: true, rateConfirmed: true };
 const input = CASES.find(c => c.id === "MF1")?.input;
@@ -40,6 +40,8 @@ function fixture(over: any = {}) {
 }
 const event = (type: string, id = "evt_fixture") => ({ id, created: 1793318400, type, data: { object: { id: type.startsWith("invoice") ? "in_fixture" : type.startsWith("customer") ? "sub_fixture" : "cs_fixture" } } });
 describe("isolated verified subscription lifecycle", () => {
+  test("one-time access reads verified payment, not a redirect or saved unlock flag", async () => { const f = fixture({ product: "pay_check" }); f.state.mode = "payment"; expect(await verifiedOneTimeAccess(f.purchase, f.get)).toBe(true); f.state.refunded = true; expect(await verifiedOneTimeAccess(f.purchase, f.get)).toBe(false); });
+  test("subscription access reads current cancellation despite stale webhook cache", async () => { const f = fixture(); f.state.status = "canceled"; const state = await verifiedSubscription(f.purchase, f.get); expect(subscriptionAccess(state.status, state.paid_through)).toBe(false); });
   test("buyer email cannot reassign another account's purchase", async () => { const f = fixture(); f.state.email = "other@example.invalid"; await expect(processTierEvent(event("checkout.session.completed"), f.db, f.get)).rejects.toThrow("account_mismatch"); expect(f.calls).toHaveLength(0); });
   for (const product of ["pay_check", "underpayment_report"]) test(`${product} can fulfil without Stripe Customer creation`, async () => { const f = fixture({ product }); f.state.mode = "payment"; f.state.customer = null; await processTierEvent(event("checkout.session.completed"), f.db, f.get); expect(f.calls).toHaveLength(1); expect(f.calls[0].args.p_customer_id).toBeNull(); });
   test("unpaid checkout cannot fulfil", async () => { const f = fixture(); f.state.paid = false; await expect(processTierEvent(event("checkout.session.completed"), f.db, f.get)).rejects.toThrow("verification_failed"); expect(f.calls).toHaveLength(0); });

@@ -72,6 +72,16 @@ async function invalidPayment(id: string, get: (path: string, params?: Record<st
   return (charges.data ?? []).some((charge: any) => charge.refunded || charge.disputed || charge.amount_refunded > 0);
 }
 
+export async function verifiedOneTimeAccess(purchase: any, get: (path: string, params?: Record<string, string>) => Promise<any>) {
+  if (!purchase.stripe_session_id || !purchase.checkout_account_email || !isTierProduct(purchase.product) || purchase.product === "pay_protection") return false;
+  const session = await get(`checkout/sessions/${purchase.stripe_session_id}`);
+  if (!session.livemode || session.payment_status !== "paid" || session.currency !== "aud" || session.mode !== "payment" || session.client_reference_id !== purchase.id || session.payment_link !== purchase.payment_link_id || session.customer_details?.email?.toLowerCase() !== purchase.checkout_account_email.toLowerCase()) return false;
+  const lines = await get(`checkout/sessions/${session.id}/line_items`, { limit: "100" });
+  if (lines.has_more || lines.data?.length !== 1 || lines.data[0].quantity !== 1 || lines.data[0].price?.id !== purchase.price_id) return false;
+  const intent = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
+  return !!intent && !await invalidPayment(intent, get);
+}
+
 /** Current verified Stripe state is also read at access time; cached webhook order cannot mint access. */
 export async function verifiedSubscription(purchase: any, get: (path: string, params?: Record<string, string>) => Promise<any>) {
   const sub = await get(`subscriptions/${purchase.stripe_subscription_id}`);
