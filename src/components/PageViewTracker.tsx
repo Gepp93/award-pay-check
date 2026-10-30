@@ -8,8 +8,7 @@ export default function PageViewTracker() {
   const last = useRef<string>();
   useEffect(() => {
     if (last.current === pathname) return;
-    last.current = pathname;
-    const t = setTimeout(() => trackPageView(pathname), 300); // let page titles update first
+    const t = setTimeout(() => { last.current = pathname; trackPageView(pathname); }, 300); // let page titles update first
     return () => clearTimeout(t);
   }, [pathname]);
   return null;
