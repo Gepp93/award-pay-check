@@ -63,7 +63,7 @@ export interface SpanRule {
   exceptions?: Array<{ id: string; label: string; clause: string; question: string; start?: number; end?: number }>;
 }
 
-export interface Classification { label: string; sundayGroup?: string }
+export interface Classification { label: string; sundayGroup?: string; /** MA000038: classifications whose penalties come from a different record set (e.g. "df" = distribution facility). */ penaltyGroup?: string }
 
 export interface RulePack {
   awardCode: string;
