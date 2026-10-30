@@ -43,6 +43,13 @@
       "when": 1793328169989,
       "tag": "0005_isolated_tier_billing_and_v2_reports",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793328339052,
+      "tag": "0006_restrict_v2_report_payload_and_subscription_access",
+      "breakpoints": true
     }
   ]
 }
