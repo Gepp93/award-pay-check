@@ -101,7 +101,9 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
   // No account required to buy: save the report (owned if signed in, otherwise
   // anonymous) and send the buyer straight to Stripe with the report id.
   const handleUnlock = async () => {
-    const product = "three_month_pass";
+    // Legacy label only — the database accepts "full_report"/"backpay_pack" here.
+    // It grants nothing: paid access comes from payment_status, set server-side only.
+    const product = "full_report";
     if (!result || !shiftDetails) return;
     if (unlocking) return;
     setUnlocking(true);
@@ -185,11 +187,16 @@ export default function NewCheck_Step3_Result({ resultState }: { resultState?: a
           <p>{result.comparisonScope === "typical-week" ? "One typical week, compared with 1/4.33 of your monthly gross pay." : "A preliminary estimate using official Fair Work rates and simplified pay rules."}</p>
         </header>
         <PreliminaryNotice className="mb-6" />
+        {result?.leave?.hours > 0 && (
+          <p className="text-sm text-muted-foreground mb-6">
+            Your payslip shows {result.leave.hours} hours of paid leave{result.leave.amount > 0 ? ` ($${Number(result.leave.amount).toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} paid)` : ""}. This check assesses worked hours only — leave pay and any leave loading are recognised but not assessed.
+          </p>
+        )}
         <div className="checker-result-layout">
           <article className="checker-sheet">
             <div className="checker-sheet-header">
               <span className="ledger-label">PAY CHECK</span>
-              {shiftDetails?.date && <span className="font-mono text-[13px] text-muted-foreground">{shiftDetails.date}</span>}
+              {shiftDetails?.date && <span className="font-mono text-[13px] text-muted-foreground">Pay period starting {new Date(`${shiftDetails.date}T12:00:00`).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}</span>}
             </div>
             {isUnderpaid ? (
               <div className="checker-result-headline">
