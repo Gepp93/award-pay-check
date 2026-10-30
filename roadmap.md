@@ -7,14 +7,14 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [x] Download official pay rates, penalties, wage allowances (2023–2026)
 - [x] Read award texts: MA000020 cl 12/16/18/29/30; MA000025 cl 11/13/14/20
 - [x] Cross-check API rates against award text rate tables (CW1a $26.67, EW5 $29.45 verified)
-- [ ] Extend snapshot builder: award args + inline penalties (MA000020 has no penalty records in the Fair Work pay database — percentages sourced from award text, dated and cited)
-- [ ] Engine: weekend-is-overtime awards (null ordinary Sat/Sun), Saturday-noon rule (MA000020 cl 30.1(b)), RDO accrual handling (cl 16.2), inline penalty lookup
-- [ ] Rule packs: CONSTRUCTION + ELECTRICAL with clause citations
-- [ ] Hand-worked test cases C1–C9, E1–E9; update X1 (MA000020 no longer unsupported)
-- [ ] Coverage registry (supported/partial/unsupported per award and scenario) + admin-only /v2 page
-- [ ] Frontend: add both awards to the v2 award step
-- [ ] Run full test suite + regenerate REPORT.md
-- [ ] Update AGENTS.md (inline-penalties extension)
+- [x] Extend snapshot builder: award args + inline penalties (MA000020 has no penalty records in the Fair Work pay database — percentages sourced from award text, dated and cited)
+- [x] Engine: weekend-is-overtime awards (null ordinary Sat/Sun), Saturday-noon rule (MA000020 cl 30.1(b)), RDO accrual handling (cl 16.2), inline penalty lookup
+- [x] Rule packs: CONSTRUCTION + ELECTRICAL with clause citations
+- [x] Hand-worked test cases C1–C14, E1–E11; X1 moved to MA000010 (MA000020 now supported)
+- [x] Coverage registry (supported/partial/unsupported per award and scenario) + admin-only /v2/coverage page
+- [x] Frontend: both awards added to the v2 award step (model.ts AWARDS)
+- [x] Full test suite green (189 tests) + REPORT.md regenerated
+- [x] AGENTS.md updated (inline-penalties exception)
 
 ## Later batches (not started)
 - Batch 2: Hospitality MA000119, MA000058; Retail MA000012, MA000005
