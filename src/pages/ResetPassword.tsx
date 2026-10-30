@@ -34,7 +34,7 @@ export default function ResetPassword() {
     <main className="mx-auto max-w-md px-4 py-16">
       <h1 className="text-center text-3xl font-extrabold">Set a new password</h1>
       {!ready ? (
-        <p className="mt-6 text-center text-ink-2">Open this page from the link in your reset email. <Link to="/v2/sign-in" className="font-semibold text-primary underline">Back to sign in</Link></p>
+        <p className="mt-6 text-center text-ink-2">Open this page from the link in your reset email. <Link to="/auth" className="font-semibold text-primary underline">Back to sign in</Link></p>
       ) : (
         <form onSubmit={submit} className="mt-8 space-y-4 rounded-2xl border border-border bg-card p-6 shadow-soft">
           <div className="space-y-2">
