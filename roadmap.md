@@ -67,4 +67,5 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [x] Mobile-only swipe carousel for homepage industry cards
 - [x] /employers page, nav links, sitemap
 - [x] Secure enquiry storage + spam protection
-- [ ] Connect support notifications on the verified domain, verify one saved enquiry and send event, then delete only the test enquiry.
+- [x] Connect support notifications with Reply-To and stored-ID deduplication; preview submission/retry, four tests and build checks pass; only test enquiry deleted.
+- [ ] Confirm support inbox receipt (blocked: support@awardpay.com.au hard-bounced; managed sending suppresses this address until 29 Nov 2026). Secure enquiry storage remains active.
