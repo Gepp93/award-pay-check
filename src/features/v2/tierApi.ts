@@ -1,12 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
 export async function tierCall(body: Record<string, unknown>) {
-  const { data, error } = await supabase.functions.invoke("tier-billing", { body });
+  const { data, error } = await supabase.functions.invoke(tierEndpoint(), { body });
   if (error) {
     const response = (error as { context?: Response }).context;
     const detail = response ? await response.clone().json().catch(() => null) : null;
     throw new Error(detail?.error ?? "billing_unavailable");
   }
   return data;
+}
+function tierEndpoint() { return new URLSearchParams(window.location.search).get("billing") === "sandbox" ? "tier-sandbox-billing" : "tier-billing"; }
+export async function downloadTierPdf(reportId: string) {
+  const { data, error } = await supabase.functions.invoke(tierEndpoint(), { body: { action: "pdf", reportId } });
+  if (error || !(data instanceof Blob)) throw new Error("pdf_forbidden");
+  const url = URL.createObjectURL(data), link = document.createElement("a");
+  link.href = url; link.download = `AwardPay-${reportId}.pdf`; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 export const billingError = (e: unknown) => {
   const message = e instanceof Error ? e.message : "";
