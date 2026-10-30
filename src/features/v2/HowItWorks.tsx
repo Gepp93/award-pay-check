@@ -48,6 +48,7 @@ const STEPS = [
 
 export default function HowItWorks() {
   const { answers } = useV2();
+  const publicSite = usePublicSite();
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 md:py-14">
       <p className="text-sm font-bold uppercase tracking-wider text-primary">How it works</p>
