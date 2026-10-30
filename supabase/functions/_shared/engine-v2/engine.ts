@@ -10,15 +10,20 @@ import restaurant from "./data/MA000119.json" with { type: "json" };
 import clubs from "./data/MA000058.json" with { type: "json" };
 import pharmacy from "./data/MA000012.json" with { type: "json" };
 import hairBeauty from "./data/MA000005.json" with { type: "json" };
+import agedCare from "./data/MA000018.json" with { type: "json" };
+import childrensServices from "./data/MA000120.json" with { type: "json" };
+import manufacturing from "./data/MA000010.json" with { type: "json" };
+import roadTransport from "./data/MA000038.json" with { type: "json" };
+import horticulture from "./data/MA000028.json" with { type: "json" };
 import holidaysData from "./data/public-holidays.json" with { type: "json" };
 import { RULE_PACKS, type Dow, type Employment, type OrdinaryRules, type OvertimeRules, type PenaltyRef } from "./rulepacks.ts";
 
-export const ENGINE_VERSION = "v2.3.0";
+export const ENGINE_VERSION = "v2.4.0";
 
-/** Award-text penalty record for awards the Fair Work pay database doesn't cover (MA000020). See scripts/engine-v2/inline_penalties.json. */
+/** Award-text penalty record for awards the Fair Work pay database doesn't cover (MA000020, MA000018, MA000120). See scripts/engine-v2/inline_penalties.json. */
 interface InlinePenalty { id: string; rate: number; description: string; clause: string; operativeFrom: string; operativeTo: string | null; sourceUrl: string; verifiedOn: string }
 type Snapshot = typeof retail & { inlinePenalties?: InlinePenalty[] };
-const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot, MA000119: restaurant as Snapshot, MA000058: clubs as Snapshot, MA000012: pharmacy as Snapshot, MA000005: hairBeauty as Snapshot };
+const SNAPSHOTS: Record<string, Snapshot> = { MA000004: retail, MA000009: hospitality as Snapshot, MA000003: fastFood as Snapshot, MA000020: construction as Snapshot, MA000025: electrical as Snapshot, MA000119: restaurant as Snapshot, MA000058: clubs as Snapshot, MA000012: pharmacy as Snapshot, MA000005: hairBeauty as Snapshot, MA000018: agedCare as Snapshot, MA000120: childrensServices as Snapshot, MA000010: manufacturing as Snapshot, MA000038: roadTransport as Snapshot, MA000028: horticulture as Snapshot };
 const STATES = ["NSW", "VIC", "QLD", "SA", "WA", "TAS", "ACT", "NT"] as const;
 export type State = typeof STATES[number];
 
