@@ -80,6 +80,8 @@ export async function calculateAnswers(a: Answers, stage: (value: number) => voi
   } else {
     result.underpayment = sum("underpayment"); result.awardPayTotal = sum("awardPayTotal");
   }
+  // Paid leave is recognised and disclosed, but not assessed by this engine.
+  if ((a.leaveHours ?? 0) > 0 || (a.leaveAmount ?? 0) > 0) result.leave = { hours: a.leaveHours ?? 0, amount: a.leaveAmount ?? 0 };
   result.reasons = [...new Set(responses.flatMap(r => r.reasons ?? []))];
   result.potentialAllowances = [...new Map(responses.flatMap(r => r.potentialAllowances ?? []).map(x => [x.id ?? x.name, x])).values()];
   const advancedPayslip = { payslipBaseRate: effectiveRate, hoursAtBase: a.usePayslipHours ? Number(a.hours) : hours, hoursAt150: a.hours150, hoursAt200: a.hours200, paidAllowances: "no", allowanceDetails: null };

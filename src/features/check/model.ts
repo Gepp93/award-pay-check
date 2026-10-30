@@ -160,11 +160,18 @@ export function applyPayslip(a: Answers, p: ParsedPayslip, awards: Award[], touc
   // The award is never applied from a payslip: the worker confirms it on the award step.
   // Only printed multipliers are bucketed; a generic "penalty" is never guessed as 150%.
   let h150 = 0, h200 = 0;
+  const isLeave = (l: { description: string; type?: string }) =>
+    l.type === "leave" || /annual\s*leave|personal\/carer|personal\s*leave|carer'?s\s*leave|sick\s*leave|long\s*service\s*leave|\bleave\b/i.test(l.description);
   for (const line of p.line_items ?? []) {
+    if (isLeave(line)) continue; // Paid leave is never overtime or worked hours.
     if (/200%|double time|\b2x\b/i.test(line.description)) h200 += line.hours ?? 0;
     else if (/150%|time.and.a.half|1\.5x/i.test(line.description)) h150 += line.hours ?? 0;
   }
   put("hours150", h150); put("hours200", h200);
+  const leaveLines = (p.line_items ?? []).filter(isLeave);
+  const leaveHours = leaveLines.reduce((t, l) => t + (l.hours ?? 0), 0);
+  const leaveAmount = leaveLines.reduce((t, l) => t + (l.amount ?? 0), 0);
+  if (leaveHours > 0 || leaveAmount > 0) { put("leaveHours", leaveHours); put("leaveAmount", leaveAmount); }
   const roster = payslipRoster(p, p.pay_period_start ?? a.weekStart);
   if (roster.length && !touched.has("shifts") && !touched.has("usePayslipHours")) {
     put("shifts", roster); put("usePayslipHours", false); put("rosterScope", "period");
