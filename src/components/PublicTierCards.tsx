@@ -42,7 +42,7 @@ export default function PublicTierCards({ compact = false }: { compact?: boolean
               ? <Button variant="outline" className="w-full" disabled={busy} onClick={() => void startProtection()}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Start Pay Protection <ArrowRight className="h-4 w-4" /></>}</Button>
               : <Button asChild variant={rec ? "default" : "outline"} className="w-full"><Link to="/check">Check my payslip <ArrowRight className="h-4 w-4" /></Link></Button>}
           </div>
-          <p className="mt-3 text-xs text-ink-3">{offer.mode === "subscription" ? "Renews yearly. Cancelling keeps access until your paid period ends." : "Choose it after your free headline result."}</p>
+          <p className="mt-3 text-xs text-ink-3">{offer.mode === "subscription" ? "Renews yearly. Cancelling keeps access until your paid period ends." : "Choose it after you see your headline result."}</p>
         </article>;
       })}
     </div>
