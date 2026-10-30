@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSubscription } from "@/hooks/useSubscription";
 import { THREE_MONTH_PASS } from "@/lib/plans";
 import { Loader2, FileText, ChevronRight } from "lucide-react";
+import PayProtectionControls from "@/components/report/PayProtectionControls";
 
 interface Row {
   id: string;
@@ -30,10 +31,7 @@ export default function MyReports() {
       return;
     }
     (async () => {
-      const { data, error } = await (supabase as any)
-        .from("reports")
-        .select("id, created_at, owed_amount, payment_status, result")
-        .order("created_at", { ascending: false });
+      const { data, error } = await (supabase as any).rpc("list_my_reports");
       if (error) {
         console.error("MyReports load error:", error);
         setRows([]);
@@ -84,6 +82,7 @@ export default function MyReports() {
           <p className="text-ink-2">{pass.isPremium && pass.expiresAt ? `${pass.subscriptionStatus === "three_month" ? THREE_MONTH_PASS.name : "Pass"} · expires ${new Date(pass.expiresAt).toLocaleDateString("en-AU")}` : "Paid reports stay unlocked."}</p>
           <Button onClick={() => navigate("/check")}>Check a payslip</Button>
         </div>
+        <PayProtectionControls />
         {rows.length === 0 ? (
           <div className="space-y-5 border-t border-rule pt-6">
             <p>No reports yet — check a payslip to get started.</p>
