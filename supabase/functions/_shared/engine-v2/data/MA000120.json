@@ -2206,5 +2206,88 @@
    "operativeTo": "2024-06-30",
    "publishedYear": 2023
   }
- ]
+ ],
+ "inlinePenalties": [
+  {
+   "id": "MA000120-ORD",
+   "rate": 100,
+   "description": "Ordinary hours (Monday to Friday 6.00 am-6.30 pm)",
+   "clause": "cl 21.1-21.2",
+   "operativeFrom": "2023-07-01",
+   "operativeTo": null,
+   "sourceUrl": "https://awards.fairwork.gov.au/MA000120.html",
+   "verifiedOn": "2026-10-30"
+  },
+  {
+   "id": "MA000120-OT-1",
+   "rate": 150,
+   "description": "Overtime - first 2 hours (full-time and part-time)",
+   "clause": "cl 23.2(a)",
+   "operativeFrom": "2023-07-01",
+   "operativeTo": null,
+   "sourceUrl": "https://awards.fairwork.gov.au/MA000120.html",
+   "verifiedOn": "2026-10-30"
+  },
+  {
+   "id": "MA000120-OT-2",
+   "rate": 200,
+   "description": "Overtime - after 2 hours (full-time and part-time)",
+   "clause": "cl 23.2(a)",
+   "operativeFrom": "2023-07-01",
+   "operativeTo": null,
+   "sourceUrl": "https://awards.fairwork.gov.au/MA000120.html",
+   "verifiedOn": "2026-10-30"
+  },
+  {
+   "id": "MA000120-SUN",
+   "rate": 200,
+   "description": "All time worked on a Sunday",
+   "clause": "cl 23.5(c)",
+   "operativeFrom": "2023-07-01",
+   "operativeTo": null,
+   "sourceUrl": "https://awards.fairwork.gov.au/MA000120.html",
+   "verifiedOn": "2026-10-30"
+  },
+  {
+   "id": "MA000120-PH",
+   "rate": 250,
+   "description": "All time worked on a public holiday",
+   "clause": "cl 23.5(d)",
+   "operativeFrom": "2023-07-01",
+   "operativeTo": null,
+   "sourceUrl": "https://awards.fairwork.gov.au/MA000120.html",
+   "verifiedOn": "2026-10-30"
+  },
+  {
+   "id": "MA000120-CAS-ORD",
+   "rate": 125,
+   "description": "Casual ordinary hours (25% loading)",
+   "clause": "cl 10.5(a)",
+   "operativeFrom": "2023-07-01",
+   "operativeTo": null,
+   "sourceUrl": "https://awards.fairwork.gov.au/MA000120.html",
+   "verifiedOn": "2026-10-30"
+  },
+  {
+   "id": "MA000120-CAS-OT-1",
+   "rate": 175,
+   "description": "Casual overtime - first 2 hours",
+   "clause": "cl 23.2(b)",
+   "operativeFrom": "2023-07-01",
+   "operativeTo": null,
+   "sourceUrl": "https://awards.fairwork.gov.au/MA000120.html",
+   "verifiedOn": "2026-10-30"
+  },
+  {
+   "id": "MA000120-CAS-OT-2",
+   "rate": 225,
+   "description": "Casual overtime - after 2 hours",
+   "clause": "cl 23.2(b)",
+   "operativeFrom": "2023-07-01",
+   "operativeTo": null,
+   "sourceUrl": "https://awards.fairwork.gov.au/MA000120.html",
+   "verifiedOn": "2026-10-30"
+  }
+ ],
+ "inlinePenaltiesNote": "The Fair Work Commission Modern Awards Pay Database has NO penalty records for this award (api.fwc.gov.au penalties endpoint returns 0 results). Every percentage below was copied by hand from the consolidated award text at https://awards.fairwork.gov.au/MA000120.html (amendments up to 1 July 2026, PR810424/PR811403) on 2026-10-30. Rates are percentages of the ordinary hourly rate. operativeFrom 2023-07-01 matches the engine's rate-history floor; these percentages were in force throughout 2023-2026 (cl 23 rates date from the 20Nov20 renumbering by PR723880). The award text states no separate casual rates for Saturday, Sunday or public holiday work, so those are Not assessed for casuals."
 }
