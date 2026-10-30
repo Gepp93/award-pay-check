@@ -306,10 +306,16 @@ export function assess(input: AssessmentInput): AssessmentResult {
     const ordId = (x: M): { id: PenaltyRef; label: string; kind: LineKind } | null => {
       if (x.day === "ph") return { id: ord.publicHoliday, label: "Public holiday", kind: "public_holiday" };
       if (x.day === "sunday") {
+        const band = ord.sundayBands?.find(b => x.tod >= b.from && x.tod < b.to);
+        if (band) return { id: band.penaltyId, label: band.label, kind: "sunday" };
         const id = ord.sunday == null ? null : typeof ord.sunday === "object" ? ord.sunday.byGroup[cls.sundayGroup ?? ""] : ord.sunday;
         return id == null ? null : { id, label: "Sunday", kind: "sunday" };
       }
-      if (x.day === "saturday") return ord.saturday == null ? null : { id: ord.saturday, label: "Saturday", kind: "saturday" };
+      if (x.day === "saturday") {
+        const band = ord.saturdayBands?.find(b => x.tod >= b.from && x.tod < b.to);
+        if (band) return { id: band.penaltyId, label: band.label, kind: "saturday" };
+        return ord.saturday == null ? null : { id: ord.saturday, label: "Saturday", kind: "saturday" };
+      }
       const band = ord.weekdayBands.find(b => x.tod >= b.from && x.tod < b.to);
       return band ? { id: band.penaltyId, label: band.label, kind: "evening" } : { id: ord.weekday, label: "Weekday ordinary hours", kind: "ordinary" };
     };

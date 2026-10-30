@@ -23,6 +23,9 @@ export interface OrdinaryRules {
   /** null = the award has no ordinary hours on this day (all work is overtime). */
   saturday: PenaltyRef | null;
   sunday: PenaltyRef | { byGroup: Record<string, number> } | null;
+  /** Time-of-day bands on Saturday/Sunday (e.g. Pharmacy). Take precedence over the flat rate; a minute outside every band falls back to the flat rate (or overtime when the flat rate is null). */
+  saturdayBands?: Band[];
+  sundayBands?: Band[];
   publicHoliday: PenaltyRef;
 }
 
