@@ -350,8 +350,18 @@ export function assess(input: AssessmentInput): AssessmentResult {
 
     // ---- overtime: stated minutes are the last N worked minutes ----
     const otMinutes = otStated == null ? 0 : Math.min(otStated, worked.length);
-    const ordinaryWorked = worked.slice(0, worked.length - otMinutes);
+    const ordinaryWorkedAll = worked.slice(0, worked.length - otMinutes);
     const otWorked = worked.slice(worked.length - otMinutes);
+
+    // Awards with no ordinary weekend hours (MA000020, MA000025): weekend minutes are
+    // overtime. Unless they were entered as overtime they can't be priced — never pay
+    // them at an ordinary rate.
+    const ordinaryWorked = ordinaryWorkedAll.filter(x => ordId(x) != null);
+    const weekendOvertime = ordinaryWorkedAll.filter(x => ordId(x) == null);
+    if (weekendOvertime.length) {
+      const days = [...new Set(weekendOvertime.map(x => x.day === "saturday" ? "Saturday" : "Sunday"))].join(" and ");
+      material("Overtime", `Shift ${si + 1}: ${hrs(weekendOvertime.length)} hours on ${days} are overtime under this award (${pack.clauses.overtime}), but they weren't entered as overtime, so AwardPay can't price them.`, si, `How many minutes of the shift on ${s.date} were paid as overtime? Enter them as overtime minutes.`);
+    }
 
     // Daily maximum (stated overtime does not excuse ordinary minutes still above the maximum).
     if (ordinaryWorked.length > dailyMax) {
@@ -387,18 +397,22 @@ export function assess(input: AssessmentInput): AssessmentResult {
     for (const x of ordinaryWorked) { const w = weekOf(x.date); weeklyOrdinary.set(w, (weeklyOrdinary.get(w) ?? 0) + 1); }
 
     // ---- ordinary lines ----
-    const groups = new Map<string, { id: number; label: string; kind: LineKind; minutes: number; date: string }>();
+    const groups = new Map<string, { id: PenaltyRef; label: string; kind: LineKind; minutes: number; date: string }>();
     for (const x of ordinaryWorked) {
-      const o = ordId(x); const key = `${o.id}|${x.date}`;
+      const o = ordId(x)!; const key = `${o.id}|${x.date}`;
       const g = groups.get(key) ?? { ...o, minutes: 0, date: x.date }; g.minutes++; groups.set(key, g);
     }
     for (const g of groups.values()) {
       const rec = penalty(g.id); const rate = penaltyRateCents(baseCents, Number(rec.rate));
+      // RDO system: only part of each ordinary day is paid; the rest accrues towards the RDO.
+      const paidMinutes = rdoScale !== 1 ? Math.round(g.minutes * rdoScale) : g.minutes;
       result.lines.push({
-        shiftIndex: si, date: g.date, category: g.label, kind: g.kind, minutes: g.minutes, percent: Number(rec.rate), hourlyCents: rate,
-        amountCents: divRound(rate * g.minutes, 60),
+        shiftIndex: si, date: g.date, category: g.label, kind: g.kind, minutes: paidMinutes, percent: Number(rec.rate), hourlyCents: rate,
+        amountCents: divRound(rate * paidMinutes, 60),
         sources: [rateSource, { type: "penalty", id: rec.penaltyFixedId, description: `${rec.clauseDescription}: ${rec.penaltyDescription}`, operativeFrom: rec.operativeFrom, clause: pack.clauses.penalties, url: pack.awardUrl }],
-        explanation: `${hrs(g.minutes)} h × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`,
+        explanation: rdoScale !== 1
+          ? `${hrs(g.minutes)} h worked, ${hrs(paidMinutes)} h paid (RDO accrual, ${rdo!.clause}) × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`
+          : `${hrs(g.minutes)} h × ${Number(rec.rate)}% of $${(baseCents / 100).toFixed(2)} = $${(rate / 100).toFixed(2)}/h`,
       });
     }
     for (const add of pack.additions) {
