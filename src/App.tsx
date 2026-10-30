@@ -39,6 +39,7 @@ import V2Questions from "./features/v2/EngineQuestions";
 import V2Pricing from "./features/v2/Pricing";
 import V2SignIn from "./features/v2/SignIn";
 import V2HowItWorks from "./features/v2/HowItWorks";
+import V2Employers from "./features/v2/Employers";
 import V2Coverage from "./features/v2/Coverage";
 import ResetPassword from "./pages/ResetPassword";
 import V2PaidReport from "./features/v2/PaidReport";
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/" element={<V2Home />} />
             <Route path="/how-it-works" element={<V2HowItWorks />} />
             <Route path="/pricing" element={<V2Pricing />} />
+            <Route path="/employers" element={<V2Employers />} />
           </Route>
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />

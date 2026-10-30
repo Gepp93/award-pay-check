@@ -36,7 +36,7 @@ export function V2Nav() {
   const { answers } = useV2();
   const publicSite = usePublicSite();
   const site = siteLinks(publicSite);
-  const links = [{ to: site.howItWorks, label: "How it works" }, { to: site.pricing, label: "Pricing" }];
+  const links = [{ to: site.howItWorks, label: "How it works" }, { to: site.pricing, label: "Pricing" }, { to: "/employers", label: "For Employers" }];
   const start = publicSite ? "/check" : answers.industry ? "/v2/check" : "/v2/industry";
   const acct = signedIn ? { to: "/reports", label: "My reports" } : { to: site.signIn, label: "Sign in" };
   return (
@@ -126,6 +126,7 @@ export function V2Footer() {
           <Link to={site.howItWorks} className="opacity-80 hover:opacity-100">How it works</Link>
           <Link to="/why-awardpay" className="opacity-80 hover:opacity-100">Why AwardPay</Link>
           <Link to={site.pricing} className="opacity-80 hover:opacity-100">Pricing</Link>
+          <Link to="/employers" className="opacity-80 hover:opacity-100">For Employers</Link>
           <Link to="/contact" className="opacity-80 hover:opacity-100">Contact</Link>
         </nav>
         <p className="text-xs opacity-70">General information only, not legal advice. For help with a dispute, contact the Fair Work Ombudsman on 13 13 94.</p>
