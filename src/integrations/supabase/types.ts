@@ -362,6 +362,144 @@ export type Database = {
           },
         ]
       }
+      tier_sandbox_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          stripe_session_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          stripe_session_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          stripe_session_id?: string
+        }
+        Relationships: []
+      }
+      tier_sandbox_purchases: {
+        Row: {
+          checkout_account_email: string | null
+          created_at: string
+          id: string
+          payment_link_id: string
+          price_id: string
+          product: string
+          report_id: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_session_id: string | null
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          checkout_account_email?: string | null
+          created_at?: string
+          id?: string
+          payment_link_id: string
+          price_id: string
+          product: string
+          report_id?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          checkout_account_email?: string | null
+          created_at?: string
+          id?: string
+          payment_link_id?: string
+          price_id?: string
+          product?: string
+          report_id?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_session_id?: string | null
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tier_sandbox_reports: {
+        Row: {
+          assessment_status: string
+          assessment_unlocked: boolean
+          created_at: string
+          id: string
+          pdf_unlocked: boolean
+          request: Json
+          result: Json
+          user_id: string
+        }
+        Insert: {
+          assessment_status: string
+          assessment_unlocked?: boolean
+          created_at?: string
+          id?: string
+          pdf_unlocked?: boolean
+          request: Json
+          result: Json
+          user_id: string
+        }
+        Update: {
+          assessment_status?: string
+          assessment_unlocked?: boolean
+          created_at?: string
+          id?: string
+          pdf_unlocked?: boolean
+          request?: Json
+          result?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tier_sandbox_transactions: {
+        Row: {
+          checkout_account_email: string
+          created_at: string
+          payment_link_id: string
+          price_id: string
+          product: string
+          purchase_id: string
+          report_id: string | null
+          stripe_customer_id: string | null
+          stripe_session_id: string
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          checkout_account_email: string
+          created_at?: string
+          payment_link_id: string
+          price_id: string
+          product: string
+          purchase_id: string
+          report_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_session_id: string
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          checkout_account_email?: string
+          created_at?: string
+          payment_link_id?: string
+          price_id?: string
+          product?: string
+          purchase_id?: string
+          report_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_session_id?: string
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       tier_subscriptions: {
         Row: {
           cancel_at_period_end: boolean
@@ -397,6 +535,89 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      tier_transaction_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          stripe_session_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          stripe_session_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          stripe_session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tier_transaction_events_stripe_session_id_fkey"
+            columns: ["stripe_session_id"]
+            isOneToOne: false
+            referencedRelation: "tier_transactions"
+            referencedColumns: ["stripe_session_id"]
+          },
+        ]
+      }
+      tier_transactions: {
+        Row: {
+          checkout_account_email: string
+          created_at: string
+          payment_link_id: string
+          price_id: string
+          product: string
+          purchase_id: string
+          report_id: string | null
+          stripe_customer_id: string | null
+          stripe_session_id: string
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          checkout_account_email: string
+          created_at?: string
+          payment_link_id: string
+          price_id: string
+          product: string
+          purchase_id: string
+          report_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_session_id: string
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          checkout_account_email?: string
+          created_at?: string
+          payment_link_id?: string
+          price_id?: string
+          product?: string
+          purchase_id?: string
+          report_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_session_id?: string
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tier_transactions_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "tier_purchases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tier_transactions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "v2_paid_reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tier_webhook_events: {
         Row: {
@@ -538,6 +759,28 @@ export type Database = {
           count: number
           retry_after: number
         }[]
+      }
+      record_tier_sandbox_transaction: {
+        Args: {
+          p_customer_id: string
+          p_event_id: string
+          p_price_id: string
+          p_purchase_id: string
+          p_session_id: string
+          p_subscription_id: string
+        }
+        Returns: boolean
+      }
+      record_tier_transaction: {
+        Args: {
+          p_customer_id: string
+          p_event_id: string
+          p_price_id: string
+          p_purchase_id: string
+          p_session_id: string
+          p_subscription_id: string
+        }
+        Returns: boolean
       }
       resolve_pass_purchase: {
         Args: { p_purchase_id?: string; p_session_id?: string }

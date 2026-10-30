@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Download, Loader2, Lock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { tierCall, billingError } from "./tierApi";
+import { tierCall, billingError, downloadTierPdf } from "./tierApi";
 import TierOffers from "./TierOffers";
-import { makeTierPdf } from "./reportPdf";
 
 export default function PaidReport() {
   const { id } = useParams();
@@ -15,7 +14,7 @@ export default function PaidReport() {
       const latest = await tierCall({ action: "report", reportId: id });
       setReport(latest);
       if (!latest.pdfUnlocked || !latest.result) { setError("PDF access is not active. Check your payment status."); return; }
-      makeTierPdf(latest.id, latest.result).save(`AwardPay-${latest.id}.pdf`);
+      await downloadTierPdf(latest.id);
     } catch (e) { setError(billingError(e)); }
   };
   const load = async () => { setError(""); try { setReport(await tierCall({ action: "report", reportId: id })); } catch (e) { setError(billingError(e)); } };
@@ -30,9 +29,9 @@ export default function PaidReport() {
       <p className="mt-6 text-3xl font-extrabold">Potential comparable difference: ${((report.summary.underpaymentCents ?? 0) / 100).toFixed(2)}</p>
       <Button variant="outline" className="mt-4" onClick={() => void load()}><RefreshCw /> Check payment status</Button>
       {report.result ? <>
-        <h2 className="mt-8 text-xl font-bold">{report.result.rulePack?.name}</h2>
+        <h2 className="mt-8 text-xl font-bold">{report.result.rulePack?.name ?? report.result.award}</h2>
         <p className="mt-2">{report.result.classification}</p>
-        <div className="mt-5 overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left"><th>Date</th><th>Working</th><th className="text-right">Award minimum</th></tr></thead><tbody>{report.result.lines.map((line: any, k: number) => <tr key={k} className="border-t border-border"><td className="py-3 pr-3">{line.date}</td><td className="py-3 pr-3">{line.explanation}<br /><span className="text-xs text-ink-3">{line.sources.map((s: any) => `${s.description} ${s.clause ?? ""}`).join("; ")}</span></td><td className="text-right">${(line.amountCents / 100).toFixed(2)}</td></tr>)}</tbody></table></div>
+        {report.pdfUnlocked && <div className="mt-5 overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left"><th>Date</th><th>Working</th><th className="text-right">Award minimum</th></tr></thead><tbody>{report.result.lines.map((line: any, k: number) => <tr key={k} className="border-t border-border"><td className="py-3 pr-3">{line.date}</td><td className="py-3 pr-3">{line.explanation}<br /><span className="text-xs text-ink-3">{line.sources.map((s: any) => `${s.description} ${s.clause ?? ""}`).join("; ")}</span></td><td className="text-right">${(line.amountCents / 100).toFixed(2)}</td></tr>)}</tbody></table></div>}
         {report.pdfUnlocked ? <Button className="mt-6" onClick={() => void download()}><Download /> Download detailed PDF</Button> : <p className="mt-5 flex gap-2 text-sm text-ink-2"><Lock className="h-4 w-4" />Pay Check includes this assessment, not a PDF. A detailed report is a separate purchase.</p>}
       </> : <p className="my-6 flex gap-2"><Lock />This assessment is saved. Details unlock only after verified payment.</p>}
       <ul className="my-6 list-disc pl-5 text-sm text-ink-2">{report.summary.exclusions.map((x: string) => <li key={x}>{x}</li>)}</ul>

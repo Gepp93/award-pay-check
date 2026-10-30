@@ -47,6 +47,7 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [x] Full suite 250 passing; latest preview build OK. Ranked NO-GO report: tests/v2/LAUNCH-READINESS-AUDIT.md. No publication or application changes.
 
 ## Three-tier pricing and payment safeguards — preview only
+- [ ] Owner's new brief: server-only detailed report/PDF, per-transaction fulfillment, recoverable lifecycle, safe return/billing controls, isolated Stripe test infrastructure and honest end-to-end matrix. Preserve legacy webhook and formulas; no live payments/publication.
 - [x] Exact $9/$29/$59 Payment Links and 2.0 preview offers; public $30 flow preserved until publication approval.
 - [x] Additive protected purchases, recurring entitlements and authoritative v2 saved reports; legacy records untouched.
 - [ ] Complete server verification, idempotent isolated webhook, renewal/cancellation/refund handling and owner access.

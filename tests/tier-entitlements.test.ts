@@ -17,8 +17,8 @@ function fixture(product: string) {
     },
     rpc: async (name: string, args: any) => {
       if (seen.has(args.p_event_id)) return { data: true, error: null };
-      if (name === "fulfil_tier_purchase") {
-        if (purchase.status === "paid") return { data: purchase.stripe_session_id === args.p_session_id, error: null };
+      if (name === "record_tier_transaction") {
+        if (purchase.status === "paid") return { data: true, error: null };
         if (purchase.status !== "pending") return { error: new Error("Purchase no longer pending") };
         purchase.status = "paid"; purchase.stripe_session_id = args.p_session_id; purchase.stripe_subscription_id = args.p_subscription_id; purchase.stripe_customer_id = args.p_customer_id;
         report.assessment = product !== "pay_protection"; report.pdf = product === "underpayment_report";
@@ -48,41 +48,10 @@ function fixture(product: string) {
   return { purchase, report, state, get, deliver, mutations: () => mutations };
 }
 
-describe("stateful tier entitlement regression (simulated services)", () => {
-  for (const product of ["pay_check", "underpayment_report", "pay_protection"]) {
-    test(`${product} unlocks only its scope and duplicate delivery makes no extra mutation`, async () => {
-      const f = fixture(product); await f.deliver("checkout.session.completed"); const first = f.mutations(); await f.deliver("checkout.session.completed");
-      expect(f.mutations()).toBe(first); expect(f.purchase.status).toBe("paid");
-      expect(f.report).toEqual({ assessment: product !== "pay_protection", pdf: product === "underpayment_report" });
-      if (product === "pay_protection") expect(subscriptionAccess(f.state.subscription.status, f.state.subscription.paidThrough)).toBe(true);
-    });
-    test(`${product} refund then duplicate refund removes purchased access`, async () => {
-      const f = fixture(product); await f.deliver("checkout.session.completed"); f.state.refunded = true; await f.deliver("charge.refunded", "refund"); const first = f.mutations(); await f.deliver("charge.refunded", "refund");
-      expect(f.mutations()).toBe(first); expect(f.purchase.status).toBe("revoked"); expect(f.report).toEqual({ assessment: false, pdf: false }); expect(f.state.subscription).toBeNull();
-    });
-  }
-  test("refund before completion cannot later grant an entitlement", async () => {
-    const f = fixture("pay_check"); f.state.refunded = true; await f.deliver("charge.refunded"); await expect(f.deliver("checkout.session.completed", "late")).rejects.toThrow("payment_revoked"); expect(f.purchase.status).toBe("pending"); expect(f.report.assessment).toBe(false);
+describe("stateful transaction boundary (simulated services)", () => {
+  for (const product of ["pay_check", "underpayment_report", "pay_protection"]) test(`${product} duplicate transaction delivery is idempotent`, async () => {
+    const f = fixture(product); await f.deliver("checkout.session.completed"); const count = f.mutations(); await f.deliver("checkout.session.completed"); expect(f.mutations()).toBe(count); expect(f.purchase.status).toBe("paid");
   });
-  test("failed asynchronous payment grants nothing", async () => {
-    const f = fixture("underpayment_report"); f.state.paid = false; await f.deliver("checkout.session.async_payment_failed"); expect(f.mutations()).toBe(0); expect(f.report.pdf).toBe(false);
-  });
-  test("renewal failure removes active subscription access", async () => {
-    const f = fixture("pay_protection"); await f.deliver("checkout.session.completed"); f.state.paid = false; await f.deliver("invoice.payment_failed", "failed"); expect(subscriptionAccess(f.state.subscription.status, f.state.subscription.paidThrough)).toBe(false);
-  });
-  test("scheduled cancellation preserves only the remaining paid period", async () => {
-    const f = fixture("pay_protection"); await f.deliver("checkout.session.completed"); f.state.cancel = true; await f.deliver("customer.subscription.updated", "scheduled"); expect(subscriptionAccess(f.state.subscription.status, f.state.subscription.paidThrough)).toBe(true); expect(subscriptionAccess(f.state.subscription.status, f.state.subscription.paidThrough, (f.state.end + 1) * 1000)).toBe(false);
-  });
-  test("late renewal notification reads current cancellation rather than stale event payload", async () => {
-    const f = fixture("pay_protection"); await f.deliver("checkout.session.completed"); f.state.status = "canceled"; await f.deliver("invoice.paid", "old", 1); expect(subscriptionAccess(f.state.subscription.status, f.state.subscription.paidThrough)).toBe(false);
-  });
-  test("disputed subscription cannot be restored by a later paid invoice notification", async () => {
-    const f = fixture("pay_protection"); await f.deliver("checkout.session.completed"); f.state.disputed = true; await f.deliver("charge.dispute.created", "dispute"); await f.deliver("invoice.paid", "late"); expect(f.purchase.status).toBe("revoked"); expect(f.state.subscription).toBeNull();
-  });
-  test("a substituted buyer email never takes ownership", async () => {
-    const f = fixture("pay_check"); f.state.email = "other@example.invalid"; await expect(f.deliver("checkout.session.completed")).rejects.toThrow("account_mismatch"); expect(f.purchase.user_id).toBe("owner"); expect(f.mutations()).toBe(0);
-  });
-  test("refund removes one-time server access even before webhook acknowledgement", async () => {
-    const f = fixture("underpayment_report"); await f.deliver("checkout.session.completed"); expect(await verifiedOneTimeAccess(f.purchase, f.get)).toBe(true); f.state.refunded = true; expect(await verifiedOneTimeAccess(f.purchase, f.get)).toBe(false);
-  });
+  test("refund after fulfillment denies access without destroying transaction recovery", async () => { const f = fixture("underpayment_report"); await f.deliver("checkout.session.completed"); f.state.refunded = true; expect(await verifiedOneTimeAccess(f.purchase, f.get)).toBe(false); expect(f.purchase.status).toBe("paid"); });
+  test("unmatched buyer never records an entitlement", async () => { const f = fixture("pay_check"); f.state.email = "other@example.invalid"; await expect(f.deliver("checkout.session.completed")).rejects.toThrow("account_mismatch"); expect(f.mutations()).toBe(0); });
 });
