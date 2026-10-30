@@ -68,7 +68,7 @@ export default function V2Home() {
                     onFocus={() => setPreview(i.id)} onBlur={() => setPreview(null)}
                     aria-pressed={answers.industry === i.id}
                     className={cn("group block w-[82%] shrink-0 snap-start overflow-hidden rounded-lg border bg-card text-left shadow-soft transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto sm:rounded-md", answers.industry === i.id ? "border-2 border-primary" : "border-border")}>
-                    <img src={i.image} alt="" loading="eager" width={896} height={752} className="aspect-[16/10] w-full object-cover" />
+                    <img src={i.image} alt="" loading="eager" width={896} height={752} className="aspect-[16/10] h-auto w-full object-cover" />
                     <span className="flex items-center justify-between gap-2 px-3 py-3 text-base font-bold sm:block sm:truncate sm:px-2 sm:py-1.5 sm:text-[13px]">{i.label}<ArrowRight className="h-4 w-4 text-primary sm:hidden" aria-hidden /></span>
                   </button>
                 ))}
