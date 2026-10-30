@@ -5,7 +5,7 @@ export const TIER_PRODUCTS = {
   pay_protection: { name: "Pay Protection", amountCents: 5900, mode: "subscription", pdf: true, link: "https://buy.stripe.com/fZu3cw2ss3AZgGHa3P6AM07" },
 } as const;
 export type TierProduct = keyof typeof TIER_PRODUCTS;
-export const isTierProduct = (value: unknown): value is TierProduct => typeof value === "string" && Object.hasOwn(TIER_PRODUCTS, value);
+export const isTierProduct = (value: unknown): value is TierProduct => typeof value === "string" && Object.prototype.hasOwnProperty.call(TIER_PRODUCTS, value);
 export function subscriptionAccess(status: string, paidThrough: string | null, now = Date.now()) {
   return status === "active" && paidThrough !== null && Date.parse(paidThrough) > now;
 }
