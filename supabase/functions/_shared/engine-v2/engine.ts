@@ -302,10 +302,14 @@ export function assess(input: AssessmentInput): AssessmentResult {
       if (k === "official") result.notes.push(`Shift ${si + 1}: ${d} is ${name} in ${input.state} (source: ${extra}).`);
     }
 
-    const ordId = (x: M): { id: number; label: string; kind: LineKind } => {
+    // null = the award has no ordinary hours on that day (all weekend work is overtime).
+    const ordId = (x: M): { id: PenaltyRef; label: string; kind: LineKind } | null => {
       if (x.day === "ph") return { id: ord.publicHoliday, label: "Public holiday", kind: "public_holiday" };
-      if (x.day === "sunday") return { id: sundayId, label: "Sunday", kind: "sunday" };
-      if (x.day === "saturday") return { id: ord.saturday, label: "Saturday", kind: "saturday" };
+      if (x.day === "sunday") {
+        const id = ord.sunday == null ? null : typeof ord.sunday === "object" ? ord.sunday.byGroup[cls.sundayGroup ?? ""] : ord.sunday;
+        return id == null ? null : { id, label: "Sunday", kind: "sunday" };
+      }
+      if (x.day === "saturday") return ord.saturday == null ? null : { id: ord.saturday, label: "Saturday", kind: "saturday" };
       const band = ord.weekdayBands.find(b => x.tod >= b.from && x.tod < b.to);
       return band ? { id: band.penaltyId, label: band.label, kind: "evening" } : { id: ord.weekday, label: "Weekday ordinary hours", kind: "ordinary" };
     };
@@ -322,7 +326,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
         if (b + breakMin > finish) { material("Break", `The break on ${s.date} runs past the end of the shift.`, si); return; }
         for (let m = b; m < b + breakMin; m++) mins[m - start].paid = false;
       } else {
-        const keys = new Set(mins.map(x => `${ordId(x).id}|${inAddition(x) ? pack.additions.find(a => x.tod >= a.from && x.tod < a.to)?.wageAllowanceId : ""}|${x.date}`));
+        const keys = new Set(mins.map(x => { const o = ordId(x); return `${o ? o.id : "weekend-overtime"}|${inAddition(x) ? pack.additions.find(a => x.tod >= a.from && x.tod < a.to)?.wageAllowanceId : ""}|${x.date}`; }));
         const uniform = keys.size === 1 && !(otStated && otStated > 0);
         if (uniform) {
           // Every minute of the shift is paid the same way, so the break's position can't change the result.
@@ -330,7 +334,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
         } else {
           material("Break", `Shift ${si + 1} has different pay rates at different times, so the start time of the ${breakMin}-minute unpaid break changes the result.`, si, `What time did your unpaid break start on ${s.date}?`);
           // Lower-bound figure only: remove the break from the highest-paid minutes.
-          const order = mins.map((x, i) => ({ i, r: Number(penalty(ordId(x).id).rate) })).sort((a, b) => b.r - a.r || a.i - b.i);
+          const order = mins.map((x, i) => { const o = ordId(x); return { i, r: o ? Number(penalty(o.id).rate) : 0 }; }).sort((a, b) => b.r - a.r || a.i - b.i);
           for (let r = 0; r < breakMin; r++) mins[order[r].i].paid = false;
           result.notes.push(`Shift ${si + 1}: until the break time is known, the figure shown removes the break from the highest-paid time, so it's a lower-bound estimate.`);
         }
