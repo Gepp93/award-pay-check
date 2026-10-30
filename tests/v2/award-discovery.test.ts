@@ -30,7 +30,7 @@ describe("classifications", () => {
       expect(ids.length).toBeGreaterThan(0);
       expect(new Set(ids).size).toBe(ids.length);
     }
-    expect(classificationsFor("MA000010")).toEqual([]); // Manufacturing: no rule pack yet
+    expect(classificationsFor("MA000027")).toEqual([]); // Health Professionals: no rule pack yet
   });
   test("switching award clears classification", () => {
     const id = classificationsFor("MA000004")[0].id;
@@ -44,7 +44,7 @@ describe("classifications", () => {
     expect(sanitizeDraft({ ...emptyDraft, awardCode: "MA000009", classificationFixedId: id }).classificationFixedId).toBeNull();
   });
   test("unsupported award stops at the award question", () => {
-    expect(stepsFor({ ...emptyDraft, awardCode: "MA000010", enterpriseAgreement: "no" })).toEqual(["award"]);
+    expect(stepsFor({ ...emptyDraft, awardCode: "MA000027", enterpriseAgreement: "no" })).toEqual(["award"]);
     expect(stepsFor({ ...emptyDraft, awardCode: "MA000004", enterpriseAgreement: "no" })).toContain("classification");
     expect(stepsFor({ ...emptyDraft, awardCode: "MA000020", enterpriseAgreement: "no" })).toContain("classification");
   });
