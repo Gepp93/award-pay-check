@@ -7,16 +7,22 @@ Machine Readable Dataset", 2024 and 2025 resources).
 
 Only fields needed by the engine are kept. Values are copied verbatim: no
 rate, percentage or amount is computed or edited here.
-Usage: python3 scripts/engine-v2/build_snapshots.py /tmp/fwc
+Usage: python3 scripts/engine-v2/build_snapshots.py /tmp/fwc [AWARD ...]
+Default award list is the original three; pass awards explicitly to build
+others (e.g. MA000020 MA000025). Awards listed in inline_penalties.json get
+their hand-verified award-text penalty records merged in (the Fair Work pay
+database has no penalty records for them).
 """
 import csv, glob, json, sys
 from pathlib import Path
 
 RAW = Path(sys.argv[1] if len(sys.argv) > 1 else "/tmp/fwc")
+AWARDS = sys.argv[2:] or ["MA000004", "MA000009", "MA000003"]
 OUT = Path(__file__).resolve().parents[2] / "supabase/functions/_shared/engine-v2/data"
 OUT.mkdir(parents=True, exist_ok=True)
 YEARS = {2023, 2024, 2025, 2026}
-FETCHED = "2026-10-29"
+FETCHED = "2026-10-30"
+INLINE = json.load(open(Path(__file__).parent / "inline_penalties.json"))
 
 def rows(pattern):
     out = []
@@ -32,7 +38,7 @@ def uniq(items, key):
             seen.add(k); out.append(i)
     return out
 
-for award in ["MA000004", "MA000009", "MA000003"]:
+for award in AWARDS:
     rates = [
         {
             "classificationFixedId": r["classification_fixed_id"],
