@@ -95,6 +95,9 @@ for award in AWARDS:
     print(award, len(rates), "rates", len(penalties), "penalties", len(wage), "wage allowances", len(doc.get("inlinePenalties", [])), "inline penalties")
 
 holidays = []
+if not (RAW / "ph2024.csv").exists():
+    print("holiday CSVs not in", RAW, "— keeping existing public-holidays.json")
+    sys.exit(0)
 for year in (2024, 2025):
     for r in csv.DictReader(open(RAW / f"ph{year}.csv", encoding="utf-8-sig")):
         holidays.append({
