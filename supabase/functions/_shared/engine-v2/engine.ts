@@ -433,12 +433,13 @@ export function assess(input: AssessmentInput): AssessmentResult {
       if (!ot) { material("Overtime", (isCasual && pack.overtimeMissingReason?.casual) || "Overtime isn't assessed for this employment type.", si); }
       else {
         let tierUsed = 0;
-        const og = new Map<string, { id: number; label: string; minutes: number; date: string }>();
+        const og = new Map<string, { id: PenaltyRef; label: string; minutes: number; date: string }>();
         for (const x of otWorked) {
-          let id: number; let label: string;
+          let id: PenaltyRef; let label: string;
           if (x.day === "ph") { id = ot.publicHoliday; label = "Overtime — public holiday"; }
           else if (ot.tierDays.includes(x.dow)) {
-            if (tierUsed < ot.tierMinutes) { id = ot.first; label = `Overtime — first ${ot.tierMinutes / 60} hours`; } else { id = ot.after; label = `Overtime — after ${ot.tierMinutes / 60} hours`; }
+            if (ot.saturdayNoonAllAfter && x.dow === 6 && x.tod >= 720) { id = ot.after; label = "Overtime — Saturday after 12 noon"; }
+            else if (tierUsed < ot.tierMinutes) { id = ot.first; label = `Overtime — first ${ot.tierMinutes / 60} hours`; } else { id = ot.after; label = `Overtime — after ${ot.tierMinutes / 60} hours`; }
             tierUsed++;
           } else {
             const flat = x.dow === 0 ? ot.flat.sunday : ot.flat.saturday;
