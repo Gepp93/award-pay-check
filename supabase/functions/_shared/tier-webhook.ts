@@ -10,7 +10,8 @@ export async function processTierEvent(event: any, db: any, get: (path: string, 
     const { data: purchase, error } = await db.from("tier_purchases").select("*").eq("id", session.client_reference_id).maybeSingle();
     if (error) throw error;
     if (!purchase || !isTierProduct(purchase.product)) return;
-    if (session.livemode !== live || session.payment_status !== "paid" || session.currency !== "aud" || session.payment_link !== purchase.payment_link_id || session.mode !== TIER_PRODUCTS[purchase.product].mode) throw new Error("checkout_verification_failed");
+    const boundLink = session.payment_link ?? (session.metadata?.awardpay_purchase === purchase.id ? session.metadata?.awardpay_link : null);
+    if (session.livemode !== live || session.payment_status !== "paid" || session.currency !== "aud" || boundLink !== purchase.payment_link_id || session.mode !== TIER_PRODUCTS[purchase.product].mode) throw new Error("checkout_verification_failed");
     const lines = await get(`checkout/sessions/${session.id}/line_items`, { limit: "100" });
     if (lines.has_more || lines.data?.length !== 1 || lines.data[0].quantity !== 1 || lines.data[0].price?.id !== purchase.price_id) throw new Error("checkout_price_mismatch");
     const customer = typeof session.customer === "string" ? session.customer : session.customer?.id;
@@ -81,7 +82,8 @@ async function invalidPayment(id: string, get: (path: string, params?: Record<st
 export async function verifiedOneTimeAccess(purchase: any, get: (path: string, params?: Record<string, string>) => Promise<any>, live = true) {
   if (!purchase.stripe_session_id || !purchase.checkout_account_email || !isTierProduct(purchase.product) || purchase.product === "pay_protection") return false;
   const session = await get(`checkout/sessions/${purchase.stripe_session_id}`);
-  if (session.livemode !== live || session.payment_status !== "paid" || session.currency !== "aud" || session.mode !== "payment" || session.client_reference_id !== (purchase.purchase_id ?? purchase.id) || session.payment_link !== purchase.payment_link_id || session.customer_details?.email?.toLowerCase() !== purchase.checkout_account_email.toLowerCase()) return false;
+  const boundLink = session.payment_link ?? (session.metadata?.awardpay_purchase === (purchase.purchase_id ?? purchase.id) ? session.metadata?.awardpay_link : null);
+  if (session.livemode !== live || session.payment_status !== "paid" || session.currency !== "aud" || session.mode !== "payment" || session.client_reference_id !== (purchase.purchase_id ?? purchase.id) || boundLink !== purchase.payment_link_id || session.customer_details?.email?.toLowerCase() !== purchase.checkout_account_email.toLowerCase()) return false;
   const lines = await get(`checkout/sessions/${session.id}/line_items`, { limit: "100" });
   if (lines.has_more || lines.data?.length !== 1 || lines.data[0].quantity !== 1 || lines.data[0].price?.id !== purchase.price_id) return false;
   const intent = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
