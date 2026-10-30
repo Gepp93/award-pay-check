@@ -175,7 +175,7 @@ export function assess(input: AssessmentInput): AssessmentResult {
   const pack = RULE_PACKS[input.awardCode];
   if (input.flags?.enterpriseAgreement) return unsupported(input, "You're covered by an enterprise agreement. AwardPay can't assess enterprise agreement pay — your agreement's rates and rules apply instead of the award.");
   if (input.flags?.awardFree) return unsupported(input, "You're award-free. AwardPay's award calculator can't assess your pay.");
-  if (!pack) return unsupported(input, `Award ${input.awardCode} isn't supported by engine v2 yet. Only the General Retail (MA000004), Hospitality (MA000009) and Fast Food (MA000003) awards can be assessed.`);
+  if (!pack) return unsupported(input, `Award ${input.awardCode} isn't supported by engine v2 yet. Only these awards can be assessed: ${Object.values(RULE_PACKS).map(p => `${p.name} (${p.awardCode})`).join(", ")}.`);
   const snap = SNAPSHOTS[pack.awardCode];
   for (const flag of pack.unsupportedFlags) if (input.flags?.[flag]) {
     const what = { shiftworker: "shiftworker rates (separate award tables)", casinoGaming: "casino gaming employee rates", managerial: "managerial staff (hotels) salaries" }[flag];
@@ -230,7 +230,13 @@ export function assess(input: AssessmentInput): AssessmentResult {
   result.rate = { hourlyCents: baseCents, operativeFrom: rateRec.operativeFrom, operativeTo: rateRec.operativeTo, publishedYear: rateRec.publishedYear, referenceDate: ref, rule };
   const rateSource: Source = { type: "pay_rate", id: input.classificationFixedId, description: `${cls.label} adult minimum hourly rate`, operativeFrom: rateRec.operativeFrom, clause: pack.clauses.minimumRates, url: pack.awardUrl };
 
-  const penalty = (id: number) => {
+  const penalty = (id: PenaltyRef) => {
+    if (typeof id === "string") {
+      // Inline penalty: percentage copied from the award text (pay database has no records for this award).
+      const rec = pick((snap.inlinePenalties ?? []).filter(p => p.id === id), ref);
+      if (!rec) throw new Error(`Missing inline penalty ${id} for ${ref}`);
+      return { penaltyFixedId: id as unknown as number, rate: rec.rate, clauseDescription: rec.description, penaltyDescription: `${rec.clause} (award text, verified ${rec.verifiedOn})`, operativeFrom: rec.operativeFrom };
+    }
     const rec = pick(snap.penalties.filter(p => p.penaltyFixedId === id), ref);
     if (!rec) throw new Error(`Missing penalty ${id} for ${ref}`);
     return rec;
@@ -238,8 +244,19 @@ export function assess(input: AssessmentInput): AssessmentResult {
   const isCasual = emp === "casual";
   const ord: OrdinaryRules = isCasual ? pack.ordinary.casual : pack.ordinary.ftpt;
   const ot: OvertimeRules | null = isCasual ? pack.overtime.casual : pack.overtime.ftpt;
-  const sundayId = typeof ord.sunday === "number" ? ord.sunday : ord.sunday.byGroup[cls.sundayGroup ?? ""];
   const dailyMax = pack.dailyMaxByEmployment?.[emp] ?? pack.dailyMaxOrdinaryMinutes;
+
+  // ---- RDO accrual (MA000020 cl 16.2): never guessed ----
+  const rdo = pack.rdoAccrual && emp !== "casual" ? pack.rdoAccrual : null;
+  let rdoScale = 1;
+  if (rdo) {
+    if (arr.rdoAccrual === true) {
+      rdoScale = rdo.paidPerWorked;
+      result.notes.push(`RDO system confirmed (${rdo.clause}): each ordinary day is part paid, part accrued towards a rostered day off, which is paid when taken.`);
+    } else if (arr.rdoAccrual !== false) {
+      material("Rostered day off", `This award's standard hours system accrues part of each day towards a rostered day off (${rdo.clause}). Whether you're on it changes how many hours are paid each day.`, undefined, "Are you on the RDO system (for example, you work 8 hours and are paid 7.6, building up a paid day off)?");
+    }
+  }
 
   // Weeks: 7-day blocks from the pay period start.
   const weekOf = (d: string) => input.payPeriod ? Math.floor(daysBetween(input.payPeriod.start, d) / 7) : -1;
