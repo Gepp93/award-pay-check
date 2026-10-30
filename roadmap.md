@@ -74,8 +74,8 @@
 - [x] Automated + desktop/mobile browser tests incl. saved report + PDF
 
 ## Final release checks (preview only)
-- [ ] Explain missing/zero award total in historical reports (page + PDF)
-- [ ] Reconcile headline vs breakdown only when comparable; otherwise explanatory note
-- [ ] Route audit for auto award selection
-- [ ] Authenticated My Reports → report → PDF test (separate real vs fixture)
-- [ ] Full tests + desktop/mobile regression
+- [x] Explain missing/zero award total in historical reports (page + PDF)
+- [x] Reconcile headline vs breakdown only when comparable; otherwise explanatory note
+- [x] Route audit for auto award selection
+- [ ] Genuine paid-report E2E (blocked: test account owns no paid report; creating one would change records)
+- [x] Full tests + desktop/mobile regression
