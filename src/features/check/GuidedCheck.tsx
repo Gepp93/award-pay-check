@@ -91,6 +91,10 @@ export default function GuidedCheck() {
   }
   useEffect(() => {
     mounted.current = true; void loadAwards();
+    // Public homepage industry cards pass an exact live industry; anything else is ignored. Award and classification still need confirmation.
+    const picked = new URLSearchParams(location.search).get("industry");
+    if (picked && picked !== "Other" && INDUSTRIES.includes(picked)) { touched.current.add("industry"); setA(prev => ({ ...prev, industry: picked })); }
+    if (location.search) navigate({ pathname: "/check", hash: location.hash }, { replace: true });
     try { const saved = JSON.parse(localStorage.getItem(SAVE_KEY) ?? "null"); if (saved?.version === 2 && saved.answers && VALID_STEPS.includes(saved.step)) { setResume(saved); go("start", true); } } catch { localStorage.removeItem(SAVE_KEY); }
     setRestored(true);
     const file = takePreloadedPayslip(); if (file) void handleFile(file);
