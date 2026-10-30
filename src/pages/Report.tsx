@@ -149,7 +149,8 @@ export default function Report() {
     if (!row || row.payment_status === "paid") return;
     const pending = (window.history.state?.usr?.pendingProduct ||
       params.get("auto")) as "full_report" | "backpay_pack" | null;
-    if (!pending) return;
+    // The $30 pass is no longer sold, so auto-checkout only applies to legacy credits.
+    if (!pending || credits <= 0) return;
     // Don't auto-burn a credit on the $10 tier — let the user click.
     if (pending === "full_report" && credits > 0) return;
     autoLaunchedRef.current = true;
