@@ -63,8 +63,8 @@ Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth,
 - [ ] Owner-approved live purchase per tier (declined for now).
 - [ ] AwardPay For Employers page (plan pending).
 
-## Mobile carousel + For Employers [in progress]
-- [ ] Mobile-only swipe carousel for homepage industry cards
-- [ ] /employers page, nav links, sitemap
-- [ ] Secure enquiry storage + spam protection
+## Mobile carousel + For Employers [done except email]
+- [x] Mobile-only swipe carousel for homepage industry cards
+- [x] /employers page, nav links, sitemap
+- [x] Secure enquiry storage + spam protection
 - [ ] Email notifications to support@ (blocked: sending domain notify.awardpay.com.au must be set up by owner)
