@@ -19,7 +19,7 @@ export async function resolveLink(product: TierProduct) {
   let after = "";
   for (let page = 0; page < 100; page++) {
     const list = await stripeGet("payment_links", { limit: "100", ...(after ? { starting_after: after } : {}) });
-    const link = list.data?.find((x: any) => x.url === TIER_PRODUCTS[product].link);
+    const link = list.data?.find((x: any) => x.url === TIER_PRODUCTS[product].link && x.id === TIER_PRODUCTS[product].linkId);
     if (link) {
       const lines = await stripeGet(`payment_links/${link.id}/line_items`, { limit: "100" });
       if (!link.active || !link.livemode || lines.has_more || lines.data?.length !== 1 || lines.data[0].quantity !== 1 || !checkPrice(lines.data[0].price, product)) throw new Error("stripe_link_mismatch");
