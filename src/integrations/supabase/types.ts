@@ -311,6 +311,7 @@ export type Database = {
       }
       tier_purchases: {
         Row: {
+          checkout_account_email: string | null
           created_at: string
           id: string
           payment_link_id: string
@@ -324,6 +325,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          checkout_account_email?: string | null
           created_at?: string
           id?: string
           payment_link_id: string
@@ -337,6 +339,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          checkout_account_email?: string | null
           created_at?: string
           id?: string
           payment_link_id?: string

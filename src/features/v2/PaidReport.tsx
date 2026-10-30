@@ -10,6 +10,14 @@ export default function PaidReport() {
   const { id } = useParams();
   const [report, setReport] = useState<any>(null);
   const [error, setError] = useState("");
+  const download = async () => {
+    try {
+      const latest = await tierCall({ action: "report", reportId: id });
+      setReport(latest);
+      if (!latest.pdfUnlocked || !latest.result) { setError("PDF access is not active. Check your payment status."); return; }
+      makeTierPdf(latest.id, latest.result).save(`AwardPay-${latest.id}.pdf`);
+    } catch (e) { setError(billingError(e)); }
+  };
   const load = async () => { setError(""); try { setReport(await tierCall({ action: "report", reportId: id })); } catch (e) { setError(billingError(e)); } };
   useEffect(() => { void load(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
   return <main className="mx-auto max-w-6xl px-4 py-10 md:px-8">
@@ -25,7 +33,7 @@ export default function PaidReport() {
         <h2 className="mt-8 text-xl font-bold">{report.result.rulePack?.name}</h2>
         <p className="mt-2">{report.result.classification}</p>
         <div className="mt-5 overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left"><th>Date</th><th>Working</th><th className="text-right">Award minimum</th></tr></thead><tbody>{report.result.lines.map((line: any, k: number) => <tr key={k} className="border-t border-border"><td className="py-3 pr-3">{line.date}</td><td className="py-3 pr-3">{line.explanation}<br /><span className="text-xs text-ink-3">{line.sources.map((s: any) => `${s.description} ${s.clause ?? ""}`).join("; ")}</span></td><td className="text-right">${(line.amountCents / 100).toFixed(2)}</td></tr>)}</tbody></table></div>
-        {report.pdfUnlocked ? <Button className="mt-6" onClick={() => makeTierPdf(report.id, report.result).save(`AwardPay-${report.id}.pdf`)}><Download /> Download detailed PDF</Button> : <p className="mt-5 flex gap-2 text-sm text-ink-2"><Lock className="h-4 w-4" />Pay Check includes this assessment, not a PDF. A detailed report is a separate purchase.</p>}
+        {report.pdfUnlocked ? <Button className="mt-6" onClick={() => void download()}><Download /> Download detailed PDF</Button> : <p className="mt-5 flex gap-2 text-sm text-ink-2"><Lock className="h-4 w-4" />Pay Check includes this assessment, not a PDF. A detailed report is a separate purchase.</p>}
       </> : <p className="my-6 flex gap-2"><Lock />This assessment is saved. Details unlock only after verified payment.</p>}
       <ul className="my-6 list-disc pl-5 text-sm text-ink-2">{report.summary.exclusions.map((x: string) => <li key={x}>{x}</li>)}</ul>
       {!report.pdfUnlocked && <TierOffers reportId={report.id} />}

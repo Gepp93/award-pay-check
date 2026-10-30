@@ -3,7 +3,7 @@ import { TIER_PRODUCTS, subscriptionAccess } from "../supabase/functions/_shared
 import { assessConfirmed, eligibilityIssues, reportSellable, type Eligibility } from "../supabase/functions/_shared/engine-v2/eligibility";
 import { buildRequest, emptyDraft } from "../src/features/v2/engine/model";
 import { CASES } from "./engine-v2/cases";
-import { processTierEvent } from "../supabase/functions/_shared/tier-webhook";
+import { processTierEvent, verifiedOneTimeAccess, verifiedSubscription } from "../supabase/functions/_shared/tier-webhook";
 import { makeTierPdf } from "../src/features/v2/reportPdf";
 const confirmed: Eligibility = { enterpriseAgreement: "no", shiftworker: "no", specialArrangement: "no", awardConfirmed: true, classificationConfirmed: true, rateConfirmed: true };
 const input = CASES.find(c => c.id === "MF1")?.input;
@@ -23,21 +23,31 @@ describe("approved products and eligibility", () => {
 });
 
 function fixture(over: any = {}) {
-  const purchase = { id: "purchase", user_id: "owner", product: "pay_protection", price_id: "price_fixture", payment_link_id: "plink_fixture", stripe_customer_id: "cus_fixture", stripe_subscription_id: "sub_fixture", ...over };
+  const purchase = { id: "purchase", user_id: "owner", checkout_account_email: "owner@example.invalid", product: "pay_protection", price_id: "price_fixture", payment_link_id: "plink_fixture", stripe_customer_id: "cus_fixture", stripe_subscription_id: "sub_fixture", stripe_session_id: "cs_fixture", ...over };
   const calls: any[] = [];
   const db = { from: () => { const q: any = { select: () => q, eq: () => q, maybeSingle: async () => ({ data: purchase, error: null }) }; return q; }, rpc: async (name: string, args: any) => { calls.push({ name, args }); return { data: true, error: null }; } };
-  const state: any = { status: "active", cancel_at_period_end: false, paid: true, customer: "cus_fixture", price: "price_fixture", period: 1824940800 };
+  const state: any = { status: "active", cancel_at_period_end: false, paid: true, customer: "cus_fixture", price: "price_fixture", period: 1824940800, email: "owner@example.invalid", refunded: false, disputed: false, amount_refunded: 0, mode: "subscription" };
   const get = async (path: string) => {
     if (path.includes("line_items")) return { data: [{ quantity: 1, price: { id: state.price } }], has_more: false };
-    if (path.startsWith("checkout/sessions/")) return { id: "cs_fixture", client_reference_id: "purchase", livemode: true, payment_status: "paid", currency: "aud", mode: "subscription", payment_link: "plink_fixture", customer: state.customer, subscription: "sub_fixture" };
+    if (path === "charges") return { data: [{ refunded: state.refunded, disputed: state.disputed, amount_refunded: state.amount_refunded }], has_more: false };
+    if (path.startsWith("charges/")) return { livemode: true, refunded: state.refunded, disputed: state.disputed, amount_refunded: state.amount_refunded, invoice: "in_fixture", customer: state.customer };
+    if (path.startsWith("checkout/sessions/")) return { id: "cs_fixture", client_reference_id: "purchase", livemode: true, payment_status: state.paid ? "paid" : "unpaid", currency: "aud", mode: state.mode, payment_link: "plink_fixture", customer: state.customer, subscription: state.mode === "subscription" ? "sub_fixture" : null, payment_intent: "pi_fixture", customer_details: { email: state.email } };
     if (path.startsWith("subscriptions/")) return { id: "sub_fixture", livemode: true, customer: state.customer, status: state.status, cancel_at_period_end: state.cancel_at_period_end, current_period_end: state.period, items: { data: [{ price: { id: state.price } }] }, latest_invoice: "in_fixture" };
-    if (path.startsWith("invoices/")) return { id: "in_fixture", subscription: "sub_fixture", paid: state.paid, status: state.paid ? "paid" : "open", currency: "aud" };
+    if (path.startsWith("invoices/")) return { id: "in_fixture", livemode: true, customer: state.customer, payment_intent: "pi_fixture", subscription: "sub_fixture", paid: state.paid, status: state.paid ? "paid" : "open", currency: "aud" };
     throw new Error("Unexpected retrieval");
   };
   return { purchase, db, calls, get, state };
 }
 const event = (type: string, id = "evt_fixture") => ({ id, created: 1793318400, type, data: { object: { id: type.startsWith("invoice") ? "in_fixture" : type.startsWith("customer") ? "sub_fixture" : "cs_fixture" } } });
 describe("isolated verified subscription lifecycle", () => {
+  test("one-time access reads verified payment, not a redirect or saved unlock flag", async () => { const f = fixture({ product: "pay_check" }); f.state.mode = "payment"; expect(await verifiedOneTimeAccess(f.purchase, f.get)).toBe(true); f.state.refunded = true; expect(await verifiedOneTimeAccess(f.purchase, f.get)).toBe(false); });
+  test("subscription access reads current cancellation despite stale webhook cache", async () => { const f = fixture(); f.state.status = "canceled"; const state = await verifiedSubscription(f.purchase, f.get); expect(subscriptionAccess(state.status, state.paid_through)).toBe(false); });
+  test("buyer email cannot reassign another account's purchase", async () => { const f = fixture(); f.state.email = "other@example.invalid"; await expect(processTierEvent(event("checkout.session.completed"), f.db, f.get)).rejects.toThrow("account_mismatch"); expect(f.calls).toHaveLength(0); });
+  for (const product of ["pay_check", "underpayment_report"]) test(`${product} can fulfil without Stripe Customer creation`, async () => { const f = fixture({ product }); f.state.mode = "payment"; f.state.customer = null; await processTierEvent(event("checkout.session.completed"), f.db, f.get); expect(f.calls).toHaveLength(1); expect(f.calls[0].args.p_customer_id).toBeNull(); });
+  test("unpaid checkout cannot fulfil", async () => { const f = fixture(); f.state.paid = false; await expect(processTierEvent(event("checkout.session.completed"), f.db, f.get)).rejects.toThrow("verification_failed"); expect(f.calls).toHaveLength(0); });
+  for (const field of ["refunded", "disputed", "amount_refunded"]) test(`${field} before checkout prevents unlock`, async () => { const f = fixture(); f.state[field] = field === "amount_refunded" ? 1 : true; await expect(processTierEvent(event("checkout.session.completed"), f.db, f.get)).rejects.toThrow("payment_revoked"); expect(f.calls).toHaveLength(0); });
+  test("renewal refund resolves through invoice without a new checkout session", async () => { const f = fixture(); f.state.refunded = true; await processTierEvent(event("charge.refunded"), f.db, f.get); expect(f.calls[0]).toMatchObject({ name: "revoke_tier_purchase", args: { p_session_id: "cs_fixture" } }); });
+  test("partially refunded renewal cannot remain active", async () => { const f = fixture(); f.state.amount_refunded = 1; await processTierEvent(event("invoice.paid"), f.db, f.get); expect(f.calls[0].args.p_status).toBe("revoked"); expect(f.calls[0].args.p_paid_through).toBeNull(); });
   test("checkout binds trusted purchase, exact Price and Stripe customer", async () => { const f = fixture(); await processTierEvent(event("checkout.session.completed"), f.db, f.get); expect(f.calls[0]).toMatchObject({ name: "fulfil_tier_purchase", args: { p_purchase_id: "purchase", p_price_id: "price_fixture", p_customer_id: "cus_fixture", p_subscription_id: "sub_fixture" } }); expect(f.calls[1].args.p_status).toBe("active"); });
   test("wrong checkout Price is rejected", async () => { const f = fixture(); f.state.price = "wrong_price"; await expect(processTierEvent(event("checkout.session.completed"), f.db, f.get)).rejects.toThrow("price_mismatch"); expect(f.calls).toHaveLength(0); });
   test("scheduled cancellation keeps active access through paid period", async () => { const f = fixture(); f.state.cancel_at_period_end = true; await processTierEvent(event("customer.subscription.updated"), f.db, f.get); expect(f.calls[0].args.p_status).toBe("active"); expect(f.calls[0].args.p_cancel_at_period_end).toBe(true); expect(f.calls[0].args.p_paid_through).not.toBeNull(); });

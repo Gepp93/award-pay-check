@@ -1,11 +1,17 @@
+import { TIER_PRODUCTS } from "../_shared/tier-products.ts";
+
 export interface CheckoutSession {
   id: string; client_reference_id?: string | null; amount_total?: number | null;
   payment_status?: string; currency?: string; metadata?: Record<string, string> | null;
   customer_details?: { email?: string | null } | null;
+  payment_link?: string | { id: string } | null;
 }
 
 /** Kept separate so webhook routing can be tested with an in-memory client. */
 export async function applyCheckout(admin: any, session: CheckoutSession) {
+  const link = typeof session.payment_link === "string" ? session.payment_link : session.payment_link?.id;
+  // Tier sessions must never activate a legacy purchase, even with a tampered reference.
+  if (Object.values(TIER_PRODUCTS).some(product => product.linkId === link)) return;
   const refId = session.client_reference_id;
   if (!refId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(refId)) return;
   if (session.payment_status !== "paid" || session.currency?.toLowerCase() !== "aud") return;
