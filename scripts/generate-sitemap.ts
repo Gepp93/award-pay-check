@@ -33,6 +33,7 @@ const staticPaths = [
   { path: "/how-it-works", priority: "0.8" },
   { path: "/pricing", priority: "0.8" },
   { path: "/contact", priority: "0.6" },
+  { path: "/employers", priority: "0.8" },
   { path: "/check", priority: "0.9" },
 ];
 
