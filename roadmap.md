@@ -1,9 +1,9 @@
 # Roadmap — AwardPay 2.0 Full Industry and Award Engine Expansion
 
 ## Final launch SEO — current scope
-- [ ] Generate initial HTML for only /, /how-it-works, /pricing, /why-awardpay, /contact and /employers using existing page content.
-- [ ] Add /employers to existing sitemap; remove both temporary hosting probes.
-- [ ] Verify generated HTML, production build and public navigation/checker; report before publication.
+- [x] Generate initial HTML for only /, /how-it-works, /pricing, /why-awardpay, /contact and /employers using existing page content.
+- [x] Add /employers to existing sitemap; remove both temporary hosting probes.
+- [x] Verify generated HTML and public client mounting/navigation/checker; automatic build reports OK. Actual deployed output remains to verify after publication approval.
 - No publication, redesign, award expansion, calculator or Stripe changes. Older payment tasks remain paused pending separate approval.
 
 Preview-only. Engine v2 stays admin-only. No changes to Engine v1, Stripe, auth, DB records or saved reports. No publishing without explicit approval.
