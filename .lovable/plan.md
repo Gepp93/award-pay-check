@@ -1,32 +1,24 @@
-# Live SEO audit (1 Nov 2026) and smallest safe fixes
+# Targeted SEO fixes (approved scope)
 
-## Findings (checked on the live site)
+## Audit summary (live, 1 Nov 2026)
+- Non-www subpages return 404 instead of redirecting. This is a domain-settings fix you need to make: add awardpay.com.au as a domain that redirects to www, replacing the GoDaddy forwarding.
+- Every URL sends the homepage title and description, and no canonical, until JavaScript runs. Subpages look like duplicates to Google.
+- The sitemap is missing /employers and the award pages.
+- Award pages (/underpaid/...) are public but not linked and not in the sitemap. Their accuracy has not been checked.
 
-| Check | Result |
-|---|---|
-| Non-www homepage | PASS: 301 to https://www.awardpay.com.au/ |
-| Non-www subpages (/pricing, /employers, /check) | FAIL: 404, the path is not kept |
-| www public pages return 200 | PASS, but the made-up URL /nonexistent-xyz also returns 200 ("soft 404") |
-| Page-specific title/description in the HTML | FAIL: every URL sends the homepage title and description; pages only get their own tags after JavaScript runs |
-| Self-referencing canonical in the HTML | FAIL: no canonical in the HTML sent to the crawler; it is added only after JavaScript runs |
-| Indexable content without JavaScript | FAIL: about 670 characters of shared text on every URL; page content needs JavaScript |
-| robots.txt | PASS: allows crawling and points to the sitemap |
-| Sitemap | PARTIAL: 6 correct public pages and no private pages, but /employers and the award pages are missing |
-| /employers | PASS: crawlable (200), linked in the site header/footer; FAIL: missing from the sitemap |
-| Award pages (/underpaid/...) | Public and return 200, but not in the sitemap and not linked from the site. I have not checked whether their rates are accurate |
+## Steps
+1. **Check that hosting serves route files first.** Add one small test file at a sub-path (for example `/pricing/index.html` from the build) and confirm on the preview/static host that `/pricing` returns that file, not the generic shell. I can only fully confirm on the live site after you approve a publish. If the host still returns the generic shell, I stop and report back. The fallback is the server-rendered template upgrade, which needs your separate approval.
+2. **Sitemap:** add `https://www.awardpay.com.au/employers`. Leave out lastmod dates.
+3. **Pre-render at build time** these pages only: `/`, `/how-it-works`, `/pricing`, `/why-awardpay`, `/contact`, `/employers`, plus the award pages that pass step 5. Each gets its own title, description, a www canonical and the real page content rendered from the same components, so there is no hidden text. Not pre-rendered: `/check`, sign-in, reports, dashboard, payment pages and `/v2/*`.
+4. **No hydration mismatch:** the app takes over the pre-rendered page using the same components. Anything that depends on the browser or the account (sign-in state, carousel) renders the same as the signed-out first view.
+5. **Award page audit:** compare each `/underpaid/<slug>` page's rates and claims with current Fair Work pay guides and the Fair Work website. Each page is marked index (accurate), fix needed (listed with the correct cited figure, not changed without your approval) or noindex. Only accurate pages go into the sitemap and get pre-rendered.
+6. **Verify:** run the existing tests and the production build. Fetch the raw HTML for each affected route, with no JavaScript run, and check its title, description, canonical and content. Run a browser check that pages look and work the same.
+7. Do not publish. Report back for approval.
 
-## Confirmed blockers, impact and smallest fix
-
-1. **Non-www subpages return 404** (DNS forwarding drops the path). Impact: lost backlinks and Search Console 404s. Fix: in domain settings, add awardpay.com.au as a domain that redirects to www, replacing the GoDaddy forwarding. No code change. You do this in domain settings.
-2. **Every page sends the homepage title, description and no canonical.** Impact: Google may treat the subpages as duplicates of the homepage, which matches subpages having almost no impressions. Smallest fix: at build time, pre-render a static HTML file for each public page in the sitemap with its own title, description, canonical and main text. The app, checker and payments stay the same. The bigger alternative is the server-rendered template upgrade.
-3. **Made-up URLs return 200.** Impact: low. The pages are already marked noindex, so this is minor. Pre-rendering does not fix it fully. No action needed now.
-4. **Sitemap is missing /employers.** Impact: slower discovery. Fix: add one sitemap entry.
-5. **Award pages are not linked or listed in the sitemap.** Impact: they get no traffic. Fix: first check each page's figures against current Fair Work rates. Only then add verified pages to the sitemap and link them, for example from the footer. Leave pages that cannot be verified out of the sitemap, or mark them noindex.
-
-## Out of scope / unchanged
-No changes to the checker, Stripe, database security, payment entitlements or Engine v2. Nothing is published without approval.
+## Unchanged
+Checker, Stripe checkout, report protection, employer enquiries, Engine v2 access, design.
 
 ## Technical details
-- Pre-render: a post-build step writes `dist/<route>/index.html` for the 7 sitemap routes, with static head tags (route meta taken from the existing Helmet values) and the page's main text.
-- Sitemap: add `https://www.awardpay.com.au/employers`. Add `/underpaid/<slug>` only after verification.
-- Order: 1 (you, in domain settings), then 4, then 2, then the 5 audit.
+- Post-build script (`scripts/prerender.ts`, run after `vite build`): renders the listed routes with `react-dom/server` + `StaticRouter` + `HelmetProvider`, injecting the head tags and markup into `dist/<route>/index.html`. The client switches to `hydrateRoot` when the root already contains pre-rendered markup.
+- Remove the static canonical from `index.html` if one exists, so each page has a single canonical.
+- Record the pre-render rule in AGENTS.md. Add these tasks to roadmap.md.
