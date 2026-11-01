@@ -2,6 +2,7 @@
 - Transfer homepage payslip uploads to the existing checker through a consume-once in-memory handoff; avoid persisting sensitive files in browser history or storage.
 - Define Ledger styling centrally in global semantic tokens, Tailwind utilities and shared UI primitives; avoid page-specific theme overrides so every page inherits one foundation.
 - Reuse ReportIncludes for the paid-report inclusion list beside LockedTeaser; this keeps the presentation consistent without duplicating offer copy or revealing gated amounts.
+- Prerender six informational routes from signed-out scripts/public-pages.json snapshots; refresh after page edits and map emitted images. Keep client mounting/private routes unchanged to avoid customer-data capture.
 - Register the classifications debug route only in development builds so diagnostic access is absent in production.
 - Keep guided checker questions in one `/check` route with hash history and a versioned answers-only draft; this preserves Back/resume without storing the payslip image.
 - Adapt guided answers to the existing official single-shift calculation contract and aggregate returned results; never change or duplicate award rate math in the flow.
@@ -11,12 +12,12 @@
 - Guard billing columns with invoker triggers and restrict purchase inserts to pending rows; clients cannot mint paid entitlements or change report payment status.
 - Create checkout references client-side without reading pending purchase rows; expose only minimal status RPCs so guest checkout does not reveal purchase emails.
 - Fulfil verified paid AUD pass sessions from the stored purchase product, warning on price differences; promo/tax variations must not strand paid customers or trigger endless retries.
-- Keep adapter and verified webhook routing tests in `tests/` using in-memory clients; this checks compatibility without live database rows or charges.
+- Keep adapter/webhook tests in `tests/` with in-memory clients; avoid live rows or charges.
 - Live /check suggests awards only from printed award codes, curated job titles or specific non-generic role words (never employer names), never auto-applies an award, de-duplicates classifications by ID, and requires a confirmed classification; v1 results are labelled preliminary estimates in every view and PDF without altering stored data.
 - Convert day-specific printed payslip hours into tagged, editable roster shifts; keep printed multiplier buckets exclusive to hours-only engine requests to avoid counting them twice.
 - Compare monthly manual rosters as a typical week and divide monthly gross by 4.33 only in the adapter; label the result weekly so engine overtime and annualization semantics remain unchanged.
 - Retry payslip reads only for transport errors or timeouts; provider rejection must immediately fall back to guided questions.
-- Link guest pass purchases to accounts only through the authenticated claim_my_passes RPC matching a confirmed auth email; clients never write purchase ownership directly.
+- Claim guest passes only through authenticated claim_my_passes matching confirmed email; never write ownership client-side.
 - Serve the 2.0 public marketing pages (`/`, `/how-it-works`, `/pricing`) from `src/features/v2` in a public `V2Layout` whose links hand off to live `/check` via exact industry mapping (`publicSite.ts`); all `/v2/*` checker/engine routes stay inside `V2Gate` for admins only, so unfinished Engine v2 is never public.
 - Read payslips in `ai-parse-payslip` through the Lovable AI Gateway Responses API with a zero-retention model, strict null-for-missing schema and count-only logs; nulls are stripped so existing clients keep the absent-field contract.
 - Keep engine v2 as a pure module in `supabase/functions/_shared/engine-v2` whose rule packs reference Fair Work record IDs, with amounts read from committed dated snapshots; the one exception is awards the Fair Work pay database has no penalty records for (MA000020), which use dated, award-text-cited inline penalties from `scripts/engine-v2/inline_penalties.json`. Unsupported or uncertain items must be Not assessed, never filled with generic rules, and v1 `calculate-shift-pay` stays unchanged until the owner approves a switch.
