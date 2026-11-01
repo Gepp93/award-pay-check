@@ -1,24 +1,18 @@
-# Targeted SEO fixes (approved scope)
+# Step 1 only: check whether live hosting serves separate page files
 
-## Audit summary (live, 1 Nov 2026)
-- Non-www subpages return 404 instead of redirecting. This is a domain-settings fix you need to make: add awardpay.com.au as a domain that redirects to www, replacing the GoDaddy forwarding.
-- Every URL sends the homepage title and description, and no canonical, until JavaScript runs. Subpages look like duplicates to Google.
-- The sitemap is missing /employers and the award pages.
-- Award pages (/underpaid/...) are public but not linked and not in the sitemap. Their accuracy has not been checked.
+## What is known
+- The site has no standalone page files today, so live hosting cannot answer this question yet.
+- The editor preview runs a development server, not the production host. A result there would not prove how the live site behaves.
 
-## Steps
-1. **Check that hosting serves route files first.** Add one small test file at a sub-path (for example `/pricing/index.html` from the build) and confirm on the preview/static host that `/pricing` returns that file, not the generic shell. I can only fully confirm on the live site after you approve a publish. If the host still returns the generic shell, I stop and report back. The fallback is the server-rendered template upgrade, which needs your separate approval.
-2. **Sitemap:** add `https://www.awardpay.com.au/employers`. Leave out lastmod dates.
-3. **Pre-render at build time** these pages only: `/`, `/how-it-works`, `/pricing`, `/why-awardpay`, `/contact`, `/employers`, plus the award pages that pass step 5. Each gets its own title, description, a www canonical and the real page content rendered from the same components, so there is no hidden text. Not pre-rendered: `/check`, sign-in, reports, dashboard, payment pages and `/v2/*`.
-4. **No hydration mismatch:** the app takes over the pre-rendered page using the same components. Anything that depends on the browser or the account (sign-in state, carousel) renders the same as the signed-out first view.
-5. **Award page audit:** compare each `/underpaid/<slug>` page's rates and claims with current Fair Work pay guides and the Fair Work website. Each page is marked index (accurate), fix needed (listed with the correct cited figure, not changed without your approval) or noindex. Only accurate pages go into the sitemap and get pre-rendered.
-6. **Verify:** run the existing tests and the production build. Fetch the raw HTML for each affected route, with no JavaScript run, and check its title, description, canonical and content. Run a browser check that pages look and work the same.
-7. Do not publish. Report back for approval.
+## Smallest test
+1. Add two tiny files that nobody visits, marked noindex and with no links to them:
+   - `public/hosting-probe/index.html` containing the text "PROBE-DIR"
+   - `public/hosting-probe-flat.html` containing the text "PROBE-FLAT"
+2. Fetch them on the static preview host using raw HTML, as Googlebot would: `/hosting-probe`, `/hosting-probe/` and `/hosting-probe-flat`. Compare each with the generic app shell.
+3. The preview cannot fully prove how production behaves. To confirm it on www.awardpay.com.au, a publish is needed. I will ask your approval for that separately. The publish would carry only these two files on top of the current live version, with no other changes.
+4. After testing, delete both files and report the result:
+   - **The folder file is served at /hosting-probe:** build-time pre-rendering works, so continue with the rest of the plan once you approve.
+   - **Only the generic shell is served:** pre-rendering will not reach Google. I will report the smallest supported alternative and make no framework change without your approval.
 
 ## Unchanged
-Checker, Stripe checkout, report protection, employer enquiries, Engine v2 access, design.
-
-## Technical details
-- Post-build script (`scripts/prerender.ts`, run after `vite build`): renders the listed routes with `react-dom/server` + `StaticRouter` + `HelmetProvider`, injecting the head tags and markup into `dist/<route>/index.html`. The client switches to `hydrateRoot` when the root already contains pre-rendered markup.
-- Remove the static canonical from `index.html` if one exists, so each page has a single canonical.
-- Record the pre-render rule in AGENTS.md. Add these tasks to roadmap.md.
+Checker, routing, Stripe, report protection, enquiries and Engine v2. Nothing is published without your approval.
