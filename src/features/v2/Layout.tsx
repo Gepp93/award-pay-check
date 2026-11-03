@@ -7,14 +7,13 @@ import { industryById } from "./industries";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { siteLinks, usePublicSite } from "./publicSite";
+import logoAsset from "@/assets/golden-a-swoosh-logo.png.asset.json";
 
 export const Logo = () => {
   const home = siteLinks(usePublicSite()).home;
   return (
   <Link to={home} className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-foreground">
-    <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground">
-      <Check className="h-5 w-5" strokeWidth={3} />
-    </span>
+    <img src={logoAsset.url} alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-lg object-cover" />
     AwardPay
   </Link>
   );
