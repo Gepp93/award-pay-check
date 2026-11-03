@@ -26,6 +26,8 @@
 .ap-brand { display: flex; align-items: center; gap: 10px; letter-spacing: 0; cursor: pointer; font-size: 20px; font-weight: 600; }
 .ap-mark { width: 28px; height: 28px; background: hsl(var(--primary)); position: relative; flex: none; border-radius: 10px; }
 .ap-mark::after { content: ""; position: absolute; inset: 8px 7px; border-left: 2.5px solid hsl(var(--primary-foreground)); border-bottom: 2.5px solid hsl(var(--primary-foreground)); border-radius: 0 0 0 2px; }
+.ap-mark-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex: none; display: block; }
+
 .ap-links { display: flex; align-items: center; gap: 24px; margin-left: auto; }
 .ap-links a { color: hsl(var(--foreground)); text-decoration: none; font-size: 15px; font-weight: 500; opacity: .8; }
 .ap-links a:hover { opacity: 1; }

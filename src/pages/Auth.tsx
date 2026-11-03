@@ -9,6 +9,7 @@ import { Calculator } from "lucide-react";
 
 import { startSubscriptionCheckout } from "@/lib/paymentLinks";
 import { THREE_MONTH_PASS } from "@/lib/plans";
+import logoMark from "@/assets/golden-a-swoosh-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -105,7 +106,7 @@ const Auth = () => {
               onClick={() => navigate("/")}
               className="flex items-center gap-2 font-semibold text-xl cursor-pointer px-0"
             >
-              <span className="ap-mark" />
+              <img src={logoMark} alt="" className="ap-mark-img" />
               <span className="text-foreground">AwardPay</span>
             </Button>
             
