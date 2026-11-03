@@ -31,7 +31,7 @@ export const NavBar = () => {
               onClick={() => handleNavigation("/")}
               className="flex items-center gap-2 font-semibold text-xl"
             >
-              <img src={logoMark} alt="" className="ap-mark" />
+              <img src={logoMark} alt="" className="ap-mark-img" />
               AwardPay
             </Button>
             {/* Desktop Navigation */}

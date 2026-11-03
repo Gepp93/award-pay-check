@@ -13,7 +13,7 @@ export const ApNav = () => {
     <header className="ap-nav">
       <div className="ap-nav-row">
         <Button variant="ghost" className="ap-brand" onClick={() => go("/")}>
-          <img src={logoMark} alt="" className="ap-mark" />
+          <img src={logoMark} alt="" className="ap-mark-img" />
           AwardPay
         </Button>
         <nav className="ap-links">

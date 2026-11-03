@@ -106,7 +106,7 @@ const Auth = () => {
               onClick={() => navigate("/")}
               className="flex items-center gap-2 font-semibold text-xl cursor-pointer px-0"
             >
-              <img src={logoMark} alt="" className="ap-mark" />
+              <img src={logoMark} alt="" className="ap-mark-img" />
               <span className="text-foreground">AwardPay</span>
             </Button>
             

@@ -13,7 +13,7 @@ export const Logo = () => {
   const home = siteLinks(usePublicSite()).home;
   return (
   <Link to={home} className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-foreground">
-    <img src={logoMark} alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-lg object-cover" />
+    <img src={logoMark} alt="" width={32} height={32} className="h-8 w-8 shrink-0 rounded-full object-cover" />
     AwardPay
   </Link>
   );
