@@ -8,6 +8,7 @@ test("prerender emits only the six approved informational routes", () => {
   for (const name of ["construction", "hospitality", "retail", "healthcare", "manufacturing", "transport", "agriculture", "education"]) {
     bundle[name] = { type: "asset", name: `${name}.jpg`, fileName: `assets/${name}-test.jpg` };
   }
+  bundle["logo"] = { type: "asset", name: "golden-a-swoosh-logo.png", fileName: "assets/logo-test.png" };
   const emitted: string[] = [];
   const hook = publicPrerender().generateBundle;
   if (typeof hook !== "function") throw new Error("Missing prerender hook");
