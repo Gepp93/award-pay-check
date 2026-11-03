@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Calculator, Menu, X } from "lucide-react";
+import logoMark from "@/assets/golden-a-swoosh-logo.png";
 
 export const PublicNavBar = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export const PublicNavBar = () => {
             onClick={() => navigate("/")}
             className="flex items-center gap-2 font-semibold text-xl cursor-pointer px-0"
           >
-            <span className="ap-mark" />
+            <img src={logoMark} alt="" className="ap-mark" />
             <span className="text-foreground">AwardPay</span>
           </Button>
           

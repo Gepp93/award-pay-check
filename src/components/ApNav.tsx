@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logoMark from "@/assets/golden-a-swoosh-logo.png";
 
 export const ApNav = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export const ApNav = () => {
     <header className="ap-nav">
       <div className="ap-nav-row">
         <Button variant="ghost" className="ap-brand" onClick={() => go("/")}>
-          <span className="ap-mark" />
+          <img src={logoMark} alt="" className="ap-mark" />
           AwardPay
         </Button>
         <nav className="ap-links">

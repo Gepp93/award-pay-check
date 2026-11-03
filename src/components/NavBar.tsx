@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Calculator, ClipboardCheck, LogOut, FileText, Menu, X, User } from "lucide-react";
 import { toast } from "sonner";
+import logoMark from "@/assets/golden-a-swoosh-logo.png";
 
 export const NavBar = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export const NavBar = () => {
               onClick={() => handleNavigation("/")}
               className="flex items-center gap-2 font-semibold text-xl"
             >
-              <span className="ap-mark" />
+              <img src={logoMark} alt="" className="ap-mark" />
               AwardPay
             </Button>
             {/* Desktop Navigation */}
