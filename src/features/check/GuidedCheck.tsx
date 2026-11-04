@@ -15,10 +15,11 @@ import { takePreloadedPayslip } from "@/lib/pendingPayslip";
 import { readPayslip, PAYSLIP_ACCEPT, type ParsedPayslip } from "@/lib/payslipReader";
 import { calculateAnswers } from "./calculate";
 import PreliminaryNotice from "@/components/report/PreliminaryNotice";
+import CheckEntry from "./CheckEntry";
 import { applyPayslip, dateOffset, defaults, INDUSTRIES, JOBS, SAVE_KEY, shiftHours, matchAwards, industryAwards, dedupeClassifications, typicalShifts, type Answers, type Award, type Classification, type Step } from "./model";
 
 const TITLES: Partial<Record<Step, [string, string]>> = {
-  start: ["Let's check your pay", "Takes about 60 seconds. Official Fair Work rates."],
+  start: ["Let's check your pay", "Choose how you'd like to check your pay. We'll help you compare what you earned against the relevant Australian award rates."],
   job: ["What do you do?", "Choose the job that best describes your work."],
   industry: ["Which industry do you work in?", "This helps narrow down your award."],
   award: ["Confirm your award", "An award sets the minimum pay and conditions for your job."],
@@ -181,7 +182,7 @@ export default function GuidedCheck() {
   const reviewRows: [Step, string, string][] = [["job", "Job", a.job || "Not sure"], ["award", "Award", a.awardName], ["employment", "Employment", a.employmentType], ["level", "Level", a.classificationName], ["pay", "Pay", `${a.frequency} · ${a.gross ? `$${a.gross} gross` : `$${a.rate}/hr`}`], ["hours", "Hours", a.usePayslipHours ? `${a.hours} ordinary hours from your payslip` : `${a.shifts.length} shifts · ${a.shifts.reduce((t, s) => t + shiftHours(s), 0).toFixed(1)} hrs`], ["allowances", "Allowances", Object.values(a.conditions).some(Boolean) ? "Work conditions selected" : "None / not sure"], ...((a.leaveHours ?? 0) > 0 ? [["hours", "Paid leave", `${a.leaveHours} hrs — recognised, not assessed`] as [Step, string, string]] : [])];
 
   return <><SEO title="Check your pay | AwardPay" description="A guided Australian award pay check using official Fair Work rates." path="/check" /><ApNav />
-    <main className={`checker-page checker-form ${["hours", "allowances", "review"].includes(step) ? "checker-has-primary" : ""}`}>
+    <main className={`checker-page checker-form ${step === "start" ? "check-entry-page" : ""} ${["hours", "allowances", "review"].includes(step) ? "checker-has-primary" : ""}`}>
       <input ref={input} type="file" className="hidden" accept={PAYSLIP_ACCEPT} aria-label="Upload payslip" onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void handleFile(f); }} />
       {step !== "start" && step !== "loading" && <div className="mb-8"><div className="flex justify-between items-center mb-3"><Button variant="ghost" size="sm" onClick={back} className="px-0"><ArrowLeft className="h-4 w-4" />Back</Button><span className="font-mono text-[13px] text-ink-3">Step {number} of {sequence.length}</span></div><div role="progressbar" aria-label="Check progress" aria-valuenow={number} aria-valuemin={0} aria-valuemax={sequence.length} className="flex gap-1">{sequence.map((s, i) => <span key={s} className={`h-[3px] flex-1 ${i < number ? "bg-primary" : "bg-rule"}`} />)}</div></div>}
       {(reading || readCount > 0) && <div role="status" className="flex gap-2 items-center text-sm text-primary mb-5">{reading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}{reading ? "Reading your payslip…" : `Filled ${a.fromPayslip.length || readCount} answers from your payslip`}</div>}
@@ -191,9 +192,7 @@ export default function GuidedCheck() {
       {error && <p role="alert" className="text-clay mb-5">{error}</p>}
 
       {step === "start" && <div className="space-y-4">{resume && <section className="border-t border-b border-rule py-5 space-y-3"><h2 className="text-xl">Pick up where you left off</h2><Button onClick={() => { setA({ ...defaults(), ...resume.answers }); touched.current = new Set(Object.keys(resume.answers)); const next = resume.step; setResume(undefined); go(next); }}>Resume my check</Button><Button variant="link" onClick={() => { setResume(undefined); localStorage.removeItem(SAVE_KEY); }}>Start again</Button></section>}
-        <Button variant="outline" className="checker-choice" onClick={() => input.current?.click()}><Camera className="h-7 w-7 text-primary" /><span className="flex-1">Upload a payslip<span className="block text-sm font-normal text-ink-2">Fastest — we fill in the details for you</span><span className="ledger-label text-primary">Recommended</span></span><ChevronRight className="h-4 w-4" /></Button>
-        <Button variant="outline" className="checker-choice" onClick={() => { setResume(undefined); go("job"); }}><span className="flex-1">Answer a few questions<span className="block text-sm font-normal text-ink-2">No payslip? No problem</span></span><ChevronRight className="h-4 w-4" /></Button>
-        <p className="text-sm text-ink-2">Your payslip image is never saved.</p></div>}
+        <CheckEntry onUpload={() => input.current?.click()} onManual={() => { setResume(undefined); go("job"); }} /></div>}
 
       {step === "job" && <div className="space-y-3">{tag("job")}{a.job && <>{choice(a.job, true, () => advance(), "Looks right")}</>}
         <Label htmlFor="job-search">Job title</Label><div className="relative"><Search className="absolute left-3 top-4 h-4 w-4 text-ink-3" /><Input id="job-search" className="pl-10" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search your job, e.g. barista" /></div>
