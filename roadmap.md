@@ -1,5 +1,9 @@
 # Roadmap — AwardPay 2.0 Full Industry and Award Engine Expansion
 
+## Checker entry design — current scope
+- [x] Replace only the /check entry presentation with two equally prominent upload/manual cards and compact trust messages using the supplied reference.
+- [x] Verify existing upload/manual connections, resume and four viewport sizes; 299 tests pass, automatic build OK, no runtime errors. Scanner confirmation used a synthetic response; fresh real scan-to-result journeys not retested. No backend, payment or v2 routing changes and no publication.
+
 ## Final launch SEO — current scope
 - [x] Generate initial HTML for only /, /how-it-works, /pricing, /why-awardpay, /contact and /employers using existing page content.
 - [x] Add /employers to existing sitemap; remove both temporary hosting probes.
