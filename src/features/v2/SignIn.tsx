@@ -34,7 +34,7 @@ export default function SignIn() {
   const afterAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const { error: claimError } = await supabase.rpc("claim_my_passes");
+      const { error: claimError } = await supabase.rpc("claim_my_passes"); await supabase.rpc("claim_my_tier_purchases");
       if (claimError) console.error("claim_my_passes error:", claimError);
     }
     if (redirect === "checkout") {
