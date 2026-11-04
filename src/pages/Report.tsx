@@ -17,6 +17,7 @@ import { startSubscriptionCheckout } from "@/lib/paymentLinks";
 import { THREE_MONTH_PASS } from "@/lib/plans";
 import { useSubscription } from "@/hooks/useSubscription";
 import TierChoices from "@/components/report/TierChoices";
+import GuestPaidNotice from "@/components/report/GuestPaidNotice";
 import { tierCall } from "@/features/v2/tierApi";
 
 interface ReportRow {
@@ -270,6 +271,7 @@ export default function Report() {
               </>
             ) : (
               <>
+                {params.get("guest") === "1" && params.get("tier_session") && <GuestPaidNotice reportId={row.id} session={params.get("tier_session")!} signedIn={!!user} />}
                 {confirming && <div className="checker-sheet text-sm flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" />Confirming your payment with Stripe…</div>}
                 {summary ? (
                   <section className="checker-findings">
