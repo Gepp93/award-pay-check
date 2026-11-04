@@ -22,11 +22,9 @@ return async (req: Request) => {
   const url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY"), service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !anon || !service) return json({ error: "unavailable" }, 503);
   const auth = req.headers.get("Authorization") ?? "";
-  if (!auth.startsWith("Bearer ")) return json({ error: "unauthorized" }, 401);
   const client = createClient(url, anon, { global: { headers: { Authorization: auth } } });
-  const { data: claims, error: claimError } = await client.auth.getClaims(auth.slice(7));
-  const userId = claims?.claims?.sub;
-  if (claimError || typeof userId !== "string" || claims?.claims?.role !== "authenticated") return json({ error: "unauthorized" }, 401);
+  const { data: claims, error: claimError } = auth.startsWith("Bearer ") ? await client.auth.getClaims(auth.slice(7)) : { data: null, error: null };
+  const signedInId = !claimError && claims?.claims?.role === "authenticated" && typeof claims?.claims?.sub === "string" ? claims.claims.sub as string : null;
   const db = tierDatabase(createClient(url, service, { auth: { persistSession: false } }), mode);
   try {
     const raw = await req.text();
@@ -34,6 +32,31 @@ return async (req: Request) => {
     const parsed = Body.safeParse(JSON.parse(raw));
     if (!parsed.success) return json({ error: "invalid_input" }, 400);
     const b = parsed.data;
+    if (!signedInId) {
+      // Guests may only start live checkout for an unowned public-checker report, or confirm a returned session.
+      if (mode !== "live") return json({ error: "unauthorized" }, 401);
+      if (b.action === "confirm" && b.sessionId) {
+        try { await processTierEvent({ id: `return:${b.sessionId}`, type: "checkout.session.completed", data: { object: { id: b.sessionId } } }, db, stripe.get, true); }
+        catch { return json({ confirmed: false }); }
+        const { data: tx } = await db.from("tier_transactions").select("user_id").eq("stripe_session_id", b.sessionId).maybeSingle();
+        return json({ confirmed: !!tx && tx.user_id === null, guest: true });
+      }
+      if (b.action !== "checkout" || !b.legacyReportId || !isTierProduct(b.product)) return json({ error: "unauthorized" }, 401);
+      if (!Deno.env.get(webhookSecretName)) return json({ error: "webhook_not_configured" }, 503);
+      if (!(await webhookReadiness()).ready) return json({ error: "webhook_events_missing" }, 503);
+      const { data: guestReport, error: gErr } = await db.from("reports").select("id,user_id,payment_status").eq("id", b.legacyReportId).is("user_id", null).maybeSingle();
+      if (gErr) throw gErr;
+      if (!guestReport) return json({ error: "unauthorized" }, 401);
+      if (b.product !== "pay_protection" && guestReport.payment_status === "paid") return json({ error: "already_unlocked" }, 409);
+      const config = await resolveLink(b.product);
+      const id = crypto.randomUUID();
+      const { error } = await db.from("tier_purchases").insert({ id, user_id: null, guest: true, checkout_account_email: null, report_id: null, legacy_report_id: guestReport.id, product: b.product, payment_link_id: config.linkId, price_id: config.priceId });
+      if (error) throw error;
+      const origin = safeOrigin(req);
+      const session = await stripe.post("checkout/sessions", { mode: TIER_PRODUCTS[b.product].mode, "line_items[0][price]": config.priceId, "line_items[0][quantity]": "1", client_reference_id: id, "metadata[awardpay_purchase]": id, "metadata[awardpay_link]": config.linkId, success_url: `${origin}/report/${guestReport.id}?tier_session={CHECKOUT_SESSION_ID}&guest=1`, cancel_url: `${origin}/report/${guestReport.id}`, ...(TIER_PRODUCTS[b.product].mode === "payment" ? { customer_creation: "always" } : {}) });
+      return json({ url: session.url, purchaseId: id });
+    }
+    const userId: string = signedInId;
     // Customer actions use public-checker reports; anything touching Engine v2 reports stays admin-only.
     const customerAction = mode === "live" && (["legacy_report", "confirm", "status", "portal", "cancel"].includes(b.action) || (b.action === "checkout" && !b.reportId));
     if (!customerAction) {
