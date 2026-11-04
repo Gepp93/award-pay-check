@@ -27,10 +27,10 @@ export default function TierChoices({ reportId, signedIn, owned, onClaim, assess
   const [busy, setBusy] = useState<TierProduct | null>(null);
   const [error, setError] = useState("");
   const buy = async (product: TierProduct) => {
-    if (!signedIn) { navigate("/auth", { state: { returnTo: `/report/${reportId}`, mode: "signup" } }); return; }
     setBusy(product); setError("");
     try {
-      if (!owned && !(await onClaim())) throw new Error("claim_failed");
+      // Guests go straight to Stripe; the server binds the purchase to the payer's email.
+      if (signedIn && !owned && !(await onClaim())) throw new Error("claim_failed");
       const data = await tierCall({ action: "checkout", product, legacyReportId: reportId });
       track("checkout_started", { tier: product });
       window.location.assign(data.url);
@@ -47,13 +47,14 @@ export default function TierChoices({ reportId, signedIn, owned, onClaim, assess
           <p className="figure text-[28px] mt-2">${offer.amountCents / 100}<span className="text-sm text-muted-foreground ml-1">AUD{offer.mode === "subscription" ? "/year" : " once"}</span></p>
           <ul className="my-4 flex-1 space-y-2 text-sm">{ITEMS[product].map(i => <li key={i} className="flex gap-2"><Check className="h-4 w-4 shrink-0 text-primary" />{i}</li>)}</ul>
           <Button variant={product === "underpayment_report" ? "default" : "outline"} disabled={!!busy} onClick={() => void buy(product)}>
-            {busy === product ? <Loader2 className="h-4 w-4 animate-spin" /> : signedIn ? `Choose ${offer.name}` : `Sign in to buy ${offer.name}`}
+            {busy === product ? <Loader2 className="h-4 w-4 animate-spin" /> : `Choose ${offer.name}`}
           </Button>
           <p className="mt-2 text-xs text-muted-foreground">{offer.mode === "subscription" ? "Renews yearly. Cancelling keeps access until the paid period ends." : "One payment for this report."}</p>
         </article>;
       })}
     </div>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-    <p className="text-xs text-muted-foreground">All results are preliminary estimates. Secure checkout by Stripe.</p>
+    <p className="text-xs text-muted-foreground">All results are preliminary estimates. Secure checkout by Stripe — no account needed.</p>
+    {!signedIn && <p className="text-sm">Already have an account? <button type="button" className="underline" onClick={() => navigate("/auth", { state: { returnTo: `/report/${reportId}` } })}>Sign in</button></p>}
   </section>;
 }

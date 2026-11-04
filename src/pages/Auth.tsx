@@ -44,7 +44,7 @@ const Auth = () => {
     // Link any pass bought as a guest with this confirmed email.
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const { error: claimError } = await supabase.rpc("claim_my_passes");
+      const { error: claimError } = await supabase.rpc("claim_my_passes"); await supabase.rpc("claim_my_tier_purchases");
       if (claimError) console.error("claim_my_passes error:", claimError);
     }
     if (isCheckoutRedirect) {

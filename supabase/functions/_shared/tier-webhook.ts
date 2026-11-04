@@ -16,13 +16,15 @@ export async function processTierEvent(event: any, db: any, get: (path: string, 
     if (lines.has_more || lines.data?.length !== 1 || lines.data[0].quantity !== 1 || lines.data[0].price?.id !== purchase.price_id) throw new Error("checkout_price_mismatch");
     const customer = typeof session.customer === "string" ? session.customer : session.customer?.id;
     const email = session.customer_details?.email;
-    if (!purchase.checkout_account_email || typeof email !== "string" || email.toLowerCase() !== purchase.checkout_account_email.toLowerCase()) throw new Error("checkout_account_mismatch");
+    // Guest purchases bind to Stripe's payer email once; account purchases keep the strict account-email match.
+    const guestBinding = purchase.guest === true && !purchase.checkout_account_email;
+    if (guestBinding ? typeof email !== "string" || !email.includes("@") : !purchase.checkout_account_email || typeof email !== "string" || email.toLowerCase() !== purchase.checkout_account_email.toLowerCase()) throw new Error("checkout_account_mismatch");
     const sub = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
     const intent = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
     // Record paid transactions even if already refunded: access is independently verified.
     if (sub && !customer) throw new Error("checkout_customer_missing");
     if (sub) await verifiedSubscription({ ...purchase, stripe_customer_id: customer, stripe_subscription_id: sub }, get, live);
-    const fulfilled = await db.rpc("record_tier_transaction", { p_event_id: event.id, p_purchase_id: purchase.id, p_session_id: session.id, p_customer_id: customer ?? null, p_subscription_id: sub ?? null, p_price_id: purchase.price_id });
+    const fulfilled = await db.rpc("record_tier_transaction", { p_event_id: event.id, p_purchase_id: purchase.id, p_session_id: session.id, p_customer_id: customer ?? null, p_subscription_id: sub ?? null, p_price_id: purchase.price_id, ...(guestBinding ? { p_payer_email: email.toLowerCase() } : {}) });
     if (fulfilled.error) throw fulfilled.error;
     if (fulfilled.data !== true) throw new Error("transaction_not_recorded");
     return;

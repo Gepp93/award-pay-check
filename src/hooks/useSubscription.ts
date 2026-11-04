@@ -44,7 +44,7 @@ export function useSubscription() {
         // Link guest pass purchases made with this confirmed email (once per session per user).
         if (!claimedUsers.has(user.id)) {
           claimedUsers.add(user.id);
-          const { error: claimError } = await supabase.rpc("claim_my_passes");
+          const { error: claimError } = await supabase.rpc("claim_my_passes"); await supabase.rpc("claim_my_tier_purchases");
           if (claimError) console.error("claim_my_passes error:", claimError);
         }
 

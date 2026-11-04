@@ -361,6 +361,7 @@ export type Database = {
         Row: {
           checkout_account_email: string | null
           created_at: string
+          guest: boolean
           id: string
           legacy_report_id: string | null
           payment_link_id: string
@@ -371,11 +372,12 @@ export type Database = {
           stripe_customer_id: string | null
           stripe_session_id: string | null
           stripe_subscription_id: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           checkout_account_email?: string | null
           created_at?: string
+          guest?: boolean
           id?: string
           legacy_report_id?: string | null
           payment_link_id: string
@@ -386,11 +388,12 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_session_id?: string | null
           stripe_subscription_id?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           checkout_account_email?: string | null
           created_at?: string
+          guest?: boolean
           id?: string
           legacy_report_id?: string | null
           payment_link_id?: string
@@ -401,7 +404,7 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_session_id?: string | null
           stripe_subscription_id?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -639,7 +642,7 @@ export type Database = {
           stripe_customer_id: string | null
           stripe_session_id: string
           stripe_subscription_id: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           checkout_account_email: string
@@ -653,7 +656,7 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_session_id: string
           stripe_subscription_id?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           checkout_account_email?: string
@@ -667,7 +670,7 @@ export type Database = {
           stripe_customer_id?: string | null
           stripe_session_id?: string
           stripe_subscription_id?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -783,6 +786,7 @@ export type Database = {
     }
     Functions: {
       claim_my_passes: { Args: never; Returns: number }
+      claim_my_tier_purchases: { Args: never; Returns: number }
       complete_pass_purchase: {
         Args: {
           p_email: string
@@ -860,6 +864,7 @@ export type Database = {
         Args: {
           p_customer_id: string
           p_event_id: string
+          p_payer_email?: string
           p_price_id: string
           p_purchase_id: string
           p_session_id: string
